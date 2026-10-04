@@ -1,0 +1,68 @@
+formatting:
+  active: true
+  MaximumLineLength:
+    active: true
+    maxLineLength: 110
+  ArgumentListWrapping:
+    active: true
+  # One parameter per line is the project style; ktlint wants a single line.
+  FunctionSignature:
+    active: false
+  # Composables are named after what they draw, in title case.
+  FunctionNaming:
+    active: false
+
+style:
+  MaxLineLength:
+    maxLineLength: 110
+  # A layout is made of numbers read off the design.
+  MagicNumber:
+    active: false
+  ReturnCount:
+    active: false
+  UnusedPrivateMember:
+    active: true
+    ignoreAnnotated: ['Preview']
+  ForbiddenComment:
+    active: true
+    comments: ['TODO:', 'FIXME:', 'STOPSHIP:']
+
+complexity:
+  LongMethod:
+    ignoreAnnotated: ['Composable']
+    threshold: 80
+  LongParameterList:
+    ignoreAnnotated: ['Composable']
+    functionThreshold: 8
+    constructorThreshold: 8
+  CyclomaticComplexMethod:
+    ignoreAnnotated: ['Composable']
+    threshold: 20
+  TooManyFunctions:
+    thresholdInClasses: 30
+    thresholdInFiles: 30
+    # A Room DAO is one function per table per operation.
+    thresholdInInterfaces: 20
+    ignoreAnnotatedFunctions: ['Composable']
+
+naming:
+  FunctionNaming:
+    ignoreAnnotated: ['Composable']
+  # Allows both MONTH and FadeHeight, the way Compose names dimensions.
+  TopLevelPropertyNaming:
+    privatePropertyPattern: '_?([a-z][A-Za-z0-9]*|[A-Z][A-Za-z0-9]*|[A-Z][A-Z0-9_]*)'
+  # AppButton.kt may also hold the AppButtonStyle enum it takes.
+  MatchingDeclarationName:
+    active: false
+
+exceptions:
+  TooGenericExceptionCaught:
+    active: true
+  SwallowedException:
+    active: true
+
+comments:
+  UndocumentedPublicClass:
+    active: false
+  UndocumentedPublicFunction:
+    active: false
