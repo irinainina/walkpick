@@ -1,0 +1,999 @@
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  font: 18px/28px "Cabin", sans-serif;
+  color: #6e7a8a;
+  background: #fff;
+}
+
+h1,
+h2,
+h3,
+p,
+ul {
+  margin: 0;
+}
+
+ul {
+  padding: 0;
+  list-style: none;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+img,
+svg {
+  display: block;
+}
+
+svg {
+  width: 24px;
+  height: 24px;
+}
+
+.sprite {
+  position: absolute;
+  width: 0;
+  height: 0;
+  overflow: hidden;
+}
+
+.page {
+  position: relative;
+  overflow-x: clip;
+}
+
+.container {
+  position: relative;
+  max-width: 1440px;
+  margin: 0 auto;
+}
+
+.display {
+  font: 800 56px/68px "Plus Jakarta Sans", sans-serif;
+}
+
+.heading {
+  font: 800 32px/40px "Plus Jakarta Sans", sans-serif;
+  color: #4f79a4;
+}
+
+.subtitle,
+.step-subtitle {
+  display: block;
+  font: 400 24px/32px "Plus Jakarta Sans", sans-serif;
+}
+
+.trail,
+.decor {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.trail {
+  z-index: 1;
+}
+
+.decor {
+  z-index: 4;
+}
+
+/* header + hero */
+
+.hero {
+  /* narrower than the 1440px drawing, the wave is cropped at the sides, not squeezed */
+  background: url("assets/images/hero-bg.svg") center top / max(100%, 1440px) 100% no-repeat;
+  color: #fff;
+}
+
+.hero-inner {
+  height: 914px;
+  padding: 0 64px;
+}
+
+.header {
+  position: fixed;
+  top: 0;
+  right: 0;
+  left: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  /* side padding keeps the content on the 1440px frame with its 64px margins */
+  padding: 48px max(64px, calc(50% - 656px)) 0;
+  transition: top 0.3s, padding 0.3s;
+}
+
+.header.scrolled {
+  padding-top: 16px;
+  padding-bottom: 16px;
+  background: linear-gradient(135deg, #0470dc, #13f1fc);
+  box-shadow: 0 8px 24px rgb(11 58 122 / 20%);
+}
+
+.header.hidden {
+  top: -80px;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font: 700 18px/24px "Cabin", sans-serif;
+}
+
+.logo-mark {
+  width: 28px;
+  height: 28px;
+}
+
+.nav {
+  display: flex;
+  gap: 48px;
+  line-height: 24px;
+}
+
+.nav a:hover,
+.nav a.active,
+.footer-links a:hover {
+  text-decoration: underline;
+  text-underline-offset: 6px;
+}
+
+.menu-button {
+  display: none;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  cursor: pointer;
+}
+
+.hero-content {
+  position: relative;
+  z-index: 3;
+  width: 560px;
+  /* 76px of it is the room the fixed header used to take */
+  padding-top: 256px;
+}
+
+.hero .display {
+  line-height: 62px;
+}
+
+.hero .subtitle {
+  margin-top: 0;
+}
+
+.hero-text {
+  margin-top: 26px;
+  color: #b7e6ff;
+}
+
+.waitlist {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 518px;
+  height: 64px;
+  margin-top: 40px;
+  padding: 6px;
+  border-radius: 32px;
+  background: #fff;
+  box-shadow: 0 12px 32px rgb(11 58 122 / 16%);
+}
+
+.waitlist-field {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  gap: 12px;
+  padding-left: 22px;
+}
+
+.waitlist-icon {
+  flex-shrink: 0;
+  color: #13f1fc;
+}
+
+.waitlist-field input {
+  width: 100%;
+  border: 0;
+  outline: 0;
+  padding: 0;
+  font: inherit;
+  color: #3f3d56;
+  background: none;
+}
+
+.waitlist-field input::placeholder {
+  color: #bdd3df;
+}
+
+.waitlist-button {
+  width: 188px;
+  height: 52px;
+  border: 0;
+  border-radius: 26px;
+  font: 700 18px/24px "Cabin", sans-serif;
+  color: #fff;
+  background: linear-gradient(135deg, #13f1fc, #70ddff);
+  cursor: pointer;
+  transition: filter 0.2s;
+}
+
+.waitlist-button:hover {
+  filter: brightness(1.05);
+}
+
+.waitlist-message {
+  position: absolute;
+  top: 100%;
+  left: 28px;
+  margin-top: 8px;
+  font: 700 18px/24px "Cabin", sans-serif;
+}
+
+.hero-art {
+  position: absolute;
+  top: 222px;
+  left: 774px;
+  z-index: 2;
+}
+
+/* features */
+
+.features {
+  position: relative;
+  z-index: 3;
+  padding-top: 118px;
+  text-align: center;
+}
+
+.section-title {
+  color: #4f79a4;
+}
+
+.section-title .subtitle {
+  margin-top: -8px;
+}
+
+.showcase {
+  position: relative;
+  width: 772px;
+  height: 476px;
+  margin: 100px auto 0;
+}
+
+.showcase-phone {
+  position: absolute;
+  top: 0;
+  left: 98px;
+}
+
+/* steps */
+
+.steps {
+  display: grid;
+  gap: 200px;
+  max-width: 1440px;
+  margin: 100px auto 0;
+  padding: 0 64px;
+}
+
+.step {
+  position: relative;
+  z-index: 3;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  column-gap: 112px;
+  align-items: center;
+}
+
+.step-image {
+  width: 100%;
+  height: auto;
+}
+
+#gallery .step-image {
+  margin-top: -15px;
+}
+
+.step-text {
+  width: 480px;
+  margin-left: -40px;
+}
+
+.step:nth-child(even) .step-image {
+  order: 2;
+}
+
+.step:nth-child(even) .step-text {
+  margin-left: 80px;
+}
+
+.step-subtitle {
+  margin-top: 4px;
+  color: #4f79a4;
+}
+
+.step-subtitle + p {
+  margin-top: 20px;
+}
+
+.privacy-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 24px;
+  padding: 10px 20px 10px 16px;
+  border-radius: 24px;
+  font: 700 18px/24px "Cabin", sans-serif;
+  color: #0470dc;
+  background: #e8f5ff;
+}
+
+.privacy-badge svg {
+  width: 20px;
+  height: 20px;
+}
+
+/* app */
+
+.app {
+  position: relative;
+  height: 876px;
+  color: #fff;
+}
+
+.app-inner {
+  display: flex;
+  align-items: flex-start;
+  padding: 84px 0 0 308px;
+}
+
+/* the wave is 2200px wide and starts 300px left of a 1440px frame; on narrower screens it is cropped */
+.app::before {
+  --wave-width: max(2200px, calc(2200 / 1440 * 100%));
+
+  content: "";
+  position: absolute;
+  top: 198px;
+  left: calc(50% - var(--wave-width) * 1020 / 2200);
+  width: var(--wave-width);
+  height: 1041px;
+  background: url("assets/images/app-bg.svg") 0 0 / 100% 100% no-repeat;
+}
+
+.app-phone {
+  position: relative;
+  z-index: 3;
+}
+
+.app-text {
+  position: relative;
+  z-index: 3;
+  width: 520px;
+  margin: 368px 0 0 3px;
+}
+
+.app-text p {
+  width: 400px;
+  margin-top: 16px;
+  color: #b7e6ff;
+}
+
+.stores {
+  display: flex;
+  gap: 16px;
+  margin-top: 40px;
+}
+
+.store-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 28px 12px 24px;
+  border-radius: 28px;
+  font: 700 18px/24px "Cabin", sans-serif;
+  text-transform: uppercase;
+  background: rgb(255 255 255 / 20%);
+  transition: background 0.2s;
+}
+
+.store-button:hover {
+  background: rgb(255 255 255 / 30%);
+}
+
+/* footer */
+
+.footer {
+  position: relative;
+  z-index: 3;
+  background: url("assets/images/footer-wave.svg") center top / max(100%, 1440px) 100% no-repeat;
+}
+
+.footer-inner {
+  z-index: 1;
+  display: grid;
+  grid-template-columns: 400px 119px auto;
+  column-gap: 61px;
+  height: 733px;
+  padding: 312px 0 0 439px;
+}
+
+.footer-trees,
+.footer-lamp {
+  position: absolute;
+  top: 261px;
+  pointer-events: none;
+}
+
+.footer-trees {
+  left: 0;
+}
+
+.footer-lamp {
+  right: 144px;
+}
+
+.footer-about,
+.footer-links,
+.copyright {
+  position: relative;
+}
+
+.footer-about .logo {
+  color: #727a9c;
+}
+
+.footer-about .logo-mark {
+  color: #13f1fc;
+}
+
+.footer-about p {
+  margin-top: 46px;
+}
+
+.footer-links {
+  margin-top: 74px;
+}
+
+.footer-links li + li {
+  margin-top: 4px;
+}
+
+.socials {
+  display: flex;
+  gap: 24px;
+  margin-top: 62px;
+}
+
+.socials a {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border: 2px solid #e7effd;
+  border-radius: 50%;
+  color: #bdd3df;
+  transition: border-color 0.2s, color 0.2s;
+}
+
+.socials li:first-child a,
+.socials a:hover {
+  border-color: #13f1fc;
+  color: #13f1fc;
+}
+
+.socials svg {
+  width: 16px;
+  height: 16px;
+}
+
+.copyright {
+  grid-column: 1 / -1;
+  margin: 42px 0 0 -439px;
+  text-align: center;
+  color: #bdd3df;
+}
+
+.credit {
+  display: block;
+  font-size: 14px;
+  line-height: 20px;
+}
+
+/* decor */
+
+.leaf,
+.firefly {
+  position: absolute;
+}
+
+.leaf {
+  animation: leaf-fall var(--duration) linear var(--delay) infinite;
+}
+
+.leaf svg {
+  width: 100%;
+  height: auto;
+  transform: rotate(var(--rotation));
+  animation: leaf-sway 2.4s ease-in-out infinite alternate;
+}
+
+.firefly {
+  border-radius: 50%;
+  background: var(--color);
+  box-shadow: 0 0 10px 2px var(--color);
+  animation: twinkle var(--duration) ease-in-out var(--delay) infinite;
+}
+
+.trail > svg {
+  width: 100%;
+  height: 100%;
+}
+
+.footprint svg {
+  width: 100%;
+  height: 100%;
+}
+
+.footprint {
+  position: absolute;
+  width: var(--size);
+  height: calc(var(--size) * 2);
+  opacity: 0;
+  transition: opacity 0.6s;
+}
+
+.footprint.visible {
+  opacity: 1;
+}
+
+@keyframes leaf-fall {
+  0% {
+    opacity: 0;
+    translate: 0 -40px;
+  }
+
+  15%,
+  80% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 0;
+    translate: 0 200px;
+  }
+}
+
+@keyframes leaf-sway {
+  from {
+    margin-left: -12px;
+    rotate: -20deg;
+  }
+
+  to {
+    margin-left: 12px;
+    rotate: 20deg;
+  }
+}
+
+@keyframes twinkle {
+  0%,
+  100% {
+    opacity: 0.4;
+    scale: 0.6;
+  }
+
+  50% {
+    opacity: 1;
+    scale: 1.3;
+    background: var(--color-alt);
+    box-shadow: 0 0 14px 4px var(--color-alt);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  .leaf,
+  .leaf svg,
+  .firefly {
+    animation: none;
+  }
+
+  .footprint {
+    opacity: 1;
+    transition: none;
+  }
+}
+
+/* between the two designed widths */
+
+@media (min-width: 768px) and (max-width: 1439px) {
+  .hero-art {
+    right: 24px;
+    left: auto;
+    width: min(642px, 48%);
+    height: auto;
+  }
+
+  .hero-content {
+    width: min(560px, 50%);
+  }
+
+  .waitlist {
+    width: min(518px, 100%);
+  }
+
+  .waitlist-field {
+    gap: 8px;
+    padding-left: 16px;
+  }
+
+  .waitlist-button {
+    flex-shrink: 0;
+    width: auto;
+    padding: 0 16px;
+  }
+
+  .step {
+    column-gap: 48px;
+  }
+
+  .step-text,
+  .step:nth-child(even) .step-text {
+    width: auto;
+    max-width: 480px;
+    margin-left: 0;
+  }
+
+  .nav {
+    gap: clamp(16px, 3vw, 48px);
+  }
+
+  .app-inner {
+    justify-content: center;
+    padding-left: 24px;
+  }
+
+  .app-text {
+    width: auto;
+    max-width: 400px;
+  }
+
+  .stores {
+    flex-wrap: wrap;
+  }
+
+  .footer-inner {
+    grid-template-columns: minmax(0, 400px) auto auto;
+    column-gap: 40px;
+    padding: 312px 24px 0 360px;
+  }
+
+  .copyright {
+    margin-left: -360px;
+  }
+}
+
+/* the email field is too narrow for its icon here */
+
+@media (min-width: 768px) and (max-width: 899px) {
+  .waitlist-icon {
+    display: none;
+  }
+}
+
+/* mobile */
+
+@media (max-width: 767px) {
+  body {
+    font-size: 16px;
+    line-height: 24px;
+  }
+
+  .display {
+    font-size: 40px;
+    line-height: 48px;
+  }
+
+  .heading {
+    font-size: 28px;
+    line-height: 36px;
+  }
+
+  .subtitle,
+  .step-subtitle {
+    font-size: 20px;
+    line-height: 28px;
+  }
+
+  .hero {
+    background-image: url("assets/images/hero-bg-mobile.svg");
+    background-size: 100% 100%;
+  }
+
+  .hero-inner {
+    height: auto;
+    padding: 0 24px 72px;
+  }
+
+  .header {
+    padding: 24px 24px 0;
+  }
+
+  .header.scrolled {
+    padding: 12px 24px;
+  }
+
+  .menu-button {
+    display: block;
+  }
+
+  .nav {
+    position: fixed;
+    inset: 0;
+    z-index: 10;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 32px;
+    font: 800 28px/36px "Plus Jakarta Sans", sans-serif;
+    background: linear-gradient(135deg, #0470dc, #13f1fc);
+    visibility: hidden;
+    opacity: 0;
+    transition: opacity 0.3s, visibility 0.3s;
+  }
+
+  .nav.open {
+    visibility: visible;
+    opacity: 1;
+  }
+
+  .menu-button[aria-expanded="true"] {
+    position: relative;
+    z-index: 11;
+  }
+
+  .hero-content {
+    width: auto;
+    max-width: 520px;
+    margin: 0 auto;
+    padding-top: 105px;
+  }
+
+  .hero .display {
+    line-height: 48px;
+  }
+
+  .hero .subtitle {
+    margin-top: 0;
+  }
+
+  .hero-text {
+    margin-top: 16px;
+  }
+
+  #gallery .step-image {
+    margin-top: -8px;
+  }
+
+  .waitlist {
+    flex-direction: column;
+    gap: 12px;
+    width: auto;
+    height: auto;
+    margin-top: 32px;
+    padding: 0;
+    border-radius: 0;
+    background: none;
+    box-shadow: none;
+  }
+
+  .waitlist-field {
+    flex: none;
+    width: 100%;
+    height: 56px;
+    padding-left: 24px;
+    border-radius: 28px;
+    background: #fff;
+  }
+
+  .waitlist-button {
+    width: 100%;
+    height: 56px;
+    border-radius: 28px;
+    box-shadow: 0 8px 24px rgb(11 58 122 / 20%);
+  }
+
+  .waitlist-message {
+    position: static;
+    margin: 0;
+  }
+
+  .hero-art {
+    position: relative;
+    top: auto;
+    left: -3px;
+    width: 100%;
+    max-width: 420px;
+    height: auto;
+    margin: 18px auto 0;
+  }
+
+  .features {
+    padding: 24px 24px 0;
+  }
+
+  .section-title .subtitle {
+    margin-top: -2px;
+  }
+
+  .showcase {
+    left: 4px;
+    width: 420px;
+    height: 259px;
+    margin: 4px 0 0 calc(50% - 210px);
+  }
+
+  .showcase-bg {
+    width: 100%;
+    height: auto;
+  }
+
+  .showcase-phone {
+    left: 53px;
+    width: 336px;
+    height: auto;
+  }
+
+  .steps {
+    grid-template-columns: minmax(0, 520px);
+    justify-content: center;
+    gap: 96px;
+    margin-top: -28px;
+    padding: 0 24px;
+  }
+
+  .step {
+    display: block;
+  }
+
+  .step-text,
+  .step:nth-child(even) .step-text {
+    width: auto;
+    margin: 16px 0 0;
+  }
+
+  .step-subtitle + p {
+    margin-top: 16px;
+  }
+
+  .privacy-badge {
+    margin-top: 16px;
+    font-size: 16px;
+    white-space: nowrap;
+  }
+
+  .app {
+    height: auto;
+    text-align: center;
+  }
+
+  .app-inner {
+    flex-direction: column;
+    align-items: center;
+    padding: 98px 24px 168px;
+  }
+
+  /* the mobile waves keep their size: the svg anchors them to the edges and fills the rest */
+  .app::before {
+    top: 220px;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: auto;
+    background-image: url("assets/images/app-bg-mobile.svg");
+    background-size: 100% 100%;
+  }
+
+  .app-phone {
+    width: 297px;
+    height: auto;
+    margin-bottom: -27px;
+  }
+
+  .app-text,
+  .app-text p {
+    width: auto;
+    max-width: 520px;
+    margin: 0;
+  }
+
+  .app-text p {
+    margin-top: 16px;
+  }
+
+  .stores {
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    margin-top: 32px;
+  }
+
+  .footer {
+    background: none;
+  }
+
+  .footer-inner {
+    grid-template-columns: 1fr 1fr;
+    column-gap: 0;
+    max-width: 568px;
+    height: auto;
+    padding: 40px 24px 0;
+  }
+
+  .footer-about {
+    display: contents;
+  }
+
+  .footer-about .logo,
+  .footer-about p {
+    grid-column: 1 / -1;
+  }
+
+  .footer-about p {
+    margin-top: 16px;
+  }
+
+  .footer-links {
+    margin-top: 24px;
+    line-height: 28px;
+  }
+
+  .socials {
+    grid-column: 1 / -1;
+    grid-row: 4;
+    margin-top: 24px;
+  }
+
+  .copyright {
+    grid-row: 5;
+    margin: 28px 0 0;
+    text-align: left;
+  }
+
+  .footer-trees {
+    position: static;
+    width: 109px;
+    height: auto;
+    margin-top: 19px;
+  }
+
+  .footer-lamp {
+    top: auto;
+    right: 39px;
+    bottom: 0;
+    width: 30px;
+    height: auto;
+  }
+}

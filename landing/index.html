@@ -1,0 +1,191 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>WalkSpot — Step. Snap. See.</title>
+  <meta name="description" content="WalkSpot counts your steps and turns every walk into a small discovery of nature and architecture.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cabin:wght@400;700&family=Plus+Jakarta+Sans:wght@400;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <svg class="sprite" aria-hidden="true">
+      <symbol id="pin-lens" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M24 45s-15-12-15-24a15 15 0 0 1 30 0c0 12-15 24-15 24z"/>
+        <circle cx="24" cy="21" r="7"/>
+        <path d="M21 18.5a4 4 0 0 1 3-1.5"/>
+      </symbol>
+      <symbol id="mail" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M4 6h16v12H4z M4 7l8 6 8-6"/>
+      </symbol>
+      <symbol id="menu" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+        <path d="M4 7h16M4 12h16M4 17h16"/>
+      </symbol>
+      <symbol id="close" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+        <path d="M6 6l12 12M18 6L6 18"/>
+      </symbol>
+      <symbol id="play" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M5 3l14 9-14 9z"/>
+      </symbol>
+      <symbol id="shield" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z M9 12l2 2 4-4"/>
+      </symbol>
+      <symbol id="instagram" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M7 3h10a4 4 0 0 1 4 4v10a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4V7a4 4 0 0 1 4-4z M12 8a4 4 0 1 0 0 8a4 4 0 1 0 0-8z"/>
+      </symbol>
+      <symbol id="x" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+        <path d="M5 4l14 16 M19 4L5 20"/>
+      </symbol>
+      <symbol id="facebook" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M14 21v-8h3l.5-3.5H14V7.5c0-1 .3-1.7 1.8-1.7H18V2.6c-.4 0-1.6-.1-3-.1-3 0-5 1.8-5 5.1v2.9H7V13h3v8"/>
+      </symbol>
+  </svg>
+
+  <div class="page" id="top">
+    <div class="trail" aria-hidden="true"></div>
+    <div class="decor" aria-hidden="true"></div>
+
+    <header class="hero">
+      <div class="container hero-inner">
+        <div class="header">
+          <a class="logo" href="#top">
+            <svg class="logo-mark"><use href="#pin-lens"/></svg>
+            WalkSpot
+          </a>
+          <nav class="nav" id="nav">
+            <a href="#walk">Walk</a>
+            <a href="#health">Health</a>
+            <a href="#landmarks">Landmarks</a>
+            <a href="#photos">Photos</a>
+            <a href="#gallery">Gallery</a>
+            <a href="#app">App</a>
+          </nav>
+          <button class="menu-button" type="button" aria-label="Open menu" aria-controls="nav" aria-expanded="false">
+            <svg><use href="#menu"/></svg>
+          </button>
+        </div>
+
+        <div class="hero-content">
+          <h1 class="display">WalkSpot<span class="subtitle">Step. Snap. See.</span></h1>
+          <p class="hero-text">Walking is the simplest way to stay healthy. Count your steps by week, month and year, and discover the beauty of nature and architecture on every walk.</p>
+          <form class="waitlist" novalidate>
+            <label class="waitlist-field">
+              <svg class="waitlist-icon"><use href="#mail"/></svg>
+              <input type="email" name="email" placeholder="Your email" aria-label="Email" required>
+            </label>
+            <button class="waitlist-button" type="submit">Join the waitlist</button>
+            <p class="waitlist-message" role="status"></p>
+          </form>
+        </div>
+        <img class="hero-art" src="assets/images/hero-art.svg" width="642" height="448" alt="Woman walking in the city with a phone">
+      </div>
+    </header>
+
+    <main>
+      <section class="features" id="features">
+        <h2 class="display section-title">Get Started Today<span class="subtitle">Move more, see more</span></h2>
+        <div class="showcase">
+          <img class="showcase-bg" src="assets/images/phone-showcase-bg.webp" width="772" height="476" alt="">
+          <img class="showcase-phone" src="assets/images/phone-showcase.webp" width="618" height="391" alt="WalkSpot home screen with today's steps">
+        </div>
+      </section>
+
+      <div class="steps" id="how-it-works">
+        <section class="step" id="walk">
+          <img class="step-image" src="assets/images/ill-walk.svg" width="600" height="400" alt="Woman with a phone on a walk" loading="lazy">
+          <div class="step-text">
+            <h3 class="heading">Just Go for a Walk</h3>
+            <p class="step-subtitle">Any pace is a good pace</p>
+            <p>No running, no pressure. A short walk around the block already counts: start where you are and enjoy the way.</p>
+          </div>
+        </section>
+        <section class="step" id="health">
+          <img class="step-image" src="assets/images/ill-health.svg" width="600" height="400" alt="Doctors next to a heart with a pulse line" loading="lazy">
+          <div class="step-text">
+            <h3 class="heading">Stay Healthy</h3>
+            <p class="step-subtitle">Every step counts</p>
+            <p>Steps are counted automatically. See your progress by week, month and year, and keep track of your mood, weight and blood pressure to see how walking helps.</p>
+          </div>
+        </section>
+        <section class="step" id="landmarks">
+          <img class="step-image" src="assets/images/ill-landmarks.svg" width="600" height="400" alt="Two people looking at a phone" loading="lazy">
+          <div class="step-text">
+            <h3 class="heading">Discover Landmarks</h3>
+            <p class="step-subtitle">History around the corner</p>
+            <p>WalkSpot shows interesting places nearby. Stop, look around and learn the story of the building in front of you.</p>
+          </div>
+        </section>
+        <section class="step" id="photos">
+          <img class="step-image" src="assets/images/ill-photos.svg" width="600" height="400" alt="Man taking a photo of flowers" loading="lazy">
+          <div class="step-text">
+            <h3 class="heading">Capture the Beauty</h3>
+            <p class="step-subtitle">Nature and architecture</p>
+            <p>Notice what others walk past. Take photos of plants, birds and buildings, and learn what you found.</p>
+            <p class="privacy-badge">
+              <svg><use href="#shield"/></svg>
+              Your photos stay private
+            </p>
+          </div>
+        </section>
+        <section class="step" id="gallery">
+          <img class="step-image" src="assets/images/ill-gallery.svg" width="600" height="415" alt="Woman browsing a photo gallery" loading="lazy">
+          <div class="step-text">
+            <h3 class="heading">Relive Your Walks</h3>
+            <p class="step-subtitle">Your best photos in one place</p>
+            <p>Browse your photos walk by walk, delete the ones you don't like and keep the best in your personal gallery.</p>
+          </div>
+        </section>
+      </div>
+
+      <section class="app" id="app">
+        <div class="container app-inner">
+          <img class="app-phone" src="assets/images/phone-mockup.webp" width="424" height="766" alt="WalkSpot app on a phone" loading="lazy">
+          <div class="app-text">
+            <h2 class="display">WalkSpot App</h2>
+            <p>Available for Android. Free to use, no ads, and your photos and routes always stay yours.</p>
+            <div class="stores">
+              <a class="store-button" href="#app">
+                <svg><use href="#play"/></svg>
+                Google Play
+              </a>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer" id="contact">
+      <div class="container footer-inner">
+        <div class="footer-about">
+          <a class="logo" href="#top">
+            <svg class="logo-mark"><use href="#pin-lens"/></svg>
+            WalkSpot
+          </a>
+          <p>WalkSpot helps you move more every day and turns your walks into small discoveries of nature and architecture.</p>
+          <ul class="socials">
+            <li><a href="#contact" aria-label="Instagram"><svg><use href="#instagram"/></svg></a></li>
+            <li><a href="#contact" aria-label="X"><svg><use href="#x"/></svg></a></li>
+            <li><a href="#contact" aria-label="Facebook"><svg><use href="#facebook"/></svg></a></li>
+          </ul>
+        </div>
+        <ul class="footer-links">
+          <li><a href="#walk">Walk</a></li>
+          <li><a href="#health">Health</a></li>
+          <li><a href="#landmarks">Landmarks</a></li>
+        </ul>
+        <ul class="footer-links">
+          <li><a href="#photos">Photos</a></li>
+          <li><a href="#gallery">Gallery</a></li>
+          <li><a href="#app">App</a></li>
+        </ul>
+        <p class="copyright">© 2026 WalkSpot<span class="credit">Design by Shabuj Khan</span></p>
+      </div>
+      <img class="footer-trees" src="assets/images/footer-trees.svg" width="400" height="472" alt="" loading="lazy">
+      <img class="footer-lamp" src="assets/images/footer-lamp.svg" width="112" height="472" alt="" loading="lazy">
+    </footer>
+  </div>
+  <script src="main.js"></script>
+</body>
+</html>
