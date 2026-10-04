@@ -73,6 +73,7 @@ dependencies {
     implementation(libs.compose.ui)
     implementation(libs.compose.material3)
     implementation(libs.androidx.activity.compose)
+    implementation(libs.androidx.navigation.compose)
 
     implementation(libs.androidx.datastore.preferences)
 

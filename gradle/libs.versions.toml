@@ -4,6 +4,7 @@ kotlin = "2.4.10"
 ksp = "2.3.11"
 composeBom = "2026.08.00"
 activityCompose = "1.13.0"
+navigationCompose = "2.9.8"
 room = "2.8.4"
 datastore = "1.2.1"
 hilt = "2.60.1"
@@ -14,6 +15,7 @@ detekt = "1.23.8"
 
 [libraries]
 androidx-activity-compose = { module = "androidx.activity:activity-compose", version.ref = "activityCompose" }
+androidx-navigation-compose = { module = "androidx.navigation:navigation-compose", version.ref = "navigationCompose" }
 
 compose-bom = { module = "androidx.compose:compose-bom", version.ref = "composeBom" }
 compose-ui = { module = "androidx.compose.ui:ui" }

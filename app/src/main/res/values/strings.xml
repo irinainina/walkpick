@@ -1,4 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">WalkSpot</string>
+    <string name="back">Back</string>
+    <string name="tab_today">Today</string>
+    <string name="tab_map">Map</string>
+    <string name="tab_gallery">Gallery</string>
+    <string name="tab_profile">Profile</string>
+    <string name="screen_sign_in">Sign in</string>
+    <string name="screen_stats">Stats</string>
+    <string name="screen_health">Health</string>
+    <string name="screen_active_walk">Active walk</string>
+    <string name="screen_walk_summary">Walk summary</string>
+    <string name="screen_camera">Camera</string>
+    <string name="screen_find_card">Find card</string>
+    <string name="screen_photo_viewer">Photo viewer</string>
+    <string name="screen_settings">Settings</string>
 </resources>

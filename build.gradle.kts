@@ -9,7 +9,7 @@ plugins {
 detekt {
     config.setFrom(files("config/detekt/detekt.yml"))
     buildUponDefaultConfig = true
-    source.setFrom(files("app/src/main/java", "app/src/test/java"))
+    source.setFrom(files("app/src/main/java", "app/src/test/java", "app/src/debug/java"))
 }
 
 // gradlew detekt -PdetektFix rewrites imports, wrapping and blank lines in place.

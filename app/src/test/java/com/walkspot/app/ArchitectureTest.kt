@@ -68,6 +68,18 @@ class ArchitectureTest {
             .assertTrue { it.resideInPackage("$ROOT.data..") }
     }
 
+    // Read from Color.kt itself, so a colour added later is covered too.
+    @Test
+    fun theRawPaletteIsReachableOnlyInsideTheThemePackage() {
+        val theme = "$ROOT.ui.theme"
+        val palette = app.files.first { it.name == "Color" }.properties().map { "$theme.${it.name}" }.toSet()
+        app.files
+            .filterNot { it.packagee?.name.orEmpty() == theme }
+            .assertTrue(additionalMessage = "Screens take colours from AppTheme.colors") { file ->
+                file.imports.none { it.name in palette }
+            }
+    }
+
     private companion object {
         const val ROOT = "com.walkspot.app"
     }
