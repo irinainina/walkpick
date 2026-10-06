@@ -8,6 +8,12 @@
             android:name=".debug.GalleryActivity"
             android:exported="true"
             tools:ignore="ExportedActivity" />
+
+        <!-- Exported so that adb can run the sync without a screen; debug builds only. -->
+        <receiver
+            android:name=".debug.SyncCheckReceiver"
+            android:exported="true"
+            tools:ignore="ExportedReceiver" />
     </application>
 
 </manifest>

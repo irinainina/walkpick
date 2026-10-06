@@ -4,6 +4,13 @@ import android.content.Context
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.preferencesDataStore
+import androidx.room.Room
+import com.walkspot.app.data.local.PendingDeleteDao
+import com.walkspot.app.data.local.WalkSpotDatabase
+import com.walkspot.app.data.sync.RemoteTables
+import com.walkspot.app.data.sync.SupabaseRemoteTables
+import com.walkspot.app.data.sync.SyncedTable
+import com.walkspot.app.data.sync.syncedTables
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -22,4 +29,20 @@ object DataModule {
     @Singleton
     fun settingsStore(@ApplicationContext context: Context): DataStore<Preferences> =
         context.settingsStore
+
+    // One instance: Room caches rows per instance.
+    @Provides
+    @Singleton
+    fun database(@ApplicationContext context: Context): WalkSpotDatabase =
+        Room.databaseBuilder(context, WalkSpotDatabase::class.java, WalkSpotDatabase.NAME).build()
+
+    @Provides
+    fun pendingDeletes(database: WalkSpotDatabase): PendingDeleteDao = database.pendingDeletes()
+
+    @Provides
+    fun tables(database: WalkSpotDatabase): List<@JvmSuppressWildcards SyncedTable<*>> =
+        syncedTables(database)
+
+    @Provides
+    fun remoteTables(remote: SupabaseRemoteTables): RemoteTables = remote
 }
