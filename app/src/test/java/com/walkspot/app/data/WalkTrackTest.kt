@@ -52,6 +52,17 @@ class WalkTrackTest {
     }
 
     @Test
+    fun stepsAreCountedFromTheFirstReadingAndNotDuringAPause() {
+        val walking = WalkTrack(start).withCounter(18_400).withCounter(18_520)
+        assertEquals(120, walking.steps)
+        val resumed = walking.pausedAt(at(60)).withCounter(18_600).resumedAt(at(120)).withCounter(18_650)
+        assertEquals(170, resumed.steps)
+        // The phone was restarted: its counter began again.
+        assertEquals(170, resumed.withCounter(12).steps)
+        assertEquals(200, resumed.withCounter(12).withCounter(42).steps)
+    }
+
+    @Test
     fun theRecorderHoldsOneWalkAndHandsItOverAtTheEnd() {
         val recorder = WalkRecorder()
         recorder.report(point(0.0, 0))

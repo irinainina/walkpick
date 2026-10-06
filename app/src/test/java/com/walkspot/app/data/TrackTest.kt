@@ -69,6 +69,7 @@ class TrackTest {
         // 2 km/h: 2.8 MET.
         assertEquals(196, walkCalories(2000.0, 3600, 70.0))
         assertEquals(0, walkCalories(0.0, 0, 70.0))
+        assertEquals(0, walkCalories(0.0, 600, 70.0))
     }
 
     @Test

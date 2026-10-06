@@ -24,8 +24,17 @@ import com.google.android.gms.location.LocationServices
 import com.google.android.gms.location.Priority
 import com.walkspot.app.MainActivity
 import com.walkspot.app.R
+import com.walkspot.app.data.steps.StepCounter
+import com.walkspot.app.data.steps.StepsAccess
 import dagger.hilt.android.AndroidEntryPoint
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import java.time.Instant
 import javax.inject.Inject
 
@@ -35,6 +44,7 @@ private const val NOTIFICATION_ID = 2
 // A walker moves a few metres in this time; asking more often only costs battery.
 private const val UPDATE_MS = 2_000L
 private const val FASTEST_UPDATE_MS = 1_000L
+private const val STEPS_MS = 5_000L
 
 /**
  * Listens to GPS while a walk is recorded. A foreground service with a notification: Android stops
@@ -46,6 +56,11 @@ class WalkService : Service() {
     @Inject
     lateinit var recorder: WalkRecorder
 
+    @Inject
+    lateinit var steps: StepCounter
+
+    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
+    private var counting: Job? = null
     private lateinit var locations: FusedLocationProviderClient
 
     private val listener = object : LocationCallback() {
@@ -79,12 +94,25 @@ class WalkService : Service() {
             .setMinUpdateIntervalMillis(FASTEST_UPDATE_MS)
             .build()
         locations.requestLocationUpdates(request, listener, Looper.getMainLooper())
+        countSteps()
         return START_STICKY
     }
 
     override fun onDestroy() {
         if (::locations.isInitialized) locations.removeLocationUpdates(listener)
+        scope.cancel()
         super.onDestroy()
+    }
+
+    // The sensor is asked while the walk goes on; without the permission the walk has no steps.
+    private fun countSteps() {
+        if (counting?.isActive == true || steps.access() != StepsAccess.COUNTING) return
+        counting = scope.launch {
+            while (true) {
+                steps.read()?.let { recorder.reportSteps(it.steps) }
+                delay(STEPS_MS)
+            }
+        }
     }
 
     private fun notification() = NotificationCompat.Builder(this, channel())

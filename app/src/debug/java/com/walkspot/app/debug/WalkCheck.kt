@@ -61,7 +61,7 @@ fun WalkCheck() {
         val seconds = it.movingSeconds(now)
         val accuracy = it.points.lastOrNull()?.accuracyM
         "started ${it.startedAt}\npaused ${it.paused}\nlegs ${it.legs.size}, points ${it.points.size}\n" +
-            "metres ${it.metres.toInt()}, moving $seconds s\n" +
+            "metres ${it.metres.toInt()}, steps ${it.steps}, moving $seconds s\n" +
             "pace ${paceSecondsPerKm(it.metres, seconds)} s/km, last accuracy $accuracy m"
     } ?: "no walk\n$last"
 

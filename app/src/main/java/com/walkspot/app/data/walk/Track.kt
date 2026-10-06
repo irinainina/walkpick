@@ -61,7 +61,8 @@ fun paceSecondsPerKm(metres: Double, movingSeconds: Long): Int? =
 
 /** Kilocalories of a walk by its average speed; pauses are not in [movingSeconds]. */
 fun walkCalories(metres: Double, movingSeconds: Long, weightKg: Double?): Int {
-    if (movingSeconds <= 0) return 0
+    // Standing with the walk switched on burns nothing worth counting.
+    if (movingSeconds <= 0 || metres <= 0) return 0
     val hours = movingSeconds / SECONDS_IN_HOUR
     val speed = metres / METRES_IN_KM / hours
     val met = WalkingMet.firstOrNull { (below, _) -> speed < below }?.second ?: FAST_WALK_MET

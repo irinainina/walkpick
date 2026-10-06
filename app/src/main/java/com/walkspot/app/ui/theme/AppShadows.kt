@@ -21,4 +21,7 @@ object AppShadows {
     val chip = shadow(y = 2.dp, blur = 8.dp, alpha = 0.12f)
     val knob = shadow(y = 1.dp, blur = 4.dp, alpha = 0.2f)
     val navBar = shadow(y = (-4).dp, blur = 16.dp, alpha = 0.08f)
+
+    /** A panel lying over the map. */
+    val panel = shadow(y = (-8).dp, blur = 32.dp, alpha = 0.16f)
 }

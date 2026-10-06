@@ -18,6 +18,9 @@ data class WalkTrack(
     val legs: List<List<TrackPoint>> = listOf(emptyList()),
     val pausedAt: Instant? = null,
     val pausedSeconds: Long = 0,
+    val steps: Int = 0,
+    /** The last reading of the phone's step counter, which counts from the start of the phone. */
+    val lastCounter: Long? = null,
 ) {
     val paused: Boolean get() = pausedAt != null
 
@@ -34,6 +37,15 @@ data class WalkTrack(
         val leg = legs.last()
         if (paused || !continuesRoute(leg.lastOrNull(), point)) return this
         return copy(legs = legs.dropLast(1).plusElement(leg + point))
+    }
+
+    /**
+     * Adds the steps counted since the last reading. Steps made during a pause are skipped, and so is
+     * a counter that went back: the phone was restarted.
+     */
+    fun withCounter(reading: Long): WalkTrack {
+        val added = lastCounter?.let { reading - it }?.takeIf { it > 0 && !paused } ?: 0
+        return copy(steps = steps + added.toInt(), lastCounter = reading)
     }
 
     fun pausedAt(at: Instant): WalkTrack = if (paused) this else copy(pausedAt = at)
@@ -59,6 +71,8 @@ class WalkRecorder @Inject constructor() {
     fun start(at: Instant) = current.update { it ?: WalkTrack(at) }
 
     fun report(point: TrackPoint) = current.update { it?.with(point) }
+
+    fun reportSteps(counter: Long) = current.update { it?.withCounter(counter) }
 
     fun pause(at: Instant) = current.update { it?.pausedAt(at) }
 
