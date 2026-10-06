@@ -13,6 +13,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import com.walkspot.app.R
+import com.walkspot.app.data.health.HealthLimits
 import com.walkspot.app.data.profile.Profile
 import com.walkspot.app.data.profile.Sex
 import com.walkspot.app.data.settings.AppSettings
@@ -30,10 +31,10 @@ import java.time.LocalDate
 // What a person can be: the limits only keep slips of the finger out.
 private val GoalRange = 1_000.0..100_000.0
 private val HeightRange = 50.0..260.0
-private val WeightRange = 20.0..300.0
-private val SystolicRange = 60.0..250.0
-private val DiastolicRange = 40.0..150.0
-private val GlucoseRange = 2.0..30.0
+private val WeightRange = HealthLimits.weightKg
+private val SystolicRange = HealthLimits.systolic
+private val DiastolicRange = HealthLimits.diastolic
+private val GlucoseRange = HealthLimits.glucoseMmol
 private const val OLDEST_YEARS = 120L
 
 @Composable
@@ -100,13 +101,13 @@ internal fun ProfileSheet(
     }
 }
 
-private fun parse(text: String, range: ClosedFloatingPointRange<Double>, decimal: Boolean): Double? {
+internal fun parse(text: String, range: ClosedFloatingPointRange<Double>, decimal: Boolean): Double? {
     val number = text.trim().replace(',', '.').toDoubleOrNull() ?: return null
     return number.takeIf { it in range && (decimal || it % 1 == 0.0) }
 }
 
 @Composable
-private fun rangeHint(range: ClosedFloatingPointRange<Double>) =
+internal fun rangeHint(range: ClosedFloatingPointRange<Double>) =
     stringResource(R.string.profile_range, range.start.toInt(), range.endInclusive.toInt())
 
 @Composable

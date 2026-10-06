@@ -43,6 +43,10 @@ data class AppColors(
     /** The badge behind a streak or notice icon. */
     val streakTint: Color,
     val positive: Color,
+    /** The badge behind the icon of a good remark. */
+    val positiveTint: Color,
+    /** The five moods, awful first. */
+    val moods: List<Color>,
     val danger: Color,
     /** The badge behind the icon of something that cannot be undone. */
     val dangerTint: Color,
@@ -79,6 +83,8 @@ internal val walkSpotColors = AppColors(
     streak = Orange,
     streakTint = Peach,
     positive = Green,
+    positiveTint = Mint,
+    moods = listOf(Red, Orange, Amber, Lime, Green),
     danger = Red,
     dangerTint = Blush,
 )

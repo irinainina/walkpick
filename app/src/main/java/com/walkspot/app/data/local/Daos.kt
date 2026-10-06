@@ -73,6 +73,9 @@ interface HealthEntryDao : SyncedDao<HealthEntryEntity> {
 
     @Query("SELECT value FROM health_entries WHERE kind = :kind ORDER BY measuredAt DESC LIMIT 1")
     fun watchLatest(kind: HealthKind): Flow<Double?>
+
+    @Query("SELECT * FROM health_entries WHERE kind = :kind ORDER BY measuredAt")
+    fun watch(kind: HealthKind): Flow<List<HealthEntryEntity>>
 }
 
 @Dao

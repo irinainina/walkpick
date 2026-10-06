@@ -11,7 +11,6 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.rememberScrollState
@@ -67,8 +66,7 @@ fun StatsScreen(
             .fillMaxSize()
             .background(AppTheme.colors.canvas)
             .statusBarsPadding()
-            .verticalScroll(rememberScrollState())
-            .navigationBarsPadding(),
+            .verticalScroll(rememberScrollState()),
     ) {
         AppTopBar(stringResource(R.string.stats_title), onBack, Modifier.padding(top = Spacing.xs))
         Spacer(Modifier.height(Spacing.sm))
@@ -97,7 +95,7 @@ fun StatsScreen(
     }
 }
 
-private fun StatsTab.titleRes() = when (this) {
+internal fun StatsTab.titleRes() = when (this) {
     StatsTab.Week -> R.string.stats_week
     StatsTab.Month -> R.string.stats_month
     StatsTab.Year -> R.string.stats_year

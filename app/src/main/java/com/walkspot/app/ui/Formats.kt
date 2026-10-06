@@ -6,6 +6,9 @@ import androidx.compose.ui.res.stringResource
 import com.walkspot.app.data.settings.DistanceUnit
 import com.walkspot.app.data.settings.GlucoseUnit
 import com.walkspot.app.data.settings.WeightUnit
+import java.time.Instant
+import java.time.LocalDate
+import java.time.ZoneId
 import java.util.Locale
 import kotlin.math.roundToInt
 
@@ -50,3 +53,5 @@ fun glucoseNumber(mmol: Double, unit: GlucoseUnit): String =
 fun glucoseText(mmol: Double, unit: GlucoseUnit): String = "${glucoseNumber(mmol, unit)} ${unit.symbol}"
 
 fun oneDecimal(value: Double): String = String.format(Locale.ENGLISH, "%.1f", value)
+
+fun Instant.localDay(zone: ZoneId = ZoneId.systemDefault()): LocalDate = atZone(zone).toLocalDate()

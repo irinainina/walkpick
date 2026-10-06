@@ -87,11 +87,11 @@ fun ChartGallery() {
             )
         }
         LineChart(
-            line = weight,
+            lines = listOf(weight),
             bars = steps,
             slots = 12,
             modifier = Modifier.size(ChartSize),
-            goal = 1 - 111 / CHART_HEIGHT,
+            goals = listOf(1 - 111 / CHART_HEIGHT),
         )
     }
 }

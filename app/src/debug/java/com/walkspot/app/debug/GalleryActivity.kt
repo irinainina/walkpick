@@ -10,8 +10,8 @@ import com.walkspot.app.ui.theme.WalkSpotTheme
 
 /**
  * adb shell am start -n com.walkspot.app/.debug.GalleryActivity [--es page <page>]
- * Pages: charts, signin, steps, today, today-off, stats-week, stats-month, stats-year, stats-all, profile,
- * settings, settings-off.
+ * Pages: charts, signin, steps, today, today-off, stats-week, stats-month, stats-year, stats-all,
+ * health-mood, health-weight, health-pressure, health-glucose, health-empty, profile, settings, settings-off.
  */
 class GalleryActivity : ComponentActivity() {
 
@@ -26,6 +26,8 @@ class GalleryActivity : ComponentActivity() {
                     "steps" -> StepsCheck()
                     "today" -> TodayGallery(StepsAccess.COUNTING)
                     "today-off" -> TodayGallery(StepsAccess.NOT_ALLOWED)
+                    "health-mood", "health-weight", "health-pressure", "health-glucose", "health-empty" ->
+                        HealthGallery(page)
                     "profile" -> ProfileGallery()
                     "settings" -> SettingsGallery(StepsAccess.COUNTING)
                     "settings-off" -> SettingsGallery(StepsAccess.NOT_ALLOWED)

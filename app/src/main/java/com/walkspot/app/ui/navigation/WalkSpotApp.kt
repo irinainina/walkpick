@@ -40,9 +40,17 @@ fun WalkSpotApp(signedIn: Boolean, onStartShown: () -> Unit) {
             signInRoutes(navController, auth, onStartShown)
             todayRoute(navController, onStartShown)
             statsRoute(navController)
+            healthRoute(navController)
             profileRoute(navController)
             settingsRoute(navController)
-            val laidOut = setOf(Screen.SignIn, Screen.Today, Screen.Stats, Screen.Profile, Screen.Settings)
+            val laidOut = setOf(
+                Screen.SignIn,
+                Screen.Today,
+                Screen.Stats,
+                Screen.Health,
+                Screen.Profile,
+                Screen.Settings,
+            )
             (Screen.entries - laidOut).forEach { screen ->
                 composable(screen.route) {
                     PlaceholderScreen(

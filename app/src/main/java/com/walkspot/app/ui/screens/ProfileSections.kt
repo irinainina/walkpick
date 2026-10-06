@@ -109,7 +109,7 @@ internal fun ProfileTabs(profile: Profile, onChange: ((Profile) -> Profile) -> U
 
 internal fun Sex.titleRes() = if (this == Sex.FEMALE) R.string.profile_female else R.string.profile_male
 
-private fun HealthKind.titleRes() = when (this) {
+internal fun HealthKind.titleRes() = when (this) {
     HealthKind.MOOD -> R.string.health_mood
     HealthKind.WEIGHT -> R.string.health_weight
     HealthKind.PRESSURE -> R.string.health_pressure

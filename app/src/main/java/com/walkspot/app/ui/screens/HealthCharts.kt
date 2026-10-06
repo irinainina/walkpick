@@ -1,0 +1,197 @@
+package com.walkspot.app.ui.screens
+
+import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentWidth
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.PathEffect
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
+import com.walkspot.app.R
+import com.walkspot.app.data.local.HealthKind
+import com.walkspot.app.ui.components.AppCard
+import com.walkspot.app.ui.components.DotChart
+import com.walkspot.app.ui.components.LineChart
+import com.walkspot.app.ui.components.Mood
+import com.walkspot.app.ui.glucoseNumber
+import com.walkspot.app.ui.health.HealthChart
+import com.walkspot.app.ui.health.HealthState
+import com.walkspot.app.ui.health.moodLevel
+import com.walkspot.app.ui.oneDecimal
+import com.walkspot.app.ui.theme.AppTheme
+import com.walkspot.app.ui.theme.PillShape
+import com.walkspot.app.ui.theme.Spacing
+import kotlin.math.roundToInt
+
+private val ChartHeight = 140.dp
+private val LabelHeight = 16.dp
+private val LineSwatch = 16.dp
+private val BarSwatch = 12.dp
+private val BarSwatchShape = RoundedCornerShape(3.dp)
+private val TargetWidth = 2.dp
+private val FirstLegendWidth = 112.dp
+
+// A target label stands 4 above its line; the upper one of two stands 2 below, clear of the lower label.
+private val LabelAbove = 20.dp
+private val LabelBelow = 2.dp
+
+/** The values of the tab over the average steps of the same days or months. */
+@Composable
+internal fun ChartCard(state: HealthState, chart: HealthChart, modifier: Modifier = Modifier) {
+    val type = MaterialTheme.typography
+    val colors = AppTheme.colors
+    AppCard(modifier) {
+        Column(Modifier.padding(horizontal = Spacing.ml, vertical = Spacing.m)) {
+            val title = stringResource(state.tab.chartTitleRes())
+            Text(title, style = type.titleSmall, color = colors.textPrimary)
+            Spacer(Modifier.height(Spacing.m))
+            Box(
+                Modifier
+                    .fillMaxWidth()
+                    .height(ChartHeight),
+            ) {
+                if (state.tab == HealthKind.MOOD) {
+                    val dots = chart.moods.map { mood -> mood?.let { moodLevel(it) to colors.moods[it - 1] } }
+                    val levels = colors.moods.indices.map { moodLevel(it + 1) }
+                    DotChart(dots, chart.bars, levels, Modifier.fillMaxSize())
+                } else {
+                    val goals = chart.goals.map { it.at }
+                    LineChart(chart.lines, chart.bars, chart.columns, Modifier.fillMaxSize(), goals)
+                }
+                chart.goals.forEachIndexed { index, goal ->
+                    val line = ChartHeight * (1 - goal.at)
+                    val top = if (chart.goals.size > 1 && index == 0) line + LabelBelow else line - LabelAbove
+                    Text(
+                        text = stringResource(R.string.health_target_value, targetText(goal.value, state)),
+                        modifier = Modifier
+                            .align(Alignment.TopEnd)
+                            .offset(y = top.coerceIn(0.dp, ChartHeight - LabelHeight)),
+                        style = type.labelSmall,
+                        color = colors.streak,
+                    )
+                }
+            }
+            Spacer(Modifier.height(Spacing.s))
+            ColumnLabels(chart)
+            Spacer(Modifier.height(Spacing.s))
+            Legend(state, targets = chart.goals.isNotEmpty())
+        }
+    }
+}
+
+private fun HealthKind.chartTitleRes() = when (this) {
+    HealthKind.MOOD -> R.string.health_mood_walking
+    HealthKind.WEIGHT -> R.string.health_weight_walking
+    HealthKind.PRESSURE -> R.string.health_pressure_walking
+    HealthKind.GLUCOSE -> R.string.health_glucose_walking
+}
+
+private fun targetText(value: Double, state: HealthState) = when (state.tab) {
+    HealthKind.WEIGHT -> oneDecimal(value * state.units.weight.perMetric)
+    HealthKind.GLUCOSE -> glucoseNumber(value, state.units.glucose)
+    else -> value.roundToInt().toString()
+}
+
+@Composable
+private fun ColumnLabels(chart: HealthChart) {
+    val type = MaterialTheme.typography
+    val colors = AppTheme.colors
+    Row(Modifier.fillMaxWidth()) {
+        chart.labels.forEachIndexed { index, label ->
+            val current = index == chart.currentLabel
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+                    .height(LabelHeight),
+                contentAlignment = Alignment.Center,
+            ) {
+                Text(
+                    text = label,
+                    // A year is wider than the column of its first month.
+                    modifier = Modifier.wrapContentWidth(unbounded = true),
+                    style = if (current) type.labelSmall else type.bodySmall,
+                    color = if (current) colors.accent else colors.textSecondary,
+                    softWrap = false,
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun Legend(state: HealthState, targets: Boolean) {
+    val colors = AppTheme.colors
+    val line = Modifier.size(LineSwatch, Spacing.xs)
+    val pressure = state.tab == HealthKind.PRESSURE
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        // Four items share the width; of three the steps stand at a fixed place and the target at the end.
+        horizontalArrangement = if (pressure) Arrangement.SpaceBetween else Arrangement.Start,
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        val name = when (state.tab) {
+            HealthKind.WEIGHT -> stringResource(R.string.health_legend_weight, state.units.weight.symbol)
+            HealthKind.GLUCOSE -> stringResource(R.string.health_glucose)
+            HealthKind.PRESSURE -> stringResource(R.string.profile_systolic)
+            HealthKind.MOOD -> stringResource(R.string.health_mood)
+        }
+        LegendItem(name, if (pressure) Modifier else Modifier.width(FirstLegendWidth)) {
+            if (state.tab == HealthKind.MOOD) {
+                Box(Modifier.width(LineSwatch)) {
+                    Box(Modifier.size(Spacing.s).background(colors.moods[Mood.Good.ordinal], CircleShape))
+                }
+            } else {
+                Box(line.background(colors.accentGradient, PillShape))
+            }
+        }
+        if (pressure) {
+            LegendItem(stringResource(R.string.profile_diastolic)) {
+                Box(line.background(colors.positive, PillShape))
+            }
+        }
+        LegendItem(stringResource(if (pressure) R.string.health_steps else R.string.health_avg_steps)) {
+            Box(Modifier.size(BarSwatch).background(colors.surfaceTint, BarSwatchShape))
+        }
+        if (targets) {
+            if (!pressure) Spacer(Modifier.weight(1f))
+            LegendItem(stringResource(R.string.health_target)) {
+                Canvas(Modifier.size(LineSwatch, TargetWidth)) {
+                    val dash = PathEffect.dashPathEffect(floatArrayOf(Spacing.xs.toPx(), TargetWidth.toPx()))
+                    val end = Offset(size.width, size.height / 2)
+                    drawLine(colors.streak, end.copy(x = 0f), end, size.height, pathEffect = dash)
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun LegendItem(text: String, modifier: Modifier = Modifier, swatch: @Composable () -> Unit) {
+    Row(
+        modifier = modifier,
+        horizontalArrangement = Arrangement.spacedBy(Spacing.s),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        swatch()
+        Text(text, style = MaterialTheme.typography.bodySmall, color = AppTheme.colors.textSecondary)
+    }
+}

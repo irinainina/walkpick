@@ -22,6 +22,7 @@ import com.walkspot.app.data.steps.yearOf
 import com.walkspot.app.ui.components.Bar
 import com.walkspot.app.ui.components.BarKind
 import com.walkspot.app.ui.grouped
+import com.walkspot.app.ui.localDay
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -30,10 +31,8 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
-import java.time.Instant
 import java.time.LocalDate
 import java.time.YearMonth
-import java.time.ZoneId
 import java.time.format.TextStyle
 import java.util.Locale
 import javax.inject.Inject
@@ -111,8 +110,6 @@ class StatsViewModel @Inject constructor(
 
     fun pick(bar: Int) = choice.update { it.copy(bar = bar) }
 }
-
-private fun Instant.localDay() = atZone(ZoneId.systemDefault()).toLocalDate()
 
 internal fun statsState(
     days: List<DailyStepsEntity>,

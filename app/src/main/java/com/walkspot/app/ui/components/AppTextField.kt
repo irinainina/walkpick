@@ -1,11 +1,14 @@
 package com.walkspot.app.ui.components
 
+import androidx.annotation.DrawableRes
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -13,6 +16,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -23,17 +27,21 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.Dp
 import com.walkspot.app.ui.theme.AppTheme
 import com.walkspot.app.ui.theme.Sizes
 import com.walkspot.app.ui.theme.Spacing
@@ -66,10 +74,7 @@ fun AppTextField(
     var focused by remember { mutableStateOf(false) }
     LaunchedEffect(Unit) { if (autoFocus) focus.requestFocus() }
     Column(modifier.fillMaxWidth()) {
-        if (label != null) {
-            Text(label, style = type.bodySmall, color = colors.textSecondary)
-            Spacer(Modifier.height(Spacing.xs))
-        }
+        if (label != null) FieldLabel(label)
         BasicTextField(
             value = value,
             onValueChange = onValueChange,
@@ -83,22 +88,12 @@ fun AppTextField(
             keyboardOptions = KeyboardOptions(keyboardType = keyboardType, imeAction = ImeAction.Done),
             keyboardActions = KeyboardActions(onDone = { onDone() }),
             decorationBox = { field ->
-                Row(
-                    modifier = Modifier
-                        .height(Sizes.control)
-                        .background(container, MaterialTheme.shapes.medium)
-                        .border(
-                            if (focused) Sizes.focusBorder else Sizes.hairline,
-                            when {
-                                error != null -> colors.danger
-                                focused -> colors.accent
-                                else -> colors.divider
-                            },
-                            MaterialTheme.shapes.medium,
-                        )
-                        .padding(horizontal = Spacing.m),
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
+                val border = when {
+                    error != null -> colors.danger
+                    focused -> colors.accent
+                    else -> colors.divider
+                }
+                FieldFrame(container, border, if (focused) Sizes.focusBorder else Sizes.hairline) {
                     Box(Modifier.weight(1f)) {
                         if (value.isEmpty()) {
                             Text(placeholder, style = type.titleLarge, color = colors.textSecondary)
@@ -114,6 +109,59 @@ fun AppTextField(
             FieldError(error)
         }
     }
+}
+
+/** Looks like a field, but a tap opens a picker instead of the keyboard. */
+@Composable
+fun PickerField(
+    text: String,
+    label: String,
+    @DrawableRes iconRes: Int,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val colors = AppTheme.colors
+    Column(modifier.fillMaxWidth()) {
+        FieldLabel(label)
+        FieldFrame(
+            container = colors.canvas,
+            border = colors.divider,
+            borderWidth = Sizes.hairline,
+            modifier = Modifier
+                .fillMaxWidth()
+                .clip(MaterialTheme.shapes.medium)
+                .clickable(role = Role.Button, onClick = onClick),
+        ) {
+            val style = MaterialTheme.typography.titleLarge
+            Text(text, Modifier.weight(1f), style = style, color = colors.textPrimary)
+            Icon(painterResource(iconRes), contentDescription = null, tint = colors.textSecondary)
+        }
+    }
+}
+
+@Composable
+private fun FieldLabel(text: String) {
+    Text(text, style = MaterialTheme.typography.bodySmall, color = AppTheme.colors.textSecondary)
+    Spacer(Modifier.height(Spacing.xs))
+}
+
+@Composable
+private fun FieldFrame(
+    container: Color,
+    border: Color,
+    borderWidth: Dp,
+    modifier: Modifier = Modifier,
+    content: @Composable RowScope.() -> Unit,
+) {
+    Row(
+        modifier = modifier
+            .height(Sizes.control)
+            .background(container, MaterialTheme.shapes.medium)
+            .border(borderWidth, border, MaterialTheme.shapes.medium)
+            .padding(horizontal = Spacing.m),
+        verticalAlignment = Alignment.CenterVertically,
+        content = content,
+    )
 }
 
 /** Six cells for the code from the letter; [onComplete] fires as the last digit lands. */
