@@ -107,8 +107,12 @@ class AuthViewModel @Inject constructor(
     private suspend fun settle() {
         val user = auth.currentUser() ?: return
         val previous = account.lastUserId()
-        if (previous != null && previous != user.id) withContext(Dispatchers.IO) { database.clearAllTables() }
+        if (previous != null && previous != user.id) {
+            withContext(Dispatchers.IO) { database.clearAllTables() }
+            account.forgetOwner()
+        }
         account.signedIn(user.id)
+        account.remember(user)
         auth.rememberProfile()
         sync.restoreFromCloud()
     }

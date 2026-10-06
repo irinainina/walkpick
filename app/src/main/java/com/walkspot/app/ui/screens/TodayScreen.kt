@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -27,6 +28,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.walkspot.app.R
 import com.walkspot.app.data.steps.StepsAccess
 import com.walkspot.app.ui.components.AppButton
@@ -47,6 +49,7 @@ private val HeaderHeight = 224.dp
 private val CardsTop = 168.dp
 private val LogoSize = 32.dp
 private val GreetingTop = 20.dp
+private val GreetingMinSize = 16.sp
 
 private const val NOON = 12
 private const val EVENING = 18
@@ -130,12 +133,15 @@ private fun Header(statusBar: Dp, now: LocalDateTime, name: String?, onReminders
                 )
             }
             Spacer(Modifier.height(GreetingTop))
+            val heading = MaterialTheme.typography.headlineLarge
             Text(
                 text = greeting(now.hour, name),
                 modifier = Modifier.padding(horizontal = Spacing.ml),
-                style = MaterialTheme.typography.headlineLarge,
+                style = heading,
                 color = colors.onAccent,
                 maxLines = 1,
+                // A long name or a phone set to large text: the line shrinks instead of losing the name.
+                autoSize = TextAutoSize.StepBased(GreetingMinSize, heading.fontSize),
             )
             Spacer(Modifier.height(Spacing.xs))
             Text(

@@ -4,12 +4,7 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.util.Log
-import com.walkspot.app.data.local.DailyStepsEntity
-import com.walkspot.app.data.local.FindEntity
-import com.walkspot.app.data.local.HealthEntryEntity
-import com.walkspot.app.data.local.HealthKind
 import com.walkspot.app.data.local.PendingDeleteEntity
-import com.walkspot.app.data.local.WalkEntity
 import com.walkspot.app.data.local.WalkSpotDatabase
 import com.walkspot.app.data.remote.SupabaseProvider
 import com.walkspot.app.data.sync.SyncScheduler
@@ -22,16 +17,13 @@ import io.github.jan.supabase.auth.providers.builtin.Email
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import java.time.Instant
-import java.time.LocalDate
-import java.util.UUID
 
 private const val TAG = "SyncCheck"
 
 /**
  * Runs the sync on a phone without any screen:
  * adb shell am broadcast -n com.walkspot.app/.debug.SyncCheckReceiver --es cmd <command>
- * Commands: signin, seed, push, remove, wipe, restore, dump.
+ * Commands: signin, seed (the made-up history of SeedData), push, remove, wipe, restore, dump.
  * signin also takes --es email and --es password of a test account.
  */
 class SyncCheckReceiver : BroadcastReceiver() {
@@ -81,7 +73,7 @@ class SyncCheckReceiver : BroadcastReceiver() {
                 Log.i(TAG, "push queued")
             }
             "remove" -> {
-                val walk = database.walks().unsynced().firstOrNull()?.id ?: SEEDED_WALK
+                val walk = database.walks().unsynced().firstOrNull()?.id ?: seedData().walks.last().id
                 database.openHelper.writableDatabase.execSQL("DELETE FROM walks WHERE id = ?", arrayOf(walk))
                 database.pendingDeletes().add(PendingDeleteEntity("walks", walk))
                 graph.scheduler().pushSoon()
@@ -99,43 +91,14 @@ class SyncCheckReceiver : BroadcastReceiver() {
         }
     }
 
+    // Rows already there are replaced: the made-up history can be written again after a change to it.
     private suspend fun seed(database: WalkSpotDatabase) {
-        val now = Instant.now()
-        database.dailySteps().save(listOf(DailyStepsEntity(LocalDate.now(), 5230, 3900, 48, 10000, now)))
-        database.walks().save(
-            listOf(
-                WalkEntity(
-                    id = SEEDED_WALK,
-                    number = 1,
-                    startedAt = now.minusSeconds(2880),
-                    endedAt = now,
-                    durationS = 2880,
-                    steps = 5230,
-                    distanceM = 3900,
-                    route = "27.56 53.9,27.57 53.91,27.56 53.9",
-                    updatedAt = now,
-                ),
-            ),
-        )
-        database.finds().save(
-            listOf(
-                FindEntity(
-                    id = UUID.randomUUID().toString(),
-                    walkId = SEEDED_WALK,
-                    takenAt = now,
-                    latitude = 53.91,
-                    longitude = 27.57,
-                    photoPath = "check/none.jpg",
-                    updatedAt = now,
-                ),
-            ),
-        )
-        database.healthEntries().save(
-            listOf(
-                HealthEntryEntity(UUID.randomUUID().toString(), HealthKind.PRESSURE, now, 122.0, 78),
-                HealthEntryEntity(UUID.randomUUID().toString(), HealthKind.MOOD, now, 4.0),
-            ),
-        )
+        val data = seedData()
+        database.dailySteps().save(data.days)
+        database.walks().save(data.walks)
+        database.finds().save(data.finds)
+        database.healthEntries().restore(data.health)
+        Log.i(TAG, "seeded ${data.days.size} days, ${data.walks.size} walks, ${data.finds.size} finds")
     }
 
     private fun dump(database: WalkSpotDatabase) {
@@ -153,9 +116,5 @@ class SyncCheckReceiver : BroadcastReceiver() {
         reader.query("SELECT route FROM walks LIMIT 1").use {
             if (it.moveToFirst()) Log.i(TAG, "route: ${it.getString(0)}")
         }
-    }
-
-    private companion object {
-        const val SEEDED_WALK = "00000000-0000-4000-8000-0000000000c1"
     }
 }

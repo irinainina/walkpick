@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <color name="canvas">#F7FAFD</color>
+    <color name="splash">#0470DC</color>
 
     <!-- Window theme before Compose takes over -->
     <style name="Theme.WalkSpot" parent="android:Theme.Material.Light.NoActionBar">

@@ -19,24 +19,31 @@ import com.walkspot.app.ui.components.AppNavBar
 import com.walkspot.app.ui.screens.PlaceholderScreen
 import com.walkspot.app.ui.theme.AppTheme
 
+/** [onStartShown] is called once the first screen has something to show. */
 @Composable
-fun WalkSpotApp(signedIn: Boolean) {
+fun WalkSpotApp(signedIn: Boolean, onStartShown: () -> Unit) {
     val navController = rememberNavController()
     // Above the NavHost: the three sign-in screens share it.
     val auth: AuthViewModel = hiltViewModel()
     val entry by navController.currentBackStackEntryAsState()
-    val tab = Screen.entries.firstOrNull { it.route == entry?.destination?.route }?.tab
+    val start = if (signedIn) Screen.Today else Screen.SignIn
+    // Until the first destination reports itself the start screen stands in, or the bar pops in late.
+    val route = entry?.destination?.route ?: start.route
+    val tab = Screen.entries.firstOrNull { it.route == route }?.tab
 
     Column(
         Modifier
             .fillMaxSize()
             .background(AppTheme.colors.canvas),
     ) {
-        val start = if (signedIn) Screen.Today else Screen.SignIn
         NavHost(navController, startDestination = start.route, modifier = Modifier.weight(1f)) {
-            signInRoutes(navController, auth)
-            todayRoute(navController)
-            (Screen.entries - Screen.SignIn - Screen.Today).forEach { screen ->
+            signInRoutes(navController, auth, onStartShown)
+            todayRoute(navController, onStartShown)
+            statsRoute(navController)
+            profileRoute(navController)
+            settingsRoute(navController)
+            val laidOut = setOf(Screen.SignIn, Screen.Today, Screen.Stats, Screen.Profile, Screen.Settings)
+            (Screen.entries - laidOut).forEach { screen ->
                 composable(screen.route) {
                     PlaceholderScreen(
                         title = stringResource(screen.titleRes),

@@ -42,6 +42,8 @@ data class AppColors(
     val streakTint: Color,
     val positive: Color,
     val danger: Color,
+    /** The badge behind the icon of something that cannot be undone. */
+    val dangerTint: Color,
 )
 
 // Figma turns the gradient inside the box of the node: the colour is 0.7 * (x / width + y / height).
@@ -75,6 +77,7 @@ internal val walkSpotColors = AppColors(
     streakTint = Peach,
     positive = Green,
     danger = Red,
+    dangerTint = Blush,
 )
 
 internal val LocalAppColors = staticCompositionLocalOf { walkSpotColors }

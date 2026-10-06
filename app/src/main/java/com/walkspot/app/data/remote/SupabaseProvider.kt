@@ -6,6 +6,7 @@ import io.github.jan.supabase.auth.Auth
 import io.github.jan.supabase.auth.auth
 import io.github.jan.supabase.auth.user.UserSession
 import io.github.jan.supabase.createSupabaseClient
+import io.github.jan.supabase.functions.Functions
 import io.github.jan.supabase.postgrest.Postgrest
 import kotlinx.coroutines.withTimeoutOrNull
 import javax.inject.Inject
@@ -38,6 +39,7 @@ class SupabaseProvider @Inject constructor() {
         ) {
             install(Auth)
             install(Postgrest)
+            install(Functions)
         }
     }
 }

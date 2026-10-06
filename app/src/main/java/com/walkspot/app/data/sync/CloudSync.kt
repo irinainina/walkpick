@@ -6,7 +6,7 @@ import javax.inject.Inject
 // Everything is written to the phone first; this carries it to the server and back.
 class CloudSync @Inject constructor(
     private val remote: RemoteTables,
-    private val tables: List<@JvmSuppressWildcards SyncedTable<*>>,
+    private val tables: List<@JvmSuppressWildcards SyncedPart>,
     private val deletes: PendingDeleteDao,
 ) {
     suspend fun push() {

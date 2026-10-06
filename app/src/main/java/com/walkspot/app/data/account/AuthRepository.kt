@@ -10,6 +10,7 @@ import io.github.jan.supabase.auth.providers.Google
 import io.github.jan.supabase.auth.providers.builtin.IDToken
 import io.github.jan.supabase.auth.providers.builtin.OTP
 import io.github.jan.supabase.exceptions.RestException
+import io.github.jan.supabase.functions.functions
 import io.github.jan.supabase.postgrest.from
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
@@ -38,9 +39,15 @@ interface AuthRepository {
 
     // The row every other table of the account hangs beside; kept if it is already there.
     suspend fun rememberProfile()
+
+    suspend fun signOut()
+
+    // The server removes the photos, the user and, by cascade, every row of the account.
+    suspend fun deleteAccount()
 }
 
 private const val TAG = "AuthRepository"
+private const val DELETE_ACCOUNT = "delete-account"
 
 class SupabaseAuthRepository @Inject constructor(
     private val supabase: SupabaseProvider,
@@ -76,6 +83,15 @@ class SupabaseAuthRepository @Inject constructor(
 
     override suspend fun rememberProfile() {
         onServer { rememberOwnProfile() }
+    }
+
+    override suspend fun signOut() = onServer { auth.signOut() }
+
+    override suspend fun deleteAccount() {
+        onServer {
+            checkNotNull(auth.currentUserOrNull()) { "nobody is signed in" }
+            supabase.client.functions.invoke(DELETE_ACCOUNT)
+        }
     }
 
     private suspend fun rememberOwnProfile() {

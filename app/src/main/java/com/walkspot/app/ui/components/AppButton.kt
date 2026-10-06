@@ -29,7 +29,8 @@ import com.walkspot.app.ui.theme.PillShape
 import com.walkspot.app.ui.theme.Sizes
 import com.walkspot.app.ui.theme.Spacing
 
-enum class AppButtonStyle { Primary, Secondary }
+/** Danger is a Secondary button whose label warns: what it does cannot be undone. */
+enum class AppButtonStyle { Primary, Secondary, Danger }
 
 /** The icon of a Primary button is painted white; a Secondary one keeps its own colours. */
 @OptIn(ExperimentalMaterial3Api::class)
@@ -76,7 +77,11 @@ fun AppButton(
             Text(
                 text = text,
                 style = MaterialTheme.typography.titleMedium,
-                color = if (primary) colors.onAccent else colors.textPrimary,
+                color = when (style) {
+                    AppButtonStyle.Primary -> colors.onAccent
+                    AppButtonStyle.Secondary -> colors.textPrimary
+                    AppButtonStyle.Danger -> colors.danger
+                },
             )
         }
     }

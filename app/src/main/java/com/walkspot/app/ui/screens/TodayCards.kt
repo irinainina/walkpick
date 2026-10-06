@@ -14,15 +14,11 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
@@ -30,13 +26,16 @@ import com.walkspot.app.R
 import com.walkspot.app.ui.components.AppCard
 import com.walkspot.app.ui.components.Bar
 import com.walkspot.app.ui.components.BarChart
+import com.walkspot.app.ui.components.IconBadge
 import com.walkspot.app.ui.components.ProgressRing
 import com.walkspot.app.ui.components.RowChevron
+import com.walkspot.app.ui.counted
+import com.walkspot.app.ui.distanceText
+import com.walkspot.app.ui.grouped
 import com.walkspot.app.ui.theme.AppTheme
 import com.walkspot.app.ui.theme.Sizes
 import com.walkspot.app.ui.theme.Spacing
 import com.walkspot.app.ui.today.TodayState
-import java.util.Locale
 
 private val RingSize = 176.dp
 private val StatsBottom = 28.dp
@@ -45,7 +44,6 @@ private val NoticeTextTop = 14.dp
 private val NoticeTextGap = 2.dp
 private val WeekBarWidth = 10.dp
 private val WeekTrackHeight = 48.dp
-private const val METRES_IN_KM = 1000f
 
 @Composable
 internal fun StepsCard(state: TodayState) {
@@ -81,7 +79,7 @@ internal fun StepsCard(state: TodayState) {
                 modifier = Modifier.padding(horizontal = Spacing.l),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                Stat(stringResource(R.string.today_km, kilometres(state.distanceM)), R.string.today_distance)
+                Stat(distanceText(state.distanceM, state.distanceUnit), R.string.today_distance)
                 Box(Modifier.width(Spacing.m), contentAlignment = Alignment.Center) {
                     Box(
                         Modifier
@@ -108,6 +106,10 @@ private fun RowScope.Stat(value: String, labelRes: Int) {
 }
 
 @Composable
+private fun Badge(@DrawableRes iconRes: Int) =
+    IconBadge(iconRes, AppTheme.colors.streakTint, AppTheme.colors.streak)
+
+@Composable
 internal fun StreakCard(streak: Int) {
     AppCard {
         Row(
@@ -119,7 +121,7 @@ internal fun StreakCard(streak: Int) {
             Column {
                 Text(
                     text = if (streak > 0) {
-                        pluralStringResource(R.plurals.today_streak, streak, streak)
+                        counted(streak, R.string.today_streak_one, R.string.today_streak_many)
                     } else {
                         stringResource(R.string.today_streak_none)
                     },
@@ -198,20 +200,3 @@ internal fun WeekCard(week: List<Bar>, onOpen: () -> Unit) {
         }
     }
 }
-
-@Composable
-private fun Badge(@DrawableRes iconRes: Int) {
-    Box(
-        modifier = Modifier
-            .size(Sizes.circle)
-            .background(AppTheme.colors.streakTint, CircleShape),
-        contentAlignment = Alignment.Center,
-    ) {
-        Icon(painterResource(iconRes), contentDescription = null, tint = AppTheme.colors.streak)
-    }
-}
-
-private fun grouped(number: Int) = String.format(Locale.ENGLISH, "%,d", number)
-
-private fun kilometres(metres: Int) =
-    if (metres == 0) "0" else String.format(Locale.ENGLISH, "%.1f", metres / METRES_IN_KM)

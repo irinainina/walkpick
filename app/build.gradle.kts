@@ -65,6 +65,8 @@ android {
             "OldTargetApi",
             // local.properties is not in the repository and holds a Windows path.
             "PropertyEscape",
+            // The app speaks English on any phone, and plurals would follow the phone's language.
+            "PluralsCandidate",
             // The launcher icon comes with stage 5; remove this line then.
             "MissingApplicationIcon",
         )
@@ -103,6 +105,7 @@ dependencies {
     implementation(platform(libs.supabase.bom))
     implementation(libs.supabase.auth)
     implementation(libs.supabase.postgrest)
+    implementation(libs.supabase.functions)
     implementation(libs.ktor.client.okhttp)
 
     implementation(libs.room.runtime)

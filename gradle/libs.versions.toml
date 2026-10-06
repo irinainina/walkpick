@@ -40,6 +40,7 @@ hilt-compiler = { module = "com.google.dagger:hilt-android-compiler", version.re
 supabase-bom = { module = "io.github.jan-tennert.supabase:bom", version.ref = "supabase" }
 supabase-auth = { module = "io.github.jan-tennert.supabase:auth-kt" }
 supabase-postgrest = { module = "io.github.jan-tennert.supabase:postgrest-kt" }
+supabase-functions = { module = "io.github.jan-tennert.supabase:functions-kt" }
 # Supabase talks HTTP through Ktor and needs an engine picked by hand
 ktor-client-okhttp = { module = "io.ktor:ktor-client-okhttp", version.ref = "ktor" }
 

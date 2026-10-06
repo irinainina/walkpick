@@ -1,11 +1,17 @@
 package com.walkspot.app
 
 import android.os.Bundle
+import android.os.SystemClock
+import android.view.View
+import android.view.ViewTreeObserver
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
+import androidx.compose.runtime.setValue
+import androidx.core.view.ViewCompat
 import com.walkspot.app.data.account.AccountStore
 import com.walkspot.app.ui.navigation.WalkSpotApp
 import com.walkspot.app.ui.theme.WalkSpotTheme
@@ -21,12 +27,43 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+        // Android reports its bars after the first layout: drawn before that, the screen jumps.
+        var barsKnown by mutableStateOf(false)
+        ViewCompat.setOnApplyWindowInsetsListener(window.decorView) { view, insets ->
+            barsKnown = true
+            ViewCompat.onApplyWindowInsets(view, insets)
+        }
+        var firstScreenReady = false
+        holdSplashUntil { firstScreenReady }
         setContent {
             WalkSpotTheme {
                 // Nothing is drawn until the phone knows whether somebody is signed in.
                 val signedIn by produceState<Boolean?>(null) { value = account.isSignedIn() }
-                signedIn?.let { WalkSpotApp(it) }
+                if (signedIn != null && barsKnown) {
+                    WalkSpotApp(signedIn == true, onStartShown = { firstScreenReady = true })
+                }
             }
         }
+    }
+
+    // Android keeps its splash screen (or the picture of the app it remembers) until the first frame is
+    // drawn; frames are refused until the first screen has its data, so no empty screen flashes in between.
+    private fun holdSplashUntil(ready: () -> Boolean) {
+        val content = findViewById<View>(android.R.id.content)
+        val giveUpAt = SystemClock.uptimeMillis() + SPLASH_LIMIT_MS
+        content.viewTreeObserver.addOnPreDrawListener(
+            object : ViewTreeObserver.OnPreDrawListener {
+                override fun onPreDraw(): Boolean {
+                    val draw = ready() || SystemClock.uptimeMillis() > giveUpAt
+                    if (draw) content.viewTreeObserver.removeOnPreDrawListener(this) else content.invalidate()
+                    return draw
+                }
+            },
+        )
+    }
+
+    private companion object {
+        // A screen that never reports itself must not leave the app behind its splash for good.
+        const val SPLASH_LIMIT_MS = 3_000L
     }
 }

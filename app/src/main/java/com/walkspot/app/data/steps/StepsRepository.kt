@@ -7,6 +7,8 @@ import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.longPreferencesKey
 import com.walkspot.app.data.local.DailyStepsDao
 import com.walkspot.app.data.local.DailyStepsEntity
+import com.walkspot.app.data.profile.ProfileStore
+import com.walkspot.app.data.profile.strideM
 import com.walkspot.app.data.sync.SyncScheduler
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
@@ -17,9 +19,8 @@ import java.time.ZoneId
 import javax.inject.Inject
 import kotlin.math.roundToInt
 
-// Until Profile lets the user set a goal and a height.
+// The goal of a profile nobody has touched yet.
 const val DEFAULT_DAILY_GOAL = 10_000
-const val DEFAULT_STRIDE_M = 0.7
 
 // A slow walk, set by the owner; active time is an estimate, the sensor gives steps only.
 private const val STEPS_PER_ACTIVE_MINUTE = 40
@@ -28,6 +29,7 @@ class StepsRepository @Inject constructor(
     private val counter: StepCounter,
     private val store: DataStore<Preferences>,
     private val days: DailyStepsDao,
+    private val profiles: ProfileStore,
     private val sync: SyncScheduler,
 ) {
     fun access(): StepsAccess = counter.access()
@@ -43,7 +45,9 @@ class StepsRepository @Inject constructor(
         if (last != null && walked > 0) {
             val added = splitByDay(last.at, now.at, walked, ZoneId.systemDefault())
             val from = added.keys.minBy { it.toEpochDay() }
-            days.save(addSteps(days.since(from), added, DEFAULT_DAILY_GOAL, DEFAULT_STRIDE_M, now.at))
+            val profile = profiles.value.first()
+            val stride = strideM(profile.sex, profile.heightCm)
+            days.save(addSteps(days.since(from), added, profile.dailyGoal, stride, now.at))
             sync.pushSoon()
         }
         remember(now)

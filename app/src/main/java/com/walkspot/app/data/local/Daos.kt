@@ -34,6 +34,9 @@ interface DailyStepsDao : SyncedDao<DailyStepsEntity> {
 
     @Query("SELECT * FROM daily_steps ORDER BY day")
     fun watchAll(): Flow<List<DailyStepsEntity>>
+
+    @Query("UPDATE daily_steps SET goal = :goal, updatedAt = :now, synced = 0 WHERE day = :day")
+    suspend fun setGoal(day: LocalDate, goal: Int, now: Instant)
 }
 
 @Dao
@@ -55,6 +58,9 @@ interface FindDao : SyncedDao<FindEntity> {
 
     @Query("UPDATE finds SET synced = 1 WHERE id = :id AND updatedAt = :updatedAt")
     suspend fun markSynced(id: String, updatedAt: Instant)
+
+    @Query("SELECT COUNT(*) FROM finds")
+    fun watchCount(): Flow<Int>
 }
 
 @Dao
@@ -64,6 +70,9 @@ interface HealthEntryDao : SyncedDao<HealthEntryEntity> {
 
     @Query("UPDATE health_entries SET synced = 1 WHERE id = :id")
     suspend fun markSynced(id: String)
+
+    @Query("SELECT value FROM health_entries WHERE kind = :kind ORDER BY measuredAt DESC LIMIT 1")
+    fun watchLatest(kind: HealthKind): Flow<Double?>
 }
 
 @Dao

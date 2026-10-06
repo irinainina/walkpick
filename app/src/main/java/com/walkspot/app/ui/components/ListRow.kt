@@ -15,6 +15,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -34,6 +35,8 @@ fun ListRow(
     value: String? = null,
     divider: Boolean = true,
     onClick: (() -> Unit)? = null,
+    labelColor: Color = AppTheme.colors.textPrimary,
+    valueColor: Color = AppTheme.colors.textSecondary,
     leading: (@Composable () -> Unit)? = null,
     trailing: @Composable () -> Unit = { RowChevron() },
 ) {
@@ -54,14 +57,14 @@ fun ListRow(
                 leading()
                 Spacer(Modifier.width(Spacing.sm))
             }
-            Text(label, style = MaterialTheme.typography.bodyLarge, color = AppTheme.colors.textPrimary)
+            Text(label, style = MaterialTheme.typography.bodyLarge, color = labelColor)
             Text(
                 text = value.orEmpty(),
                 modifier = Modifier
                     .weight(1f)
                     .padding(start = Spacing.s, end = Spacing.xs),
                 style = MaterialTheme.typography.bodyLarge,
-                color = AppTheme.colors.textSecondary,
+                color = valueColor,
                 textAlign = TextAlign.End,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,

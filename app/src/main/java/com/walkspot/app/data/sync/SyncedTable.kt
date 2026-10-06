@@ -15,6 +15,13 @@ private const val CHUNK = 100
 // PostgREST answers with at most a thousand rows.
 private const val PAGE = 1000L
 
+/** Something kept on the phone and copied to the server and back. */
+interface SyncedPart {
+    suspend fun push(remote: RemoteTables)
+
+    suspend fun pull(remote: RemoteTables)
+}
+
 // One table kept on the phone and copied to the server under the same name.
 class SyncedTable<T : Any>(
     val name: String,
@@ -26,8 +33,8 @@ class SyncedTable<T : Any>(
     private val markSynced: suspend (T) -> Unit,
     // takes rows as the server sent them and stores them as synced
     private val restore: suspend (List<T>) -> Unit,
-) {
-    suspend fun push(remote: RemoteTables) {
+) : SyncedPart {
+    override suspend fun push(remote: RemoteTables) {
         unsynced().chunked(CHUNK).forEach { rows ->
             val json = rows.map { SyncJson.encodeToJsonElement(serializer, it).jsonObject }
             remote.upsert(name, json, key, insertOnly)
@@ -35,7 +42,7 @@ class SyncedTable<T : Any>(
         }
     }
 
-    suspend fun pull(remote: RemoteTables) {
+    override suspend fun pull(remote: RemoteTables) {
         var from = 0L
         do {
             val page = remote.page(name, key, from, from + PAGE - 1)

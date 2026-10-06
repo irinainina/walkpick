@@ -6,6 +6,9 @@
     <!-- Tells a closed Google chooser from a phone with no network. -->
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
+    <!-- The walk reminder. -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+
     <!-- Steps come from the phone's own step sensor. -->
     <uses-permission android:name="android.permission.ACTIVITY_RECOGNITION" />
     <uses-feature

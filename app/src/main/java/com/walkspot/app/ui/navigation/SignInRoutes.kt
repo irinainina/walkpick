@@ -1,5 +1,6 @@
 package com.walkspot.app.ui.navigation
 
+import androidx.compose.runtime.SideEffect
 import androidx.compose.ui.res.stringResource
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
@@ -14,7 +15,11 @@ import com.walkspot.app.ui.screens.messageRes
 private const val EMAIL = "SignInEmail"
 private const val CODE = "SignInCode"
 
-internal fun NavGraphBuilder.signInRoutes(navController: NavHostController, auth: AuthViewModel) {
+internal fun NavGraphBuilder.signInRoutes(
+    navController: NavHostController,
+    auth: AuthViewModel,
+    onShown: () -> Unit,
+) {
     // The sign-in is left behind, or the back gesture walks out of a signed-in app onto it.
     val enter = {
         navController.navigate(Screen.Today.route) {
@@ -26,6 +31,7 @@ internal fun NavGraphBuilder.signInRoutes(navController: NavHostController, auth
         navController.popBackStack()
     }
     composable(Screen.SignIn.route) {
+        SideEffect(onShown)
         val google = rememberGoogleSignIn()
         SignInScreen(
             onGoogle = { auth.signInWithGoogle(google, enter) },

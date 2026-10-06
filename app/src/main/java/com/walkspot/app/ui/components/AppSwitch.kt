@@ -32,6 +32,7 @@ fun AppSwitch(
     onToggle: (Boolean) -> Unit,
     label: String,
     modifier: Modifier = Modifier,
+    enabled: Boolean = true,
 ) {
     val knobStart by animateDpAsState(
         targetValue = if (on) TrackWidth - Sizes.icon - KnobInset else KnobInset,
@@ -47,7 +48,7 @@ fun AppSwitch(
             .size(TrackWidth, TrackHeight)
             .then(track)
             .clip(PillShape)
-            .toggleable(value = on, role = Role.Switch, onValueChange = onToggle)
+            .toggleable(value = on, enabled = enabled, role = Role.Switch, onValueChange = onToggle)
             .semantics { contentDescription = label },
     ) {
         Box(

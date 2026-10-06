@@ -8,12 +8,16 @@ import androidx.room.Room
 import com.walkspot.app.data.account.AuthRepository
 import com.walkspot.app.data.account.SupabaseAuthRepository
 import com.walkspot.app.data.local.DailyStepsDao
+import com.walkspot.app.data.local.FindDao
+import com.walkspot.app.data.local.HealthEntryDao
 import com.walkspot.app.data.local.PendingDeleteDao
 import com.walkspot.app.data.local.WalkDao
 import com.walkspot.app.data.local.WalkSpotDatabase
+import com.walkspot.app.data.profile.ProfileSync
+import com.walkspot.app.data.settings.SettingsSync
 import com.walkspot.app.data.sync.RemoteTables
 import com.walkspot.app.data.sync.SupabaseRemoteTables
-import com.walkspot.app.data.sync.SyncedTable
+import com.walkspot.app.data.sync.SyncedPart
 import com.walkspot.app.data.sync.syncedTables
 import dagger.Module
 import dagger.Provides
@@ -50,8 +54,17 @@ object DataModule {
     fun walks(database: WalkSpotDatabase): WalkDao = database.walks()
 
     @Provides
-    fun tables(database: WalkSpotDatabase): List<@JvmSuppressWildcards SyncedTable<*>> =
-        syncedTables(database)
+    fun finds(database: WalkSpotDatabase): FindDao = database.finds()
+
+    @Provides
+    fun healthEntries(database: WalkSpotDatabase): HealthEntryDao = database.healthEntries()
+
+    @Provides
+    fun synced(
+        database: WalkSpotDatabase,
+        profile: ProfileSync,
+        settings: SettingsSync,
+    ): List<@JvmSuppressWildcards SyncedPart> = syncedTables(database) + profile + settings
 
     @Provides
     fun remoteTables(remote: SupabaseRemoteTables): RemoteTables = remote
