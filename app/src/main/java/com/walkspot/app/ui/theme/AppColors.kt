@@ -32,6 +32,8 @@ data class AppColors(
     val surface: Color,
     /** A chart track and anything inactive. */
     val surfaceTint: Color,
+    /** The track of a switch that is off. */
+    val switchOff: Color,
     /** A chart bar of a day that is over and did not reach the goal. */
     val barPast: Color,
     val divider: Color,
@@ -70,6 +72,7 @@ internal val walkSpotColors = AppColors(
     canvas = Canvas,
     surface = White,
     surfaceTint = PaleBlue,
+    switchOff = Mist,
     barPast = LightBlue,
     divider = Line,
     scrim = Ink.copy(alpha = 0.48f),

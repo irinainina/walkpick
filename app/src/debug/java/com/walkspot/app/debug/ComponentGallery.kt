@@ -48,7 +48,7 @@ fun ComponentGallery() {
             .statusBarsPadding(),
         verticalArrangement = Arrangement.spacedBy(Spacing.m),
     ) {
-        AppTopBar(title = "Title", onBack = {}) {
+        AppTopBar(title = "Debug page", onBack = {}) {
             CircleButton(R.drawable.ic_plus, "Add", {}, tint = AppTheme.colors.accent, raised = true)
         }
         Column(

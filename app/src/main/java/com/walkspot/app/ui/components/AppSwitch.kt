@@ -1,6 +1,6 @@
 package com.walkspot.app.ui.components
 
-import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.offset
@@ -10,7 +10,6 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.dropShadow
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
@@ -34,26 +33,30 @@ fun AppSwitch(
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
 ) {
-    val knobStart by animateDpAsState(
-        targetValue = if (on) TrackWidth - Sizes.icon - KnobInset else KnobInset,
-        label = "knob",
-    )
-    val track = if (on) {
-        Modifier.background(AppTheme.colors.accentGradient, PillShape)
-    } else {
-        Modifier.background(AppTheme.colors.surfaceTint, PillShape)
-    }
+    // 0 is off, 1 is on: the knob slides and the gradient comes through the grey together.
+    val turned by animateFloatAsState(targetValue = if (on) 1f else 0f, label = "switch")
     Box(
         modifier = modifier
             .size(TrackWidth, TrackHeight)
-            .then(track)
-            .clip(PillShape)
-            .toggleable(value = on, enabled = enabled, role = Role.Switch, onValueChange = onToggle)
+            .background(AppTheme.colors.switchOff, PillShape)
+            .background(AppTheme.colors.accentGradient, PillShape, alpha = turned)
+            // No ripple: the moving knob is the answer to the tap.
+            .toggleable(
+                value = on,
+                interactionSource = null,
+                indication = null,
+                enabled = enabled,
+                role = Role.Switch,
+                onValueChange = onToggle,
+            )
             .semantics { contentDescription = label },
     ) {
         Box(
             Modifier
-                .offset { IntOffset(knobStart.roundToPx(), KnobInset.roundToPx()) }
+                .offset {
+                    val travel = TrackWidth - Sizes.icon - KnobInset * 2
+                    IntOffset((KnobInset + travel * turned).roundToPx(), KnobInset.roundToPx())
+                }
                 .size(Sizes.icon)
                 .dropShadow(CircleShape, AppShadows.knob)
                 .background(AppTheme.colors.surface, CircleShape),

@@ -103,6 +103,7 @@
     <string name="profile_target_pressure">Target pressure</string>
     <string name="profile_systolic">Systolic</string>
     <string name="profile_diastolic">Diastolic</string>
+    <string name="profile_mmhg">mmHg</string>
     <string name="profile_target_glucose">Target glucose</string>
     <string name="profile_target_glucose_in">Target glucose, %1$s</string>
     <string name="profile_cm">%1$d cm</string>

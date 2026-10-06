@@ -1,32 +1,256 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- The logo for the system splash screen, which shows only the middle of its icon. -->
-<vector xmlns:android="http://schemas.android.com/apk/res/android"
-    android:width="64dp"
-    android:height="64dp"
-    android:viewportWidth="64"
-    android:viewportHeight="64">
-    <group
-        android:pivotX="32"
-        android:pivotY="32"
-        android:scaleX="0.5"
-        android:scaleY="0.5">
-        <path
-            android:pathData="M32 60C32 60 12 44 12 28C12 22.6957 14.1071 17.6086 17.8579 13.8579C21.6086 10.1071 26.6957 8 32 8C37.3043 8 42.3914 10.1071 46.1421 13.8579C49.8929 17.6086 52 22.6957 52 28C52 44 32 60 32 60Z"
-            android:strokeColor="#FFFFFF"
-            android:strokeWidth="4"
-            android:strokeLineCap="round"
-            android:strokeLineJoin="round" />
-        <path
-            android:pathData="M32 37.3333C37.1547 37.3333 41.3333 33.1547 41.3333 28C41.3333 22.8453 37.1547 18.6667 32 18.6667C26.8453 18.6667 22.6667 22.8453 22.6667 28C22.6667 33.1547 26.8453 37.3333 32 37.3333Z"
-            android:strokeColor="#FFFFFF"
-            android:strokeWidth="4"
-            android:strokeLineCap="round"
-            android:strokeLineJoin="round" />
-        <path
-            android:pathData="M28 24.6667C28.4822 24.0636 29.0896 23.5725 29.7802 23.2272C30.4709 22.8819 31.2282 22.6906 32 22.6667"
-            android:strokeColor="#FFFFFF"
-            android:strokeWidth="4"
-            android:strokeLineCap="round"
-            android:strokeLineJoin="round" />
-    </group>
-</vector>
+<animated-vector xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt">
+    <aapt:attr name="android:drawable">
+        <vector
+            android:width="64dp"
+            android:height="64dp"
+            android:viewportWidth="64"
+            android:viewportHeight="64">
+            <group
+                android:pivotX="32"
+                android:pivotY="32"
+                android:scaleX="0.5"
+                android:scaleY="0.5">
+                <path
+                    android:pathData="M32 60C32 60 12 44 12 28C12 22.6957 14.1071 17.6086 17.8579 13.8579C21.6086 10.1071 26.6957 8 32 8C37.3043 8 42.3914 10.1071 46.1421 13.8579C49.8929 17.6086 52 22.6957 52 28C52 44 32 60 32 60Z"
+                    android:strokeColor="#FFFFFF"
+                    android:strokeWidth="4"
+                    android:strokeLineCap="round"
+                    android:strokeLineJoin="round" />
+                <path
+                    android:pathData="M32 37.3333C37.1547 37.3333 41.3333 33.1547 41.3333 28C41.3333 22.8453 37.1547 18.6667 32 18.6667C26.8453 18.6667 22.6667 22.8453 22.6667 28C22.6667 33.1547 26.8453 37.3333 32 37.3333Z"
+                    android:strokeColor="#FFFFFF"
+                    android:strokeWidth="4"
+                    android:strokeLineCap="round"
+                    android:strokeLineJoin="round" />
+                <group android:name="dot">
+                    <path
+                        android:name="glint"
+                        android:pathData="M28 24.6667C28.4822 24.0636 29.0896 23.5725 29.7802 23.2272C30.4709 22.8819 31.2282 22.6906 32 22.6667"
+                        android:strokeColor="#FFFFFF"
+                        android:strokeWidth="4"
+                        android:strokeLineCap="round"
+                        android:strokeLineJoin="round" />
+                </group>
+                <group
+                    android:name="star"
+                    android:pivotX="32"
+                    android:pivotY="28"
+                    android:scaleX="0"
+                    android:scaleY="0">
+                    <path
+                        android:fillColor="#FFFFFF"
+                        android:pathData="M32 10L33.4 26.6L50 28L33.4 29.4L32 46L30.6 29.4L14 28L30.6 26.6Z" />
+                    <group
+                        android:pivotX="32"
+                        android:pivotY="28"
+                        android:rotation="45"
+                        android:scaleX="0.55"
+                        android:scaleY="0.55">
+                        <path
+                            android:fillColor="#FFFFFF"
+                            android:pathData="M32 10L33.4 26.6L50 28L33.4 29.4L32 46L30.6 29.4L14 28L30.6 26.6Z" />
+                    </group>
+                </group>
+            </group>
+        </vector>
+    </aapt:attr>
+    <target android:name="glint">
+        <aapt:attr name="android:animation">
+            <set>
+                <objectAnimator
+                    android:duration="1350"
+                    android:interpolator="@android:interpolator/linear">
+                    <propertyValuesHolder android:propertyName="trimPathStart">
+                        <keyframe
+                            android:fraction="0"
+                            android:value="0"
+                            android:valueType="floatType" />
+                        <keyframe
+                            android:fraction="0.148"
+                            android:value="0.49"
+                            android:valueType="floatType" />
+                        <keyframe
+                            android:fraction="0.852"
+                            android:value="0.49"
+                            android:valueType="floatType" />
+                        <keyframe
+                            android:fraction="1"
+                            android:value="0"
+                            android:valueType="floatType" />
+                    </propertyValuesHolder>
+                </objectAnimator>
+                <objectAnimator
+                    android:duration="1350"
+                    android:interpolator="@android:interpolator/linear">
+                    <propertyValuesHolder android:propertyName="trimPathEnd">
+                        <keyframe
+                            android:fraction="0"
+                            android:value="1"
+                            android:valueType="floatType" />
+                        <keyframe
+                            android:fraction="0.148"
+                            android:value="0.51"
+                            android:valueType="floatType" />
+                        <keyframe
+                            android:fraction="0.852"
+                            android:value="0.51"
+                            android:valueType="floatType" />
+                        <keyframe
+                            android:fraction="1"
+                            android:value="1"
+                            android:valueType="floatType" />
+                    </propertyValuesHolder>
+                </objectAnimator>
+            </set>
+        </aapt:attr>
+    </target>
+    <target android:name="dot">
+        <aapt:attr name="android:animation">
+            <set>
+                <objectAnimator
+                    android:duration="1350"
+                    android:interpolator="@android:interpolator/linear">
+                    <propertyValuesHolder android:propertyName="translateX">
+                        <keyframe
+                            android:fraction="0"
+                            android:value="0"
+                            android:valueType="floatType" />
+                        <keyframe
+                            android:fraction="0.148"
+                            android:value="0"
+                            android:valueType="floatType" />
+                        <keyframe
+                            android:fraction="0.333"
+                            android:value="2.2"
+                            android:valueType="floatType" />
+                        <keyframe
+                            android:fraction="0.667"
+                            android:value="2.2"
+                            android:valueType="floatType" />
+                        <keyframe
+                            android:fraction="0.852"
+                            android:value="0"
+                            android:valueType="floatType" />
+                        <keyframe
+                            android:fraction="1"
+                            android:value="0"
+                            android:valueType="floatType" />
+                    </propertyValuesHolder>
+                </objectAnimator>
+                <objectAnimator
+                    android:duration="1350"
+                    android:interpolator="@android:interpolator/linear">
+                    <propertyValuesHolder android:propertyName="translateY">
+                        <keyframe
+                            android:fraction="0"
+                            android:value="0"
+                            android:valueType="floatType" />
+                        <keyframe
+                            android:fraction="0.148"
+                            android:value="0"
+                            android:valueType="floatType" />
+                        <keyframe
+                            android:fraction="0.333"
+                            android:value="4.8"
+                            android:valueType="floatType" />
+                        <keyframe
+                            android:fraction="0.667"
+                            android:value="4.8"
+                            android:valueType="floatType" />
+                        <keyframe
+                            android:fraction="0.852"
+                            android:value="0"
+                            android:valueType="floatType" />
+                        <keyframe
+                            android:fraction="1"
+                            android:value="0"
+                            android:valueType="floatType" />
+                    </propertyValuesHolder>
+                </objectAnimator>
+            </set>
+        </aapt:attr>
+    </target>
+    <target android:name="star">
+        <aapt:attr name="android:animation">
+            <set>
+                <objectAnimator
+                    android:duration="1350"
+                    android:interpolator="@android:interpolator/linear">
+                    <propertyValuesHolder android:propertyName="scaleX">
+                        <keyframe
+                            android:fraction="0"
+                            android:value="0"
+                            android:valueType="floatType" />
+                        <keyframe
+                            android:fraction="0.333"
+                            android:value="0"
+                            android:valueType="floatType" />
+                        <keyframe
+                            android:fraction="0.467"
+                            android:value="1"
+                            android:valueType="floatType" />
+                        <keyframe
+                            android:fraction="0.667"
+                            android:value="0"
+                            android:valueType="floatType" />
+                        <keyframe
+                            android:fraction="1"
+                            android:value="0"
+                            android:valueType="floatType" />
+                    </propertyValuesHolder>
+                </objectAnimator>
+                <objectAnimator
+                    android:duration="1350"
+                    android:interpolator="@android:interpolator/linear">
+                    <propertyValuesHolder android:propertyName="scaleY">
+                        <keyframe
+                            android:fraction="0"
+                            android:value="0"
+                            android:valueType="floatType" />
+                        <keyframe
+                            android:fraction="0.333"
+                            android:value="0"
+                            android:valueType="floatType" />
+                        <keyframe
+                            android:fraction="0.467"
+                            android:value="1"
+                            android:valueType="floatType" />
+                        <keyframe
+                            android:fraction="0.667"
+                            android:value="0"
+                            android:valueType="floatType" />
+                        <keyframe
+                            android:fraction="1"
+                            android:value="0"
+                            android:valueType="floatType" />
+                    </propertyValuesHolder>
+                </objectAnimator>
+                <objectAnimator
+                    android:duration="1350"
+                    android:interpolator="@android:interpolator/linear">
+                    <propertyValuesHolder android:propertyName="rotation">
+                        <keyframe
+                            android:fraction="0"
+                            android:value="0"
+                            android:valueType="floatType" />
+                        <keyframe
+                            android:fraction="0.333"
+                            android:value="0"
+                            android:valueType="floatType" />
+                        <keyframe
+                            android:fraction="0.667"
+                            android:value="60"
+                            android:valueType="floatType" />
+                        <keyframe
+                            android:fraction="1"
+                            android:value="60"
+                            android:valueType="floatType" />
+                    </propertyValuesHolder>
+                </objectAnimator>
+            </set>
+        </aapt:attr>
+    </target>
+</animated-vector>

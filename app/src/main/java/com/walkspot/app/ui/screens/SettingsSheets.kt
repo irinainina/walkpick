@@ -118,23 +118,30 @@ private fun TimeSheet(current: LocalTime, onDismiss: () -> Unit, onSave: (LocalT
     val submit = { time?.let(onSave) ?: Unit }
     AppSheet(stringResource(R.string.settings_time), onDismiss) {
         Spacer(Modifier.height(Spacing.m))
-        Row(horizontalArrangement = Arrangement.spacedBy(Spacing.s)) {
+        Row(horizontalArrangement = Arrangement.spacedBy(Spacing.m)) {
             val part = Modifier.weight(1f)
             val number = KeyboardType.Number
-            AppTextField(hour, { hour = it }, stringResource(R.string.settings_hour), part, number)
+            AppTextField(
+                value = hour,
+                onValueChange = { hour = it },
+                modifier = part,
+                label = stringResource(R.string.settings_hour),
+                keyboardType = number,
+            )
             AppTextField(
                 value = minute,
                 onValueChange = { minute = it },
-                placeholder = stringResource(R.string.settings_minute),
                 modifier = part,
+                label = stringResource(R.string.settings_minute),
                 keyboardType = number,
                 onDone = submit,
                 error = stringResource(R.string.settings_time_wrong).takeIf {
                     hour.isNotBlank() && minute.isNotBlank() && time == null
                 },
+                autoFocus = false,
             )
         }
-        Spacer(Modifier.height(Spacing.l))
+        Spacer(Modifier.height(Spacing.xl))
         AppButton(stringResource(R.string.profile_save), onClick = submit)
     }
 }

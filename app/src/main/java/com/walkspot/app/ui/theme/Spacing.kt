@@ -24,4 +24,5 @@ object Sizes {
     /** A button, a list row, a field. */
     val control = 56.dp
     val hairline = 1.dp
+    val focusBorder = 2.dp
 }

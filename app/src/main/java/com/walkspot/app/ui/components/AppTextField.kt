@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -16,11 +17,15 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.semantics.contentDescription
@@ -36,57 +41,78 @@ import com.walkspot.app.ui.theme.Spacing
 // Six is what Supabase is set to send.
 const val CODE_LENGTH = 6
 
-/** A one-line field that takes the focus as it appears; [error] goes under it and turns the border red. */
+/**
+ * A one-line field that takes the focus as it appears unless [autoFocus] is off; [error] goes under it and
+ * turns the border red.
+ * [label] stands above it, [suffix] names the unit at its right edge.
+ */
 @Composable
 fun AppTextField(
     value: String,
     onValueChange: (String) -> Unit,
-    placeholder: String,
     modifier: Modifier = Modifier,
+    placeholder: String = "",
+    label: String? = null,
+    suffix: String? = null,
     keyboardType: KeyboardType = KeyboardType.Text,
     onDone: () -> Unit = {},
     error: String? = null,
+    container: Color = AppTheme.colors.canvas,
+    autoFocus: Boolean = true,
 ) {
     val colors = AppTheme.colors
+    val type = MaterialTheme.typography
     val focus = remember { FocusRequester() }
-    LaunchedEffect(Unit) { focus.requestFocus() }
-    Column(modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(Spacing.s)) {
+    var focused by remember { mutableStateOf(false) }
+    LaunchedEffect(Unit) { if (autoFocus) focus.requestFocus() }
+    Column(modifier.fillMaxWidth()) {
+        if (label != null) {
+            Text(label, style = type.bodySmall, color = colors.textSecondary)
+            Spacer(Modifier.height(Spacing.xs))
+        }
         BasicTextField(
             value = value,
             onValueChange = onValueChange,
             modifier = Modifier
                 .fillMaxWidth()
-                .focusRequester(focus),
+                .focusRequester(focus)
+                .onFocusChanged { focused = it.isFocused },
             singleLine = true,
-            textStyle = MaterialTheme.typography.bodyLarge.copy(color = colors.textPrimary),
+            textStyle = type.titleLarge.copy(color = colors.textPrimary),
             cursorBrush = SolidColor(colors.accent),
             keyboardOptions = KeyboardOptions(keyboardType = keyboardType, imeAction = ImeAction.Done),
             keyboardActions = KeyboardActions(onDone = { onDone() }),
             decorationBox = { field ->
-                Box(
+                Row(
                     modifier = Modifier
                         .height(Sizes.control)
-                        .background(colors.surface, MaterialTheme.shapes.medium)
+                        .background(container, MaterialTheme.shapes.medium)
                         .border(
-                            Sizes.hairline,
-                            if (error != null) colors.danger else colors.divider,
+                            if (focused) Sizes.focusBorder else Sizes.hairline,
+                            when {
+                                error != null -> colors.danger
+                                focused -> colors.accent
+                                else -> colors.divider
+                            },
                             MaterialTheme.shapes.medium,
                         )
                         .padding(horizontal = Spacing.m),
-                    contentAlignment = Alignment.CenterStart,
+                    verticalAlignment = Alignment.CenterVertically,
                 ) {
-                    if (value.isEmpty()) {
-                        Text(
-                            text = placeholder,
-                            style = MaterialTheme.typography.bodyLarge,
-                            color = colors.textSecondary,
-                        )
+                    Box(Modifier.weight(1f)) {
+                        if (value.isEmpty()) {
+                            Text(placeholder, style = type.titleLarge, color = colors.textSecondary)
+                        }
+                        field()
                     }
-                    field()
+                    if (suffix != null) Text(suffix, style = type.bodyMedium, color = colors.textSecondary)
                 }
             },
         )
-        if (error != null) FieldError(error)
+        if (error != null) {
+            Spacer(Modifier.height(Spacing.s))
+            FieldError(error)
+        }
     }
 }
 

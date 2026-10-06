@@ -131,7 +131,7 @@ private fun NumberSheet(
             onDone = submit,
             error = rangeHint(range).takeIf { text.isNotBlank() && number == null },
         )
-        Spacer(Modifier.height(Spacing.l))
+        Spacer(Modifier.height(Spacing.xl))
         AppButton(stringResource(R.string.profile_save), onClick = submit)
     }
 }
@@ -145,23 +145,30 @@ private fun PressureSheet(profile: Profile, onDismiss: () -> Unit, onSave: (Int,
     val submit = { if (systolic != null && diastolic != null) onSave(systolic.toInt(), diastolic.toInt()) }
     AppSheet(stringResource(R.string.profile_target_pressure), onDismiss) {
         Spacer(Modifier.height(Spacing.m))
-        AppTextField(
-            value = upper,
-            onValueChange = { upper = it },
-            placeholder = stringResource(R.string.profile_systolic),
-            keyboardType = KeyboardType.Number,
-            error = rangeHint(SystolicRange).takeIf { upper.isNotBlank() && systolic == null },
-        )
-        Spacer(Modifier.height(Spacing.sm))
-        AppTextField(
-            value = lower,
-            onValueChange = { lower = it },
-            placeholder = stringResource(R.string.profile_diastolic),
-            keyboardType = KeyboardType.Number,
-            onDone = submit,
-            error = rangeHint(DiastolicRange).takeIf { lower.isNotBlank() && diastolic == null },
-        )
-        Spacer(Modifier.height(Spacing.l))
+        Row(horizontalArrangement = Arrangement.spacedBy(Spacing.m)) {
+            val unit = stringResource(R.string.profile_mmhg)
+            AppTextField(
+                value = upper,
+                onValueChange = { upper = it },
+                modifier = Modifier.weight(1f),
+                label = stringResource(R.string.profile_systolic),
+                suffix = unit,
+                keyboardType = KeyboardType.Number,
+                error = rangeHint(SystolicRange).takeIf { upper.isNotBlank() && systolic == null },
+            )
+            AppTextField(
+                value = lower,
+                onValueChange = { lower = it },
+                modifier = Modifier.weight(1f),
+                label = stringResource(R.string.profile_diastolic),
+                suffix = unit,
+                keyboardType = KeyboardType.Number,
+                onDone = submit,
+                error = rangeHint(DiastolicRange).takeIf { lower.isNotBlank() && diastolic == null },
+                autoFocus = false,
+            )
+        }
+        Spacer(Modifier.height(Spacing.xl))
         AppButton(stringResource(R.string.profile_save), onClick = submit)
     }
 }
@@ -188,22 +195,36 @@ private fun BirthDateSheet(current: LocalDate?, onDismiss: () -> Unit, onSave: (
     val filled = day.isNotBlank() && month.isNotBlank() && year.isNotBlank()
     AppSheet(stringResource(R.string.profile_birth_date), onDismiss) {
         Spacer(Modifier.height(Spacing.m))
-        Row(horizontalArrangement = Arrangement.spacedBy(Spacing.s)) {
+        Row(horizontalArrangement = Arrangement.spacedBy(Spacing.m)) {
             val part = Modifier.weight(1f)
             val number = KeyboardType.Number
-            AppTextField(day, { day = it }, stringResource(R.string.profile_day), part, number)
-            AppTextField(month, { month = it }, stringResource(R.string.profile_month), part, number)
+            AppTextField(
+                value = day,
+                onValueChange = { day = it },
+                modifier = part,
+                label = stringResource(R.string.profile_day),
+                keyboardType = number,
+            )
+            AppTextField(
+                value = month,
+                onValueChange = { month = it },
+                modifier = part,
+                label = stringResource(R.string.profile_month),
+                keyboardType = number,
+                autoFocus = false,
+            )
             AppTextField(
                 value = year,
                 onValueChange = { year = it },
-                placeholder = stringResource(R.string.profile_year),
                 modifier = part,
-                keyboardType = KeyboardType.Number,
+                label = stringResource(R.string.profile_year),
+                keyboardType = number,
                 onDone = submit,
                 error = stringResource(R.string.profile_date_wrong).takeIf { filled && date == null },
+                autoFocus = false,
             )
         }
-        Spacer(Modifier.height(Spacing.l))
+        Spacer(Modifier.height(Spacing.xl))
         AppButton(stringResource(R.string.profile_save), onClick = submit)
     }
 }

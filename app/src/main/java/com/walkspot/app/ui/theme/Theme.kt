@@ -26,22 +26,16 @@ private val AppColorScheme = with(walkSpotColors) {
     )
 }
 
-/** How a tap is answered; Material's own answer is a grey. */
+// How a tap on a row is answered: a neutral grey, Android draws the wave at about a fifth of the colour.
 @OptIn(ExperimentalMaterial3Api::class)
-object AppRipples {
-    // The light end of the gradient; Android draws the wave at about a fifth of the colour.
-    val soft = RippleConfiguration(color = Cyan)
-
-    /** On the gradient, where blue would not show. */
-    val onAccent = RippleConfiguration(color = walkSpotColors.onAccent)
-}
+private val SoftRipple = RippleConfiguration(color = Grey)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun WalkSpotTheme(content: @Composable () -> Unit) {
     CompositionLocalProvider(
         LocalAppColors provides walkSpotColors,
-        LocalRippleConfiguration provides AppRipples.soft,
+        LocalRippleConfiguration provides SoftRipple,
         // Android paints a field yellow after filling it from a suggestion.
         LocalAutofillHighlightBrush provides SolidColor(Color.Transparent),
     ) {

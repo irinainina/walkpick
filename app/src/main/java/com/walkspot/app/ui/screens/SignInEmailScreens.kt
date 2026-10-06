@@ -67,6 +67,7 @@ fun SignInEmailScreen(
             keyboardType = KeyboardType.Email,
             onDone = onContinue,
             error = problem?.let { stringResource(it.messageRes()) },
+            container = AppTheme.colors.surface,
         )
         Spacer(Modifier.height(Spacing.ml))
         AppButton(
