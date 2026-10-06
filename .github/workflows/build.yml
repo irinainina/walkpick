@@ -26,6 +26,14 @@ jobs:
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
 
+      # An empty value still builds: the app runs and cannot reach the server.
+      - name: Write local.properties
+        run: |
+          {
+            echo "supabase.url=${{ secrets.SUPABASE_URL }}"
+            echo "supabase.publishableKey=${{ secrets.SUPABASE_PUBLISHABLE_KEY }}"
+          } > local.properties
+
       - name: Unit tests
         run: ./gradlew testDebugUnitTest --no-daemon
 

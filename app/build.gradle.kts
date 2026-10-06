@@ -1,3 +1,12 @@
+import java.util.Properties
+
+// The Supabase address and key come from local.properties, which git ignores.
+fun localProperty(name: String): String {
+    val file = rootProject.file("local.properties")
+    if (!file.exists()) return ""
+    return Properties().apply { file.inputStream().use(::load) }.getProperty(name).orEmpty()
+}
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
@@ -16,13 +25,20 @@ android {
         targetSdk = 36
         versionCode = 1
         versionName = "0.1"
+
+        buildConfigField("String", "SUPABASE_URL", "\"${localProperty("supabase.url")}\"")
+        buildConfigField(
+            "String",
+            "SUPABASE_PUBLISHABLE_KEY",
+            "\"${localProperty("supabase.publishableKey")}\"",
+        )
     }
 
     buildTypes {
         release {
             isMinifyEnabled = true
             isShrinkResources = true
-            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"))
+            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
         }
     }
 
@@ -50,6 +66,7 @@ android {
 
     buildFeatures {
         compose = true
+        buildConfig = true
     }
 
     testOptions {
@@ -76,6 +93,11 @@ dependencies {
     implementation(libs.androidx.navigation.compose)
 
     implementation(libs.androidx.datastore.preferences)
+
+    implementation(platform(libs.supabase.bom))
+    implementation(libs.supabase.auth)
+    implementation(libs.supabase.postgrest)
+    implementation(libs.ktor.client.okhttp)
 
     implementation(libs.room.runtime)
     implementation(libs.room.ktx)
