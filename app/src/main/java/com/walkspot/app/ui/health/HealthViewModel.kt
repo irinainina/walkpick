@@ -4,7 +4,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.walkspot.app.data.health.HealthRepository
 import com.walkspot.app.data.local.HealthKind
-import com.walkspot.app.data.profile.Profile
 import com.walkspot.app.data.profile.ProfileRepository
 import com.walkspot.app.data.settings.AppSettings
 import com.walkspot.app.data.settings.SettingsStore
@@ -65,7 +64,7 @@ class HealthViewModel @Inject constructor(
                     val today = LocalDate.now()
                     val zone = ZoneId.systemDefault()
                     val (tab, period) = chosen.tab to chosen.period
-                    val targets = profile.targets(tab)
+                    val targets = profile.healthTargets(tab)
                     val target = targets.firstOrNull()
                     chosen.copy(
                         today = today,
@@ -85,14 +84,6 @@ class HealthViewModel @Inject constructor(
     fun open(tab: HealthKind) = choice.update { it.copy(tab = tab) }
 
     fun show(period: StatsTab) = choice.update { it.copy(period = period) }
-}
-
-// The lines of the chart, the upper one first; the card compares with the first.
-private fun Profile.targets(kind: HealthKind): List<Double> = when (kind) {
-    HealthKind.MOOD -> emptyList()
-    HealthKind.WEIGHT -> listOfNotNull(targetWeightKg)
-    HealthKind.PRESSURE -> listOf(targetSystolic.toDouble(), targetDiastolic.toDouble())
-    HealthKind.GLUCOSE -> listOf(targetGlucose)
 }
 
 internal fun healthState(turnedOn: Set<HealthKind>, choice: HealthChoice): HealthState {

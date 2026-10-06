@@ -3,8 +3,8 @@ package com.walkspot.app.ui.profile
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.walkspot.app.data.account.AccountStore
+import com.walkspot.app.data.health.HealthRepository
 import com.walkspot.app.data.local.FindDao
-import com.walkspot.app.data.local.HealthEntryDao
 import com.walkspot.app.data.local.HealthKind
 import com.walkspot.app.data.local.WalkDao
 import com.walkspot.app.data.profile.Profile
@@ -18,6 +18,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import java.time.Instant
 import java.time.LocalDate
 import javax.inject.Inject
 
@@ -43,7 +44,7 @@ class ProfileViewModel @Inject constructor(
     steps: StepsRepository,
     walks: WalkDao,
     finds: FindDao,
-    health: HealthEntryDao,
+    private val health: HealthRepository,
     settings: SettingsStore,
     account: AccountStore,
 ) : ViewModel() {
@@ -60,6 +61,10 @@ class ProfileViewModel @Inject constructor(
         combine(profiles.profile, totals, weight, account.user, units) { profile, totals, kg, who, units ->
             ProfileState(LocalDate.now(), who?.name, who?.email.orEmpty(), profile, totals, kg, units)
         }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(KEEP_AFTER_LEAVING_MS), null)
+
+    fun addWeight(kg: Double, at: Instant) {
+        viewModelScope.launch { health.add(HealthKind.WEIGHT, kg, diastolic = null, measuredAt = at) }
+    }
 
     fun change(transform: (Profile) -> Profile) {
         viewModelScope.launch { profiles.change(transform) }

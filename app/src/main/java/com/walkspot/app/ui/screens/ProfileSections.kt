@@ -24,7 +24,7 @@ import com.walkspot.app.ui.weightText
 enum class ProfileField { Goal, Sex, BirthDate, Height, TargetWeight, TargetPressure, TargetGlucose }
 
 @Composable
-internal fun ProfileBody(state: ProfileState, onEdit: (ProfileField) -> Unit) {
+internal fun ProfileBody(state: ProfileState, onEdit: (ProfileField) -> Unit, onWeigh: () -> Unit) {
     val profile = state.profile
     val notSet = stringResource(R.string.profile_not_set)
     SectionTitle(stringResource(R.string.profile_body), stringResource(R.string.profile_body_note))
@@ -44,11 +44,11 @@ internal fun ProfileBody(state: ProfileState, onEdit: (ProfileField) -> Unit) {
             value = profile.heightCm?.let { stringResource(R.string.profile_cm, it) } ?: notSet,
             onClick = { onEdit(ProfileField.Height) },
         )
-        // The weight is the latest entry of Health: entered in one place, it cannot disagree.
+        // The weight is the latest entry of Health: a tap adds an entry there, so the two cannot disagree.
         ListRow(
             label = stringResource(R.string.profile_weight),
             value = state.weightKg?.let { weightText(it, state.units.weight) } ?: notSet,
-            trailing = {},
+            onClick = onWeigh,
         )
         val pressure = HealthKind.PRESSURE in profile.healthTabs
         val glucose = HealthKind.GLUCOSE in profile.healthTabs

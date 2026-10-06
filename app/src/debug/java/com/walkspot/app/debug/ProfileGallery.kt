@@ -28,6 +28,7 @@ fun ProfileGallery() {
             weightKg = 64.2,
         ),
         onChange = {},
+        onWeight = { _, _ -> },
         onSettings = {},
     )
 }

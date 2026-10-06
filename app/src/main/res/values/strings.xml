@@ -129,6 +129,8 @@
     <string name="health_no_change">No change %s</string>
     <string name="health_systolic_change">%d systolic</string>
     <string name="health_mostly">Mostly %1$s %2$s</string>
+    <string name="health_day_today">today</string>
+    <string name="health_day_yesterday">yesterday</string>
     <string name="health_today_at">Today, %s</string>
     <string name="health_yesterday_at">Yesterday, %s</string>
     <string name="health_mood_walking">Mood and walking</string>

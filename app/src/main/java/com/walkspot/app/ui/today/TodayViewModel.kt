@@ -5,9 +5,12 @@ import androidx.lifecycle.viewModelScope
 import com.walkspot.app.data.account.AccountStore
 import com.walkspot.app.data.account.AuthRefused
 import com.walkspot.app.data.account.AuthRepository
+import com.walkspot.app.data.health.HealthRepository
 import com.walkspot.app.data.local.DailyStepsEntity
+import com.walkspot.app.data.local.HealthKind
 import com.walkspot.app.data.local.WalkDao
 import com.walkspot.app.data.profile.ProfileRepository
+import com.walkspot.app.data.settings.AppSettings
 import com.walkspot.app.data.settings.DistanceUnit
 import com.walkspot.app.data.settings.SettingsStore
 import com.walkspot.app.data.steps.DEFAULT_DAILY_GOAL
@@ -18,12 +21,18 @@ import com.walkspot.app.data.steps.goalMet
 import com.walkspot.app.data.steps.weekOf
 import com.walkspot.app.ui.components.Bar
 import com.walkspot.app.ui.components.BarKind
+import com.walkspot.app.ui.health.HealthTile
+import com.walkspot.app.ui.health.healthCurrent
+import com.walkspot.app.ui.health.healthTargets
+import com.walkspot.app.ui.stats.StatsTab
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
@@ -50,6 +59,9 @@ data class TodayState(
     val activeMinutes: Int = 0,
     val streak: Int = 0,
     val week: List<Bar> = emptyList(),
+    /** The tabs of Health turned on in Profile. */
+    val health: List<HealthTile> = emptyList(),
+    val units: AppSettings = AppSettings(),
 )
 
 @HiltViewModel
@@ -58,6 +70,7 @@ class TodayViewModel @Inject constructor(
     profiles: ProfileRepository,
     settings: SettingsStore,
     walks: WalkDao,
+    health: HealthRepository,
     account: AccountStore,
     auth: AuthRepository,
 ) : ViewModel() {
@@ -71,15 +84,32 @@ class TodayViewModel @Inject constructor(
 
     // The goal of the profile stands in until today has a row of its own.
     private val who = combine(account.user, profiles.profile, settings.value) { user, profile, settings ->
-        Triple(user?.name, profile.dailyGoal, settings.distance)
+        Triple(user?.name, profile.dailyGoal, settings)
+    }
+
+    // One tile for a tab turned on in Profile, with the change of this month, as Health opens.
+    @OptIn(ExperimentalCoroutinesApi::class)
+    private val tiles = profiles.profile.flatMapLatest { profile ->
+        val tabs = HealthKind.entries.filter { it in profile.healthTabs }
+        combine(tabs.map { health.watch(it) }) { entries ->
+            val today = LocalDate.now()
+            val zone = ZoneId.systemDefault()
+            tabs.mapIndexed { index, kind ->
+                val target = profile.healthTargets(kind).firstOrNull()
+                HealthTile(kind, healthCurrent(entries[index], StatsTab.Month, today, target, zone))
+            }
+        }
     }
 
     // Null until the days are read: zeros shown first would jump to the real numbers.
     val state: StateFlow<TodayState?> =
         combine(steps.watchDays(), walkDays, now, access, who) { days, walkDays, now, access, who ->
-            val (name, goal, unit) = who
-            todayState(days, walkDays, now, access, name, goal).copy(distanceUnit = unit)
-        }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(KEEP_AFTER_LEAVING_MS), null)
+            val (name, goal, units) = who
+            val shown = todayState(days, walkDays, now, access, name, goal)
+            shown.copy(distanceUnit = units.distance, units = units)
+        }
+            .combine(tiles) { state, tiles -> state.copy(health = tiles) }
+            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(KEEP_AFTER_LEAVING_MS), null)
 
     init {
         viewModelScope.launch {

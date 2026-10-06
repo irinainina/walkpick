@@ -33,6 +33,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.walkspot.app.R
+import com.walkspot.app.data.local.HealthKind
 import com.walkspot.app.data.profile.Profile
 import com.walkspot.app.ui.compact
 import com.walkspot.app.ui.components.AppCard
@@ -40,10 +41,13 @@ import com.walkspot.app.ui.components.GradientHeader
 import com.walkspot.app.ui.components.IconBadge
 import com.walkspot.app.ui.components.ListRow
 import com.walkspot.app.ui.grouped
+import com.walkspot.app.ui.health.HealthState
 import com.walkspot.app.ui.profile.ProfileState
+import com.walkspot.app.ui.stats.StatsTab
 import com.walkspot.app.ui.theme.AppTheme
 import com.walkspot.app.ui.theme.Sizes
 import com.walkspot.app.ui.theme.Spacing
+import java.time.Instant
 
 // Below the status bar: the frame draws 232 with a status bar of 24.
 private val HeaderHeight = 208.dp
@@ -60,11 +64,13 @@ private val TotalDividerHeight = 40.dp
 fun ProfileScreen(
     state: ProfileState,
     onChange: ((Profile) -> Profile) -> Unit,
+    onWeight: (Double, Instant) -> Unit,
     onSettings: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val statusBar = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
     var editing by rememberSaveable { mutableStateOf<ProfileField?>(null) }
+    var weighing by rememberSaveable { mutableStateOf(false) }
     Box(
         modifier
             .fillMaxSize()
@@ -87,7 +93,7 @@ fun ProfileScreen(
                     },
                 )
             }
-            ProfileBody(state, onEdit = { editing = it })
+            ProfileBody(state, onEdit = { editing = it }, onWeigh = { weighing = true })
             ProfileTabs(state.profile, onChange)
             Spacer(Modifier.height(Spacing.ml))
             AppCard {
@@ -105,6 +111,15 @@ fun ProfileScreen(
     }
     editing?.let { field ->
         ProfileSheet(field, state.profile, state.units, onSave = onChange, onDismiss = { editing = null })
+    }
+    if (weighing) {
+        // The New entry sheet of Health with the weight alone.
+        val weight = HealthKind.WEIGHT
+        NewEntrySheet(
+            state = HealthState(listOf(weight), weight, StatsTab.Month, state.today, units = state.units),
+            onSave = { _, kg, _, at -> onWeight(kg, at) },
+            onDismiss = { weighing = false },
+        )
     }
 }
 

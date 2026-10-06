@@ -1,6 +1,8 @@
 package com.walkspot.app.ui.health
 
 import com.walkspot.app.data.local.HealthEntryEntity
+import com.walkspot.app.data.local.HealthKind
+import com.walkspot.app.data.profile.Profile
 import com.walkspot.app.data.steps.DayRange
 import com.walkspot.app.data.steps.monthOf
 import com.walkspot.app.data.steps.weekOf
@@ -23,6 +25,17 @@ data class HealthCurrent(
     /** Mood only: the mood met most often in the period, the better one of two equally frequent. */
     val usualMood: Int? = null,
 )
+
+/** A tab of Health on the Today card: its latest entry and the change this month, if it has any. */
+data class HealthTile(val kind: HealthKind, val current: HealthCurrent?)
+
+/** The target lines of a chart, the upper one first; the card and the tile compare with the first. */
+internal fun Profile.healthTargets(kind: HealthKind): List<Double> = when (kind) {
+    HealthKind.MOOD -> emptyList()
+    HealthKind.WEIGHT -> listOfNotNull(targetWeightKg)
+    HealthKind.PRESSURE -> listOf(targetSystolic.toDouble(), targetDiastolic.toDouble())
+    HealthKind.GLUCOSE -> listOf(targetGlucose)
+}
 
 /** Health shows the period that holds today; there is nothing to page through. */
 internal fun healthRange(period: StatsTab, today: LocalDate, first: LocalDate): DayRange = when (period) {

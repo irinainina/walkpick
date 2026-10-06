@@ -31,6 +31,7 @@ internal fun NavGraphBuilder.todayRoute(navController: NavHostController, onShow
             onAllowSteps = allowSteps,
             onStartWalk = { navController.navigate(Screen.ActiveWalk.route) },
             onStats = { navController.navigate(Screen.Stats.route) },
+            onHealth = { navController.navigate(Screen.Health.route) },
             onReminders = { navController.navigate(Screen.Settings.route) },
         )
     }

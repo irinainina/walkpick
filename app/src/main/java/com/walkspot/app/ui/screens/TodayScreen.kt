@@ -62,6 +62,7 @@ fun TodayScreen(
     onAllowSteps: () -> Unit,
     onStartWalk: () -> Unit,
     onStats: () -> Unit,
+    onHealth: () -> Unit,
     onReminders: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -96,6 +97,8 @@ fun TodayScreen(
             )
             Spacer(Modifier.height(Spacing.l))
             WeekCard(state.week, onStats)
+            Spacer(Modifier.height(Spacing.ml))
+            HealthCard(state.health, state.units, state.now.toLocalDate(), onHealth)
         }
     }
 }

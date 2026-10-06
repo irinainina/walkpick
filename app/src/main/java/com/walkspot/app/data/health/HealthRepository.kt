@@ -49,6 +49,8 @@ class HealthRepository @Inject constructor(
 ) {
     fun watch(kind: HealthKind): Flow<List<HealthEntryEntity>> = entries.watch(kind)
 
+    fun watchLatest(kind: HealthKind): Flow<Double?> = entries.watchLatest(kind)
+
     /** False when the entry was refused, see [healthEntry]. */
     suspend fun add(kind: HealthKind, value: Double, diastolic: Int?, measuredAt: Instant): Boolean {
         val entry = healthEntry(kind, value, diastolic, measuredAt, Instant.now()) ?: return false

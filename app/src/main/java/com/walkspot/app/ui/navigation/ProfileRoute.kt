@@ -18,6 +18,7 @@ internal fun NavGraphBuilder.profileRoute(navController: NavHostController) {
             ProfileScreen(
                 state = it,
                 onChange = model::change,
+                onWeight = model::addWeight,
                 onSettings = { navController.navigate(Screen.Settings.route) },
             )
         }

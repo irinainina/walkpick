@@ -121,17 +121,29 @@ private fun Reading(entry: HealthEntryEntity, units: AppSettings, modifier: Modi
         Text(title, modifier, style = type.headlineMedium, color = colors.textPrimary)
         return
     }
-    val (number, unit) = when (entry.kind) {
-        HealthKind.WEIGHT -> oneDecimal(entry.value * units.weight.perMetric) to units.weight.symbol
-        HealthKind.GLUCOSE -> glucoseNumber(entry.value, units.glucose) to units.glucose.symbol
-        else -> "${entry.value.roundToInt()}/${entry.diastolic}" to stringResource(R.string.profile_mmhg)
-    }
+    val (number, unit) = readingText(entry, units)
     // The large digits measure a pixel over their line height.
     Row(modifier.height(ReadingHeight), verticalAlignment = Alignment.Bottom) {
         Text(number, style = type.displaySmall, color = colors.textPrimary)
         Spacer(Modifier.width(Spacing.xs))
         Text(unit, Modifier.padding(bottom = UnitLift), style = ParagraphStyle, color = colors.textSecondary)
     }
+}
+
+/** The number of a weight, pressure or glucose entry in the units of Settings, and the unit. */
+@Composable
+internal fun readingText(entry: HealthEntryEntity, units: AppSettings): Pair<String, String> =
+    when (entry.kind) {
+        HealthKind.WEIGHT -> oneDecimal(entry.value * units.weight.perMetric) to units.weight.symbol
+        HealthKind.GLUCOSE -> glucoseNumber(entry.value, units.glucose) to units.glucose.symbol
+        else -> "${entry.value.roundToInt()}/${entry.diastolic}" to stringResource(R.string.profile_mmhg)
+    }
+
+/** The size of a change, written as the reading is, without the unit. */
+internal fun changeText(kind: HealthKind, size: Double, units: AppSettings): String = when (kind) {
+    HealthKind.WEIGHT -> oneDecimal(size * units.weight.perMetric)
+    HealthKind.GLUCOSE -> glucoseNumber(size, units.glucose)
+    else -> size.roundToInt().toString()
 }
 
 /** The line under the reading and whether it is good news; null when the period has nothing to compare. */
@@ -152,16 +164,15 @@ private fun periodNote(current: HealthCurrent, state: HealthState): Pair<String,
     }
     val change = current.change ?: return null
     val size = abs(change)
-    val (amount, none) = when (state.tab) {
-        HealthKind.WEIGHT -> (size * state.units.weight.perMetric).let {
-            "${oneDecimal(it)} ${state.units.weight.symbol}" to (oneDecimal(it) == oneDecimal(0.0))
-        }
-        HealthKind.GLUCOSE -> glucoseNumber(size, state.units.glucose).let {
-            it to (it == glucoseNumber(0.0, state.units.glucose))
-        }
-        else -> stringResource(R.string.health_systolic_change, size.roundToInt()) to (size.roundToInt() == 0)
+    val number = changeText(state.tab, size, state.units)
+    if (number == changeText(state.tab, 0.0, state.units)) {
+        return stringResource(R.string.health_no_change, period) to false
     }
-    if (none) return stringResource(R.string.health_no_change, period) to false
+    val amount = when (state.tab) {
+        HealthKind.WEIGHT -> "$number ${state.units.weight.symbol}"
+        HealthKind.PRESSURE -> stringResource(R.string.health_systolic_change, size.roundToInt())
+        else -> number
+    }
     return "${if (change < 0) "↓" else "↑"} $amount $period" to current.towardTarget
 }
 
