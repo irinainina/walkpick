@@ -4,9 +4,10 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import com.walkspot.app.ui.screens.SignInScreen
 import com.walkspot.app.ui.theme.WalkSpotTheme
 
-/** adb shell am start -n com.walkspot.app/.debug.GalleryActivity [--es page charts] */
+/** adb shell am start -n com.walkspot.app/.debug.GalleryActivity [--es page charts|signin] */
 class GalleryActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -14,7 +15,11 @@ class GalleryActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             WalkSpotTheme {
-                if (intent.getStringExtra("page") == "charts") ChartGallery() else ComponentGallery()
+                when (intent.getStringExtra("page")) {
+                    "charts" -> ChartGallery()
+                    "signin" -> SignInScreen(onGoogle = {}, onEmail = {})
+                    else -> ComponentGallery()
+                }
             }
         }
     }

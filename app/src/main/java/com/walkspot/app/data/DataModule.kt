@@ -5,6 +5,8 @@ import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.preferencesDataStore
 import androidx.room.Room
+import com.walkspot.app.data.account.AuthRepository
+import com.walkspot.app.data.account.SupabaseAuthRepository
 import com.walkspot.app.data.local.PendingDeleteDao
 import com.walkspot.app.data.local.WalkSpotDatabase
 import com.walkspot.app.data.sync.RemoteTables
@@ -45,4 +47,7 @@ object DataModule {
 
     @Provides
     fun remoteTables(remote: SupabaseRemoteTables): RemoteTables = remote
+
+    @Provides
+    fun auth(repository: SupabaseAuthRepository): AuthRepository = repository
 }

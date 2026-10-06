@@ -33,6 +33,11 @@ android {
             "SUPABASE_PUBLISHABLE_KEY",
             "\"${localProperty("supabase.publishableKey")}\"",
         )
+        buildConfigField(
+            "String",
+            "GOOGLE_WEB_CLIENT_ID",
+            "\"${localProperty("google.webClientId")}\"",
+        )
     }
 
     buildTypes {
@@ -105,9 +110,15 @@ dependencies {
     ksp(libs.room.compiler)
 
     implementation(libs.androidx.work.runtime)
+    implementation(libs.androidx.lifecycle.viewmodel.compose)
+
+    implementation(libs.androidx.credentials)
+    implementation(libs.androidx.credentials.play.services)
+    implementation(libs.googleid)
 
     implementation(libs.hilt.android)
     implementation(libs.hilt.work)
+    implementation(libs.hilt.navigation.compose)
     ksp(libs.hilt.compiler)
     ksp(libs.androidx.hilt.compiler)
 

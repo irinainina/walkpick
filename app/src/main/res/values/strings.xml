@@ -15,4 +15,24 @@
     <string name="screen_find_card">Find card</string>
     <string name="screen_photo_viewer">Photo viewer</string>
     <string name="screen_settings">Settings</string>
+    <string name="sign_in_tagline">Step. Snap. See.</string>
+    <string name="sign_in_google">Continue with Google</string>
+    <string name="sign_in_email">Continue with email</string>
+    <string name="sign_in_email_hint">We\'ll email you a code. No password needed.</string>
+    <string name="sign_in_legal">By continuing you agree to the Terms and Privacy Policy</string>
+    <string name="auth_email_title">Your email</string>
+    <string name="auth_email_label">Email address</string>
+    <string name="auth_send_code">Send code</string>
+    <string name="auth_email_invalid">Please enter a valid email address</string>
+    <string name="auth_code_title">Check your email</string>
+    <string name="auth_code_subtitle">Enter the 6-digit code sent to %1$s</string>
+    <string name="auth_code_label">Six-digit code</string>
+    <string name="auth_code_wrong">That code didn\'t work. Try again or ask for a new one.</string>
+    <string name="auth_code_slow">The email can take a couple of minutes. A new code replaces the one before it.</string>
+    <string name="auth_resend">Resend code</string>
+    <string name="auth_resend_in">Resend code in %1$d s</string>
+    <string name="auth_offline">No internet connection. Check it and try again.</string>
+    <string name="auth_no_answer">The server didn\'t answer. Try again.</string>
+    <string name="auth_too_often">Too many codes asked for. Wait a minute.</string>
+    <string name="auth_no_google">Google didn\'t sign you in. Use the email code instead.</string>
 </resources>
