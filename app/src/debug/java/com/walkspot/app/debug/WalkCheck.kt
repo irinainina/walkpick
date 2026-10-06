@@ -1,6 +1,7 @@
 package com.walkspot.app.debug
 
 import android.Manifest
+import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
@@ -66,8 +67,14 @@ fun WalkCheck() {
 
     Column(Modifier.safeDrawingPadding().padding(16.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
         Text(report)
-        val needed = arrayOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.POST_NOTIFICATIONS)
-        AppButton("Allow", onClick = { ask.launch(needed) })
+        AppButton("Allow", onClick = {
+            val location = Manifest.permission.ACCESS_FINE_LOCATION
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                ask.launch(arrayOf(location, Manifest.permission.POST_NOTIFICATIONS))
+            } else {
+                ask.launch(arrayOf(location))
+            }
+        })
         AppButton("Start", onClick = { graph.control().start() })
         AppButton(
             text = if (track?.paused == true) "Resume" else "Pause",

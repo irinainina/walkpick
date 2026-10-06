@@ -9,6 +9,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.content.pm.ServiceInfo
+import android.os.Build
 import android.os.IBinder
 import android.os.Looper
 import androidx.core.app.NotificationCompat
@@ -65,12 +66,13 @@ class WalkService : Service() {
             stopSelf()
             return START_NOT_STICKY
         }
-        ServiceCompat.startForeground(
-            this,
-            NOTIFICATION_ID,
-            notification(),
-            ServiceInfo.FOREGROUND_SERVICE_TYPE_LOCATION,
-        )
+        // Android 10 and later want to be told what the service is for.
+        val type = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            ServiceInfo.FOREGROUND_SERVICE_TYPE_LOCATION
+        } else {
+            0
+        }
+        ServiceCompat.startForeground(this, NOTIFICATION_ID, notification(), type)
         recorder.start(Instant.now())
         locations = LocationServices.getFusedLocationProviderClient(this)
         val request = LocationRequest.Builder(Priority.PRIORITY_HIGH_ACCURACY, UPDATE_MS)

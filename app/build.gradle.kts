@@ -69,8 +69,6 @@ android {
             "PropertyEscape",
             // The app speaks English on any phone, and plurals would follow the phone's language.
             "PluralsCandidate",
-            // The launcher icon comes with stage 5; remove this line then.
-            "MissingApplicationIcon",
         )
     }
 

@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The gradient of the app header behind the launcher icon. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <path android:pathData="M0 0H108V108H0Z">
+        <aapt:attr name="android:fillColor">
+            <gradient
+                android:endColor="#13F1FC"
+                android:endX="108"
+                android:endY="54"
+                android:startColor="#0470DC"
+                android:startX="0"
+                android:startY="54"
+                android:type="linear" />
+        </aapt:attr>
+    </path>
+</vector>
