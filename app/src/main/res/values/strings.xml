@@ -117,6 +117,9 @@
     <string name="health_pressure">Pressure</string>
     <string name="health_glucose">Glucose</string>
     <string name="health_new_entry">New entry</string>
+    <string name="walk_channel">Walk recording</string>
+    <string name="walk_notification_title">Walk in progress</string>
+    <string name="walk_notification_text">WalkSpot is recording your route</string>
     <string name="health_how_feel">How do you feel?</string>
     <string name="health_date_time">Date and time</string>
     <string name="health_lower_wrong">Lower than systolic</string>

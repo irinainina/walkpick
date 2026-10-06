@@ -38,6 +38,8 @@ android {
             "GOOGLE_WEB_CLIENT_ID",
             "\"${localProperty("google.webClientId")}\"",
         )
+        // The Maps SDK reads its key from the manifest.
+        manifestPlaceholders["mapsKey"] = localProperty("maps.key")
     }
 
     buildTypes {
@@ -118,6 +120,9 @@ dependencies {
     implementation(libs.androidx.credentials)
     implementation(libs.androidx.credentials.play.services)
     implementation(libs.googleid)
+
+    implementation(libs.maps.compose)
+    implementation(libs.play.services.location)
 
     implementation(libs.hilt.android)
     implementation(libs.hilt.work)

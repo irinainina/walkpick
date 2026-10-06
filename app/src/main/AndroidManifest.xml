@@ -15,6 +15,12 @@
         android:name="android.hardware.sensor.stepcounter"
         android:required="false" />
 
+    <!-- The route of a walk; the service keeps receiving the location after the screen is left. -->
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_LOCATION" />
+
     <application
         android:name=".WalkSpotApplication"
         android:allowBackup="false"
@@ -32,6 +38,15 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <service
+            android:name=".data.walk.WalkService"
+            android:exported="false"
+            android:foregroundServiceType="location" />
+
+        <meta-data
+            android:name="com.google.android.geo.API_KEY"
+            android:value="${mapsKey}" />
 
         <!-- WorkManager is started by WalkSpotApplication, so workers get Hilt dependencies. -->
         <provider

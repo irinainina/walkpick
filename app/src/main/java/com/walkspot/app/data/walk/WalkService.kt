@@ -1,0 +1,128 @@
+package com.walkspot.app.data.walk
+
+import android.Manifest
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.app.PendingIntent
+import android.app.Service
+import android.content.Context
+import android.content.Intent
+import android.content.pm.PackageManager
+import android.content.pm.ServiceInfo
+import android.os.IBinder
+import android.os.Looper
+import androidx.core.app.NotificationCompat
+import androidx.core.app.NotificationManagerCompat
+import androidx.core.app.ServiceCompat
+import androidx.core.content.ContextCompat
+import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.location.LocationCallback
+import com.google.android.gms.location.LocationRequest
+import com.google.android.gms.location.LocationResult
+import com.google.android.gms.location.LocationServices
+import com.google.android.gms.location.Priority
+import com.walkspot.app.MainActivity
+import com.walkspot.app.R
+import dagger.hilt.android.AndroidEntryPoint
+import dagger.hilt.android.qualifiers.ApplicationContext
+import java.time.Instant
+import javax.inject.Inject
+
+private const val CHANNEL_ID = "walk_recording"
+private const val NOTIFICATION_ID = 2
+
+// A walker moves a few metres in this time; asking more often only costs battery.
+private const val UPDATE_MS = 2_000L
+private const val FASTEST_UPDATE_MS = 1_000L
+
+/**
+ * Listens to GPS while a walk is recorded. A foreground service with a notification: Android stops
+ * giving the location to an app that has left the screen without one.
+ */
+@AndroidEntryPoint
+class WalkService : Service() {
+
+    @Inject
+    lateinit var recorder: WalkRecorder
+
+    private lateinit var locations: FusedLocationProviderClient
+
+    private val listener = object : LocationCallback() {
+        override fun onLocationResult(result: LocationResult) {
+            result.locations.forEach {
+                val at = Instant.ofEpochMilli(it.time)
+                recorder.report(TrackPoint(it.latitude, it.longitude, at, it.accuracy))
+            }
+        }
+    }
+
+    override fun onBind(intent: Intent?): IBinder? = null
+
+    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        val allowed = ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) ==
+            PackageManager.PERMISSION_GRANTED
+        if (!allowed) {
+            stopSelf()
+            return START_NOT_STICKY
+        }
+        ServiceCompat.startForeground(
+            this,
+            NOTIFICATION_ID,
+            notification(),
+            ServiceInfo.FOREGROUND_SERVICE_TYPE_LOCATION,
+        )
+        recorder.start(Instant.now())
+        locations = LocationServices.getFusedLocationProviderClient(this)
+        val request = LocationRequest.Builder(Priority.PRIORITY_HIGH_ACCURACY, UPDATE_MS)
+            .setMinUpdateIntervalMillis(FASTEST_UPDATE_MS)
+            .build()
+        locations.requestLocationUpdates(request, listener, Looper.getMainLooper())
+        return START_STICKY
+    }
+
+    override fun onDestroy() {
+        if (::locations.isInitialized) locations.removeLocationUpdates(listener)
+        super.onDestroy()
+    }
+
+    private fun notification() = NotificationCompat.Builder(this, channel())
+        .setSmallIcon(R.drawable.ic_logo_mark)
+        .setContentTitle(getString(R.string.walk_notification_title))
+        .setContentText(getString(R.string.walk_notification_text))
+        .setOngoing(true)
+        .setContentIntent(
+            PendingIntent.getActivity(
+                this,
+                0,
+                Intent(this, MainActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP),
+                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
+            ),
+        )
+        .build()
+
+    // Android keeps the channel once it exists. Low importance: the notification is there, but silent.
+    private fun channel(): String {
+        val manager = NotificationManagerCompat.from(this)
+        if (manager.getNotificationChannel(CHANNEL_ID) == null) {
+            val name = getString(R.string.walk_channel)
+            val channel = NotificationChannel(CHANNEL_ID, name, NotificationManager.IMPORTANCE_LOW)
+            manager.createNotificationChannel(channel)
+        }
+        return CHANNEL_ID
+    }
+}
+
+/** Starts and stops the recording from the screens. */
+class WalkControl @Inject constructor(
+    @ApplicationContext private val context: Context,
+    private val recorder: WalkRecorder,
+) {
+    /** The location permission must be granted already; without it the service ends at once. */
+    fun start() = ContextCompat.startForegroundService(context, Intent(context, WalkService::class.java))
+
+    /** Stops listening to GPS and returns the walk as it was recorded. */
+    fun stop(): WalkTrack? {
+        context.stopService(Intent(context, WalkService::class.java))
+        return recorder.finish()
+    }
+}
