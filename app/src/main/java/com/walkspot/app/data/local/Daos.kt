@@ -27,6 +27,9 @@ interface DailyStepsDao : SyncedDao<DailyStepsEntity> {
 
     @Query("UPDATE daily_steps SET synced = 1 WHERE day = :day AND updatedAt = :updatedAt")
     suspend fun markSynced(day: LocalDate, updatedAt: Instant)
+
+    @Query("SELECT * FROM daily_steps WHERE day >= :from ORDER BY day")
+    suspend fun since(from: LocalDate): List<DailyStepsEntity>
 }
 
 @Dao

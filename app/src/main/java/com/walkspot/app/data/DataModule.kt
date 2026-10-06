@@ -7,6 +7,7 @@ import androidx.datastore.preferences.preferencesDataStore
 import androidx.room.Room
 import com.walkspot.app.data.account.AuthRepository
 import com.walkspot.app.data.account.SupabaseAuthRepository
+import com.walkspot.app.data.local.DailyStepsDao
 import com.walkspot.app.data.local.PendingDeleteDao
 import com.walkspot.app.data.local.WalkSpotDatabase
 import com.walkspot.app.data.sync.RemoteTables
@@ -40,6 +41,9 @@ object DataModule {
 
     @Provides
     fun pendingDeletes(database: WalkSpotDatabase): PendingDeleteDao = database.pendingDeletes()
+
+    @Provides
+    fun dailySteps(database: WalkSpotDatabase): DailyStepsDao = database.dailySteps()
 
     @Provides
     fun tables(database: WalkSpotDatabase): List<@JvmSuppressWildcards SyncedTable<*>> =

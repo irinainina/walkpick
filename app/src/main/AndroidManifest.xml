@@ -6,6 +6,12 @@
     <!-- Tells a closed Google chooser from a phone with no network. -->
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
+    <!-- Steps come from the phone's own step sensor. -->
+    <uses-permission android:name="android.permission.ACTIVITY_RECOGNITION" />
+    <uses-feature
+        android:name="android.hardware.sensor.stepcounter"
+        android:required="false" />
+
     <application
         android:name=".WalkSpotApplication"
         android:allowBackup="false"

@@ -31,7 +31,7 @@ private const val TAG = "SyncCheck"
 /**
  * Runs the sync on a phone without any screen:
  * adb shell am broadcast -n com.walkspot.app/.debug.SyncCheckReceiver --es cmd <command>
- * Commands: signin, seed, remove, wipe, restore, dump.
+ * Commands: signin, seed, push, remove, wipe, restore, dump.
  * signin also takes --es email and --es password of a test account.
  */
 class SyncCheckReceiver : BroadcastReceiver() {
@@ -75,6 +75,10 @@ class SyncCheckReceiver : BroadcastReceiver() {
                 seed(database)
                 graph.scheduler().pushSoon()
                 Log.i(TAG, "seeded, push queued")
+            }
+            "push" -> {
+                graph.scheduler().pushSoon()
+                Log.i(TAG, "push queued")
             }
             "remove" -> {
                 val walk = database.walks().unsynced().firstOrNull()?.id ?: SEEDED_WALK
