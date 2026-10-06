@@ -59,23 +59,22 @@ fun monthlyAverages(days: List<DailyStepsEntity>, range: DayRange, today: LocalD
         .map { MonthAverage(it, stepsStats(days, monthOf(it), today).averageSteps) }
         .toList()
 
-// Today does not break a streak until it is over.
-fun currentStreak(days: List<DailyStepsEntity>, today: LocalDate): Int {
-    val met = days.filter { it.goalMet }.map { it.day }.toSet()
-    var day = if (today in met) today else today.minusDays(1)
+// A streak is days in a row with a recorded walk; today does not break it until it is over.
+fun currentStreak(walkDays: Set<LocalDate>, today: LocalDate): Int {
+    var day = if (today in walkDays) today else today.minusDays(1)
     var streak = 0
-    while (day in met) {
+    while (day in walkDays) {
         streak++
         day = day.minusDays(1)
     }
     return streak
 }
 
-fun longestStreak(days: List<DailyStepsEntity>): Int {
+fun longestStreak(walkDays: Set<LocalDate>): Int {
     var longest = 0
     var run = 0
     var previous: LocalDate? = null
-    days.filter { it.goalMet }.map { it.day }.sortedBy { it.toEpochDay() }.forEach { day ->
+    walkDays.sortedBy { it.toEpochDay() }.forEach { day ->
         run = if (previous?.plusDays(1) == day) run + 1 else 1
         longest = maxOf(longest, run)
         previous = day

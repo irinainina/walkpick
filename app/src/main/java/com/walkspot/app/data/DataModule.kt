@@ -9,6 +9,7 @@ import com.walkspot.app.data.account.AuthRepository
 import com.walkspot.app.data.account.SupabaseAuthRepository
 import com.walkspot.app.data.local.DailyStepsDao
 import com.walkspot.app.data.local.PendingDeleteDao
+import com.walkspot.app.data.local.WalkDao
 import com.walkspot.app.data.local.WalkSpotDatabase
 import com.walkspot.app.data.sync.RemoteTables
 import com.walkspot.app.data.sync.SupabaseRemoteTables
@@ -44,6 +45,9 @@ object DataModule {
 
     @Provides
     fun dailySteps(database: WalkSpotDatabase): DailyStepsDao = database.dailySteps()
+
+    @Provides
+    fun walks(database: WalkSpotDatabase): WalkDao = database.walks()
 
     @Provides
     fun tables(database: WalkSpotDatabase): List<@JvmSuppressWildcards SyncedTable<*>> =

@@ -40,6 +40,9 @@ private fun bold(size: Int, lineHeight: Int) = style(Cabin, FontWeight.Bold, siz
 
 private fun regular(size: Int, lineHeight: Int) = style(Cabin, FontWeight.Normal, size, lineHeight)
 
+/** A line of running text, taller than the list-row bodyLarge. */
+val ParagraphStyle = regular(16, 24)
+
 // Names follow Material 3 slots, values come from the Figma frames
 val AppTypography = Typography(
     displayMedium = heading(36, 44),

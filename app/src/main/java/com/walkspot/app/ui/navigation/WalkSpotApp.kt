@@ -35,7 +35,8 @@ fun WalkSpotApp(signedIn: Boolean) {
         val start = if (signedIn) Screen.Today else Screen.SignIn
         NavHost(navController, startDestination = start.route, modifier = Modifier.weight(1f)) {
             signInRoutes(navController, auth)
-            (Screen.entries - Screen.SignIn).forEach { screen ->
+            todayRoute(navController)
+            (Screen.entries - Screen.SignIn - Screen.Today).forEach { screen ->
                 composable(screen.route) {
                     PlaceholderScreen(
                         title = stringResource(screen.titleRes),

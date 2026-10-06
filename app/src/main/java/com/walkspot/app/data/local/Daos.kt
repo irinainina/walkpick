@@ -6,6 +6,7 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Upsert
+import kotlinx.coroutines.flow.Flow
 import java.time.Instant
 import java.time.LocalDate
 
@@ -30,6 +31,9 @@ interface DailyStepsDao : SyncedDao<DailyStepsEntity> {
 
     @Query("SELECT * FROM daily_steps WHERE day >= :from ORDER BY day")
     suspend fun since(from: LocalDate): List<DailyStepsEntity>
+
+    @Query("SELECT * FROM daily_steps ORDER BY day")
+    fun watchAll(): Flow<List<DailyStepsEntity>>
 }
 
 @Dao
@@ -39,6 +43,9 @@ interface WalkDao : SyncedDao<WalkEntity> {
 
     @Query("UPDATE walks SET synced = 1 WHERE id = :id AND updatedAt = :updatedAt")
     suspend fun markSynced(id: String, updatedAt: Instant)
+
+    @Query("SELECT startedAt FROM walks")
+    fun watchStarts(): Flow<List<Instant>>
 }
 
 @Dao

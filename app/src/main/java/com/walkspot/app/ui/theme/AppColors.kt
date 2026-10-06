@@ -4,8 +4,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.runtime.staticCompositionLocalOf
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.LinearGradientShader
+import androidx.compose.ui.graphics.Shader
+import androidx.compose.ui.graphics.ShaderBrush
 
 @Immutable
 data class AppColors(
@@ -17,8 +22,12 @@ data class AppColors(
     /** The light end of the gradient: the latest point of a chart. */
     val accentLight: Color,
     val onAccent: Color,
+    /** The ground of a round button standing on the gradient. */
+    val onAccentOverlay: Color,
     /** The header and the main buttons. */
     val accentGradient: Brush,
+    /** The same gradient turned 45 degrees: the steps ring. */
+    val accentDiagonal: Brush,
     val canvas: Color,
     val surface: Color,
     /** A chart track and anything inactive. */
@@ -29,9 +38,22 @@ data class AppColors(
     /** The dimmed screen under a sheet. */
     val scrim: Color,
     val streak: Color,
+    /** The badge behind a streak or notice icon. */
+    val streakTint: Color,
     val positive: Color,
     val danger: Color,
 )
+
+// Figma turns the gradient inside the box of the node: the colour is 0.7 * (x / width + y / height).
+private const val DIAGONAL_SCALE = 0.7f
+
+private class DiagonalGradient(private val colors: List<Color>) : ShaderBrush() {
+    override fun createShader(size: Size): Shader {
+        val squares = size.width * size.width + size.height * size.height
+        val reach = size.width * size.height / (DIAGONAL_SCALE * squares.coerceAtLeast(1f))
+        return LinearGradientShader(Offset.Zero, Offset(size.height * reach, size.width * reach), colors)
+    }
+}
 
 internal val walkSpotColors = AppColors(
     textPrimary = Ink,
@@ -40,7 +62,9 @@ internal val walkSpotColors = AppColors(
     accent = Blue,
     accentLight = Cyan,
     onAccent = White,
+    onAccentOverlay = White.copy(alpha = 0.2f),
     accentGradient = Brush.horizontalGradient(listOf(Blue, Cyan)),
+    accentDiagonal = DiagonalGradient(listOf(Blue, Cyan)),
     canvas = Canvas,
     surface = White,
     surfaceTint = PaleBlue,
@@ -48,6 +72,7 @@ internal val walkSpotColors = AppColors(
     divider = Line,
     scrim = Ink.copy(alpha = 0.48f),
     streak = Orange,
+    streakTint = Peach,
     positive = Green,
     danger = Red,
 )

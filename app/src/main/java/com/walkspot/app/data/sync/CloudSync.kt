@@ -19,9 +19,10 @@ class CloudSync @Inject constructor(
         tables.forEach { it.push(remote) }
     }
 
-    // For a phone that has just been signed in on.
+    // For a phone that has just been signed in on; what it gathered before that goes up at once.
     suspend fun restore() {
         if (!remote.isSignedIn()) return
         tables.forEach { it.pull(remote) }
+        push()
     }
 }

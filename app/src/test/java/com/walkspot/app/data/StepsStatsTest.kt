@@ -71,24 +71,23 @@ class StepsStatsTest {
         assertEquals(expected, monthlyAverages(days, range, today))
     }
 
+    private fun walked(vararg dates: String) = dates.map { LocalDate.parse("2026-09-$it") }.toSet()
+
     @Test
     fun todayDoesNotBreakAStreakUntilItIsOver() {
-        val days = listOf(day("2026-09-28", 10000), day("2026-09-29", 11000), day("2026-09-30", 300))
-        assertEquals(2, currentStreak(days, today))
-        assertEquals(3, currentStreak(days.dropLast(1) + day("2026-09-30", 10000), today))
+        assertEquals(2, currentStreak(walked("28", "29"), today))
+        assertEquals(3, currentStreak(walked("28", "29", "30"), today))
     }
 
     @Test
-    fun aMissedDayEndsTheStreak() {
-        val days = listOf(day("2026-09-27", 10000), day("2026-09-28", 9999), day("2026-09-29", 10000))
-        assertEquals(1, currentStreak(days, today))
-        assertEquals(0, currentStreak(days.dropLast(1), today))
+    fun aDayWithoutAWalkEndsTheStreak() {
+        assertEquals(1, currentStreak(walked("27", "29"), today))
+        assertEquals(0, currentStreak(walked("27", "28"), today))
     }
 
     @Test
     fun theLongestStreakIsFoundAnywhere() {
-        val days = listOf("01", "02", "03", "05", "06", "20").map { day("2026-09-$it", 10000) }
-        assertEquals(3, longestStreak(days))
-        assertEquals(0, longestStreak(emptyList()))
+        assertEquals(3, longestStreak(walked("01", "02", "03", "05", "06", "20")))
+        assertEquals(0, longestStreak(emptySet()))
     }
 }

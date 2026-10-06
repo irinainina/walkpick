@@ -21,8 +21,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.ColorFilter
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
@@ -31,12 +29,12 @@ import androidx.compose.ui.unit.dp
 import com.walkspot.app.R
 import com.walkspot.app.ui.components.AppButton
 import com.walkspot.app.ui.components.AppButtonStyle
+import com.walkspot.app.ui.components.GradientHeader
 import com.walkspot.app.ui.theme.AppTheme
 import com.walkspot.app.ui.theme.Spacing
 
 // Below the status bar: the frame draws 312 with a status bar of 24.
 private val HeaderHeight = 288.dp
-private val WaveHeight = 72.dp
 private val LogoTop = 32.dp
 private val LogoSize = 64.dp
 private val IllustrationHeight = 260.dp
@@ -120,12 +118,7 @@ fun SignInScreen(
 @Composable
 private fun Header(statusBar: Dp) {
     val colors = AppTheme.colors
-    Box(
-        Modifier
-            .fillMaxWidth()
-            .height(statusBar + HeaderHeight)
-            .background(colors.accentGradient),
-    ) {
+    GradientHeader(statusBar + HeaderHeight) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
@@ -151,15 +144,5 @@ private fun Header(statusBar: Dp) {
                 color = colors.onAccent,
             )
         }
-        Image(
-            painter = painterResource(R.drawable.bg_wave),
-            contentDescription = null,
-            modifier = Modifier
-                .align(Alignment.BottomCenter)
-                .fillMaxWidth()
-                .height(WaveHeight),
-            contentScale = ContentScale.FillBounds,
-            colorFilter = ColorFilter.tint(colors.canvas),
-        )
     }
 }

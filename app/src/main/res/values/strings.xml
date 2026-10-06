@@ -35,4 +35,26 @@
     <string name="auth_no_answer">The server didn\'t answer. Try again.</string>
     <string name="auth_too_often">Too many codes asked for. Wait a minute.</string>
     <string name="auth_no_google">Google didn\'t sign you in. Use the email code instead.</string>
+    <string name="today_morning">Good morning</string>
+    <string name="today_afternoon">Good afternoon</string>
+    <string name="today_evening">Good evening</string>
+    <string name="today_greeting_name">%1$s, %2$s</string>
+    <string name="today_reminders">Reminders</string>
+    <string name="today_of_steps">of %1$s steps</string>
+    <string name="today_km">%1$s km</string>
+    <string name="today_min">%1$d min</string>
+    <string name="today_distance">Distance</string>
+    <string name="today_active_time">Active time</string>
+    <plurals name="today_streak">
+        <item quantity="one">%1$d day in a row</item>
+        <item quantity="other">%1$d days in a row</item>
+    </plurals>
+    <string name="today_streak_none">Start a streak today</string>
+    <string name="today_streak_hint">Any walk keeps the streak going</string>
+    <string name="today_start_walk">Start walk</string>
+    <string name="today_week">This week</string>
+    <string name="today_no_steps">Steps aren\'t being counted</string>
+    <string name="today_no_permission">Allow access to physical activity</string>
+    <string name="today_no_sensor">This phone has no step sensor</string>
+    <string name="today_allow">Allow</string>
 </resources>

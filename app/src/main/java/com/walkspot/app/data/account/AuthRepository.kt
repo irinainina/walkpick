@@ -16,11 +16,14 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
+import kotlinx.serialization.json.contentOrNull
+import kotlinx.serialization.json.jsonPrimitive
 import java.io.IOException
 import java.nio.channels.UnresolvedAddressException
 import javax.inject.Inject
 
-data class AccountUser(val id: String, val email: String)
+// [name] is the first name Google gave; a sign-in by email code has none.
+data class AccountUser(val id: String, val email: String, val name: String? = null)
 
 /** Signing in. Everything here can fail with [AuthRefused]. */
 interface AuthRepository {
@@ -47,7 +50,12 @@ class SupabaseAuthRepository @Inject constructor(
 
     override suspend fun currentUser(): AccountUser? {
         if (!supabase.isConfigured) return null
-        return onServer { auth.currentUserOrNull()?.let { AccountUser(it.id, it.email.orEmpty()) } }
+        return onServer {
+            auth.currentUserOrNull()?.let { user ->
+                val name = user.userMetadata?.get("full_name")?.jsonPrimitive?.contentOrNull
+                AccountUser(user.id, user.email.orEmpty(), name?.substringBefore(' ')?.ifBlank { null })
+            }
+        }
     }
 
     override suspend fun sendCode(email: String) = onServer {

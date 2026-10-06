@@ -8,6 +8,7 @@ import androidx.datastore.preferences.core.longPreferencesKey
 import com.walkspot.app.data.local.DailyStepsDao
 import com.walkspot.app.data.local.DailyStepsEntity
 import com.walkspot.app.data.sync.SyncScheduler
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import java.time.Duration
 import java.time.Instant
@@ -30,6 +31,8 @@ class StepsRepository @Inject constructor(
     private val sync: SyncScheduler,
 ) {
     fun access(): StepsAccess = counter.access()
+
+    fun watchDays(): Flow<List<DailyStepsEntity>> = days.watchAll()
 
     // Adds the steps walked since the last reading to their days; false when steps cannot be read.
     suspend fun refresh(): Boolean {

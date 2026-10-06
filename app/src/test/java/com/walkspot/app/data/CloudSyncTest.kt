@@ -133,6 +133,17 @@ class CloudSyncTest {
         assertTrue(phone.rows.all { it.synced })
     }
 
+    @Test
+    fun rowsGatheredBeforeSigningInAreSentRightAfterTheRestore() = runTest {
+        val remote = FakeRemote()
+        val phone = Phone("walks", count = 2)
+
+        CloudSync(remote, listOf(phone.table), FakeDeletes()).restore()
+
+        assertEquals(listOf("page walks 0", "upsert walks 2"), remote.calls)
+        assertTrue(phone.rows.all { it.synced })
+    }
+
     private companion object {
         fun entry(id: String) =
             HealthEntryEntity(id, HealthKind.WEIGHT, Instant.parse("2026-10-06T08:00:00Z"), 64.2)
