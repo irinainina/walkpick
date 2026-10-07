@@ -46,6 +46,7 @@ fun WalkSpotApp(signedIn: Boolean, walkAsked: Int, onStartShown: () -> Unit) {
             walkSummaryRoute(navController)
             cameraRoute(navController)
             findCardRoute(navController)
+            placeCardRoute(navController)
             mapRoute(navController)
             profileRoute(navController)
             settingsRoute(navController)

@@ -27,6 +27,7 @@ import com.google.maps.android.compose.MarkerComposable
 import com.google.maps.android.compose.rememberCameraPositionState
 import com.google.maps.android.compose.rememberUpdatedMarkerState
 import com.walkspot.app.R
+import com.walkspot.app.data.places.Place
 import com.walkspot.app.ui.components.CircleButton
 import com.walkspot.app.ui.components.MeDot
 import com.walkspot.app.ui.components.PaleRouteLine
@@ -54,6 +55,7 @@ fun MapScreen(
     state: MapState,
     onTab: (MapTab) -> Unit,
     onLook: (Double, Double) -> Unit,
+    onPlace: (Place) -> Unit,
     onLocate: () -> Unit,
     onWalk: (String) -> Unit,
     modifier: Modifier = Modifier,
@@ -66,7 +68,7 @@ fun MapScreen(
             .background(AppTheme.colors.canvas),
     ) {
         if (state.tab == MapTab.Map) {
-            RoutesMap(state, onLook, onLocate, PaddingValues(top = underSwitch))
+            RoutesMap(state, onLook, onPlace, onLocate, PaddingValues(top = underSwitch))
         } else {
             val content = PaddingValues(Spacing.ml, underSwitch + Spacing.ml, Spacing.ml, Spacing.l)
             DiaryList(state, onWalk, content)
@@ -88,6 +90,7 @@ fun MapScreen(
 private fun RoutesMap(
     state: MapState,
     onLook: (Double, Double) -> Unit,
+    onPlace: (Place) -> Unit,
     onLocate: () -> Unit,
     covered: PaddingValues,
 ) {
@@ -123,7 +126,10 @@ private fun RoutesMap(
                     MarkerComposable(
                         state = rememberUpdatedMarkerState(LatLng(place.latitude, place.longitude)),
                         anchor = centre,
-                        title = place.title,
+                        onClick = {
+                            onPlace(place)
+                            true
+                        },
                     ) { UnvisitedPlacePin() }
                 }
             }

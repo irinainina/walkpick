@@ -23,6 +23,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.walkspot.app.R
+import com.walkspot.app.data.local.FindKind
 import com.walkspot.app.ui.components.AppButton
 import com.walkspot.app.ui.components.AppButtonStyle
 import com.walkspot.app.ui.components.AppSheet
@@ -47,10 +48,16 @@ fun FindCardScreen(
     onBest: () -> Unit,
     onDelete: () -> Unit,
     onWalk: (String) -> Unit,
+    onChoose: (Int) -> Unit,
+    onRename: (String) -> Unit,
+    /** Asks the services again, as the given kind when the find was unknown. */
+    onRetry: (FindKind?) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val colors = AppTheme.colors
     var deleting by rememberSaveable { mutableStateOf(false) }
+    var renaming by rememberSaveable { mutableStateOf(false) }
+    var asking by rememberSaveable { mutableStateOf(false) }
     Box(
         modifier
             .fillMaxSize()
@@ -83,12 +90,36 @@ fun FindCardScreen(
         FindCardBody(
             state = state,
             onWalk = onWalk,
+            onNotThis = { renaming = true },
+            onName = onRename,
+            // An unknown find has lost its kind: the walker says again what it is.
+            onRetry = { if (state.find.kind == FindKind.UNKNOWN) asking = true else onRetry(null) },
             modifier = Modifier
                 .padding(top = PhotoHeight - SheetOverlap)
                 .fillMaxWidth()
                 .background(colors.surface, SheetShape)
                 .navigationBarsPadding(),
         )
+    }
+    if (renaming) {
+        NotThisSheet(
+            find = state.find,
+            onDismiss = { renaming = false },
+            onChoose = {
+                onChoose(it)
+                renaming = false
+            },
+            onRename = {
+                onRename(it)
+                renaming = false
+            },
+        )
+    }
+    if (asking) {
+        KindSheet(onDismiss = { asking = false }) {
+            onRetry(it)
+            asking = false
+        }
     }
     if (deleting) {
         AppSheet(stringResource(R.string.find_delete_title), onDismiss = { deleting = false }) {

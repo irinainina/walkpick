@@ -26,6 +26,7 @@ class FindStore @Inject constructor(
     private val sync: SyncScheduler,
     private val photos: PhotoStore,
     private val remote: RemoteTables,
+    private val identifier: FindIdentifier,
 ) {
     private fun drafted(id: String) = recorder.track.value?.finds?.firstOrNull { it.id == id }
 
@@ -44,6 +45,13 @@ class FindStore @Inject constructor(
         val saved = finds.get(id) ?: return
         finds.save(listOf(transform(saved).copy(updatedAt = Instant.now(), synced = false)))
         sync.pushSoon()
+    }
+
+    /** Asks the services for the name and the description the find still lacks. */
+    suspend fun identify(id: String) {
+        val find = drafted(id) ?: finds.get(id) ?: return
+        val better = identifier.identified(find)
+        if (better != find) change(id) { better }
     }
 
     /** Removes the find and its photo from the phone at once, from the server with the next sync. */

@@ -1,6 +1,7 @@
 package com.walkspot.app.debug
 
 import androidx.compose.runtime.Composable
+import com.walkspot.app.data.local.FindAlternative
 import com.walkspot.app.data.local.FindEntity
 import com.walkspot.app.data.local.FindKind
 import com.walkspot.app.data.local.WalkEntity
@@ -25,7 +26,20 @@ private val yarrow = FindEntity(
     description = "A hardy wildflower with flat clusters of tiny white flowers. It grows in meadows and " +
         "along paths and blooms from June to September.",
     wikipediaUrl = "https://en.wikipedia.org/wiki/Achillea_millefolium",
+    alternatives = listOf(
+        FindAlternative("Sneezewort", "Achillea ptarmica", 0.04f),
+        FindAlternative("Oxeye daisy", "Leucanthemum vulgare", 0.02f),
+    ),
     updatedAt = taken,
+)
+
+private val nameless = yarrow.copy(
+    kind = FindKind.UNKNOWN,
+    name = null,
+    latinName = null,
+    match = null,
+    description = null,
+    wikipediaUrl = null,
 )
 
 private val walk = WalkEntity(
@@ -40,6 +54,15 @@ private val walk = WalkEntity(
 
 /** The card of a find with the data of the Figma frame, for the comparison with the design. */
 @Composable
-fun FindCardGallery() {
-    FindCardScreen(FindCardState(yarrow, walk = walk), onBack = {}, onBest = {}, onDelete = {}, onWalk = {})
+fun FindCardGallery(unknown: Boolean) {
+    FindCardScreen(
+        state = FindCardState(if (unknown) nameless else yarrow, walk = walk),
+        onBack = {},
+        onBest = {},
+        onDelete = {},
+        onWalk = {},
+        onChoose = {},
+        onRename = {},
+        onRetry = {},
+    )
 }

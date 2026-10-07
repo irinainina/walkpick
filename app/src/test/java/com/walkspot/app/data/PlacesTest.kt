@@ -3,6 +3,7 @@ package com.walkspot.app.data
 import com.walkspot.app.data.places.PlaceCell
 import com.walkspot.app.data.places.PlacesRepository
 import com.walkspot.app.data.places.parsePlaces
+import com.walkspot.app.data.places.parseSummary
 import com.walkspot.app.data.places.placeCell
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -27,6 +28,19 @@ class PlacesTest {
         assertEquals(28754198L, places.first().id)
         assertEquals(50.4484, places.first().latitude)
         assertEquals(30.5186, places.first().longitude)
+    }
+
+    @Test
+    fun theSummaryOfAnArticleGivesItsPictureSmallAndWide() {
+        val article = parseSummary(
+            """{"title":"Lebedyn","pageid":6862017,"extract":"A city.","thumbnail":{"source":
+                "https://upload.wikimedia.org/wikipedia/commons/thumb/a/ab/Tower.jpg/330px-Tower.jpg"}}""",
+        )
+
+        assertEquals(6862017L, article?.id)
+        assertEquals(true, article?.picture?.endsWith("/330px-Tower.jpg"))
+        assertEquals(true, article?.widePicture?.endsWith("/960px-Tower.jpg"))
+        assertEquals(null, parseSummary("""{"title":"Nowhere"}""")?.picture)
     }
 
     @Test

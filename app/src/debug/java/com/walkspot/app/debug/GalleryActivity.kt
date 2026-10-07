@@ -32,7 +32,7 @@ class GalleryActivity : ComponentActivity() {
                     "walk" -> WalkCheck()
                     "active-walk" -> ActiveWalkGallery()
                     "walk-summary" -> WalkSummaryGallery()
-                    "find-card" -> FindCardGallery()
+                    "find-card", "find-unknown" -> FindCardGallery(unknown = page == "find-unknown")
                     "camera", "camera-identifying" -> CameraGallery(page == "camera-identifying")
                     "profile" -> ProfileGallery()
                     "settings" -> SettingsGallery(StepsAccess.COUNTING)

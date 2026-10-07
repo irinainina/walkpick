@@ -144,6 +144,12 @@
     <string name="find_waiting_title">Not identified yet</string>
     <string name="find_waiting_text">It will be named when the phone is online</string>
     <string name="find_match">Match</string>
+    <string name="find_not_this">Not this?</string>
+    <string name="find_not_this_text">Pick another match or enter a name yourself</string>
+    <string name="find_enter_name">Enter a name</string>
+    <string name="find_name_it">Name it yourself</string>
+    <string name="find_try_again">Try again</string>
+    <string name="find_what_is_it">What is it?</string>
     <string name="find_percent">%1$d%%</string>
     <string name="find_wikipedia">Read on Wikipedia</string>
     <string name="find_where">Where</string>
@@ -153,6 +159,10 @@
     <string name="find_delete_title">Delete this find?</string>
     <string name="find_delete_text">The photo and what is known about it will be removed. This can\'t be undone.</string>
     <string name="find_delete">Delete find</string>
+    <string name="place_landmark">Landmark</string>
+    <string name="place_away">%1$s · %2$s from you</string>
+    <string name="place_not_visited">Not visited yet</string>
+    <string name="place_not_visited_photo">Not visited yet · photo from Wikipedia</string>
     <string name="camera_close">Close</string>
     <string name="camera_flash">Flash</string>
     <string name="camera_flip">Switch camera</string>

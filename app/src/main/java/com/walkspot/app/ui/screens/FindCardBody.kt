@@ -29,6 +29,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.compose.MarkerComposable
@@ -67,7 +68,14 @@ private val Taken = DateTimeFormatter.ofPattern("EEE, MMM d · HH:mm", Locale.EN
 
 /** Everything under the photo of a find. */
 @Composable
-internal fun FindCardBody(state: FindCardState, onWalk: (String) -> Unit, modifier: Modifier = Modifier) {
+internal fun FindCardBody(
+    state: FindCardState,
+    onWalk: (String) -> Unit,
+    onNotThis: () -> Unit,
+    onName: (String) -> Unit,
+    onRetry: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
     val find = state.find
     val type = MaterialTheme.typography
     val colors = AppTheme.colors
@@ -83,7 +91,11 @@ internal fun FindCardBody(state: FindCardState, onWalk: (String) -> Unit, modifi
         }
         Text(name, style = type.headlineLarge, color = colors.textPrimary)
         if (under != null) Text(under, style = ParagraphStyle, color = colors.textSecondary)
-        find.match?.let { Match(it) }
+        if (find.name != null) {
+            Match(find.match, onNotThis)
+        } else {
+            UnnamedControls(unknown = find.kind == FindKind.UNKNOWN, onName, onRetry)
+        }
         if (!find.description.isNullOrBlank()) {
             Spacer(Modifier.height(Spacing.ml))
             Text(find.description, style = ParagraphStyle, color = colors.textPrimary)
@@ -99,7 +111,7 @@ internal fun FindCardBody(state: FindCardState, onWalk: (String) -> Unit, modifi
 }
 
 @Composable
-private fun KindChip(kind: FindKind) {
+internal fun KindChip(kind: FindKind) {
     val look = kind.look()
     Row(
         modifier = Modifier
@@ -114,18 +126,29 @@ private fun KindChip(kind: FindKind) {
     }
 }
 
-// How sure the service is, as a number and as a bar.
+// How sure the service is, as a number and as a bar, and the way to another name. A place and a
+// name typed by hand have no match: only the link is left of the row.
 @Composable
-private fun Match(match: Float) {
+private fun Match(match: Float?, onNotThis: () -> Unit) {
     val colors = AppTheme.colors
     val type = MaterialTheme.typography
     Spacer(Modifier.height(Spacing.sm))
     Row {
-        Text(stringResource(R.string.find_match), style = type.bodyMedium, color = colors.textSecondary)
-        Spacer(Modifier.width(Spacing.s))
-        val percent = stringResource(R.string.find_percent, (match * PERCENT).roundToInt())
-        Text(percent, style = type.labelMedium, color = colors.positive)
+        if (match != null) {
+            Text(stringResource(R.string.find_match), style = type.bodyMedium, color = colors.textSecondary)
+            Spacer(Modifier.width(Spacing.s))
+            val percent = stringResource(R.string.find_percent, (match * PERCENT).roundToInt())
+            Text(percent, style = type.labelMedium, color = colors.positive)
+        }
+        Spacer(Modifier.weight(1f))
+        Text(
+            text = stringResource(R.string.find_not_this),
+            modifier = Modifier.clickable(onClick = onNotThis),
+            style = type.labelMedium,
+            color = colors.accent,
+        )
     }
+    if (match == null) return
     Spacer(Modifier.height(Spacing.xs))
     Box(
         Modifier
@@ -144,10 +167,10 @@ private fun Match(match: Float) {
 }
 
 @Composable
-private fun WikipediaLink(url: String) {
+internal fun WikipediaLink(url: String, above: Dp = Spacing.l) {
     val colors = AppTheme.colors
     val links = LocalUriHandler.current
-    Spacer(Modifier.height(Spacing.l))
+    Spacer(Modifier.height(above))
     val row = Modifier
         .height(Spacing.l)
         .clickable { links.openUri(url) }

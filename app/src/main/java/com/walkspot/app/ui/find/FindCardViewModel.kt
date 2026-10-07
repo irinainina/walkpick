@@ -4,7 +4,10 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.walkspot.app.data.find.FindStore
+import com.walkspot.app.data.find.choosing
+import com.walkspot.app.data.find.renamed
 import com.walkspot.app.data.local.FindEntity
+import com.walkspot.app.data.local.FindKind
 import com.walkspot.app.data.local.WalkEntity
 import com.walkspot.app.data.walk.WalkRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -60,6 +63,21 @@ class FindCardViewModel @Inject constructor(
 
     fun toggleBest() {
         viewModelScope.launch { finds.change(id) { it.copy(isBest = !it.isBest) } }
+    }
+
+    fun choose(option: Int) = change { it.choosing(option) }
+
+    fun rename(name: String) = change { it.renamed(name) }
+
+    /** Asks the services again, as [kind] when the walker says anew what the find is. */
+    fun retry(kind: FindKind?) = change { it.copy(kind = kind ?: it.kind) }
+
+    // A new name wants its own description, a new kind its own service: both are asked at once.
+    private fun change(transform: (FindEntity) -> FindEntity) {
+        viewModelScope.launch {
+            finds.change(id, transform)
+            finds.identify(id)
+        }
     }
 
     fun delete(onDone: () -> Unit) {

@@ -22,6 +22,7 @@ internal fun NavGraphBuilder.mapRoute(navController: NavHostController) {
             state = state,
             onTab = model::open,
             onLook = model::lookAround,
+            onPlace = { navController.navigate(placeCardRoute(it)) },
             onLocate = { if (model.canLocate) model.locate() else ask() },
             onWalk = { navController.navigate(walkSummaryRoute(it)) },
         )
