@@ -44,6 +44,7 @@ fun WalkSpotApp(signedIn: Boolean, walkAsked: Int, onStartShown: () -> Unit) {
             healthRoute(navController)
             activeWalkRoute(navController)
             walkSummaryRoute(navController)
+            cameraRoute(navController)
             mapRoute(navController)
             profileRoute(navController)
             settingsRoute(navController)
@@ -53,6 +54,7 @@ fun WalkSpotApp(signedIn: Boolean, walkAsked: Int, onStartShown: () -> Unit) {
                 Screen.Stats,
                 Screen.Health,
                 Screen.ActiveWalk,
+                Screen.Camera,
                 Screen.Map,
                 Screen.Profile,
                 Screen.Settings,

@@ -1,6 +1,7 @@
 package com.walkspot.app.data.walk
 
 import android.content.Context
+import com.walkspot.app.data.local.FindEntity
 import com.walkspot.app.data.local.InstantIso
 import com.walkspot.app.data.local.SyncJson
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -20,6 +21,7 @@ import java.io.File
 import java.io.IOException
 import java.time.Duration
 import java.time.Instant
+import java.util.UUID
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -36,6 +38,10 @@ data class WalkTrack(
     val steps: Int = 0,
     /** The last reading of the phone's step counter, which counts from the start of the phone. */
     val lastCounter: Long? = null,
+    /** The id the saved walk gets: photos taken on the way point at it. */
+    val id: String = UUID.randomUUID().toString(),
+    /** The photos taken on the way; they are kept with the walk: a find cannot be without one. */
+    val finds: List<FindEntity> = emptyList(),
 ) {
     val paused: Boolean get() = pausedAt != null
 
@@ -118,6 +124,8 @@ class WalkRecorder @Inject constructor(draft: WalkDraft) {
     fun start(at: Instant) = current.update { it ?: WalkTrack(at) }
 
     fun report(point: TrackPoint) = current.update { it?.with(point) }
+
+    fun add(find: FindEntity) = current.update { it?.copy(finds = it.finds + find) }
 
     fun reportSteps(counter: Long) = current.update { it?.withCounter(counter) }
 

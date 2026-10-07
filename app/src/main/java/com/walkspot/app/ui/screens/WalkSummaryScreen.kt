@@ -43,7 +43,6 @@ import com.google.maps.android.compose.MarkerComposable
 import com.google.maps.android.compose.rememberCameraPositionState
 import com.google.maps.android.compose.rememberUpdatedMarkerState
 import com.walkspot.app.R
-import com.walkspot.app.data.local.WalkEntity
 import com.walkspot.app.data.walk.paceSecondsPerKm
 import com.walkspot.app.data.walk.routePlaces
 import com.walkspot.app.ui.components.AppButton
@@ -105,7 +104,7 @@ fun WalkSummaryScreen(
             .background(AppTheme.colors.canvas)
             .verticalScroll(rememberScrollState()),
     ) {
-        RouteMap(walk)
+        RouteMap(state)
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -145,8 +144,12 @@ fun WalkSummaryScreen(
 
 // The whole route as a picture at the top of the page: the page scrolls, the map does not.
 @Composable
-private fun RouteMap(walk: WalkEntity) {
-    val route = remember(walk.route) { routePlaces(walk.route).map { (lat, lon) -> LatLng(lat, lon) } }
+private fun RouteMap(state: WalkSummaryState) {
+    // A walk kept for its photos alone has no line: the map shows where the first photo was taken.
+    val route = remember(state.walk.route, state.finds) {
+        val photo = state.finds.take(1).map { it.latitude to it.longitude }
+        routePlaces(state.walk.route).ifEmpty { photo }.map { (lat, lon) -> LatLng(lat, lon) }
+    }
     val camera = rememberCameraPositionState()
     val edge = with(LocalDensity.current) { RouteEdge.roundToPx() }
     var loaded by remember { mutableStateOf(false) }

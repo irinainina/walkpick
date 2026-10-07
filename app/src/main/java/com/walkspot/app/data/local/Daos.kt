@@ -77,6 +77,9 @@ interface FindDao : SyncedDao<FindEntity> {
     @Query("UPDATE finds SET synced = 1 WHERE id = :id AND updatedAt = :updatedAt")
     suspend fun markSynced(id: String, updatedAt: Instant)
 
+    @Query("SELECT * FROM finds WHERE walkId = :walkId ORDER BY takenAt")
+    fun watchOf(walkId: String): Flow<List<FindEntity>>
+
     @Query("SELECT COUNT(*) FROM finds")
     fun watchCount(): Flow<Int>
 

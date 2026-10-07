@@ -44,6 +44,11 @@ data class AppColors(
     val unvisitedRing: Color,
     /** The dimmed screen under a sheet. */
     val scrim: Color,
+    /** The camera before its picture comes, and what is laid over the picture: buttons, hint, bar. */
+    val photoGround: Color,
+    val photoButton: Color,
+    val photoHint: Color,
+    val photoBar: Color,
     val streak: Color,
     /** The badge behind a streak or notice icon. */
     val streakTint: Color,
@@ -88,6 +93,10 @@ internal val walkSpotColors = AppColors(
     unvisited = LightBlue,
     unvisitedRing = Sky,
     scrim = Ink.copy(alpha = 0.48f),
+    photoGround = Night,
+    photoButton = Black.copy(alpha = 0.32f),
+    photoHint = Black.copy(alpha = 0.4f),
+    photoBar = Black.copy(alpha = 0.48f),
     streak = Orange,
     streakTint = Peach,
     positive = Green,

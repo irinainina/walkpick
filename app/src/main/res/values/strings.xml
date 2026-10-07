@@ -132,6 +132,14 @@
     <string name="walk_start">Start</string>
     <string name="walk_minimize">Minimize</string>
     <string name="walk_locate">My location</string>
+    <string name="camera_close">Close</string>
+    <string name="camera_flash">Flash</string>
+    <string name="camera_flip">Switch camera</string>
+    <string name="camera_shutter">Take a photo</string>
+    <string name="camera_hint">Point at a view or its details</string>
+    <string name="camera_no_place">No location yet. Try again in a moment</string>
+    <string name="camera_identifying">Identifying…</string>
+    <string name="camera_photo_saved">Photo saved. Looking it up…</string>
     <string name="walk_photo">Take a photo</string>
     <string name="map_diary">Diary</string>
     <string name="diary_today">Today</string>

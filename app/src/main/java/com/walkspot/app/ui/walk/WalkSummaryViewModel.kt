@@ -3,6 +3,7 @@ package com.walkspot.app.ui.walk
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.walkspot.app.data.local.FindEntity
 import com.walkspot.app.data.local.WalkEntity
 import com.walkspot.app.data.settings.DistanceUnit
 import com.walkspot.app.data.settings.SettingsStore
@@ -17,7 +18,11 @@ import javax.inject.Inject
 
 private const val KEEP_AFTER_LEAVING_MS = 5_000L
 
-data class WalkSummaryState(val walk: WalkEntity, val distanceUnit: DistanceUnit = DistanceUnit.KM)
+data class WalkSummaryState(
+    val walk: WalkEntity,
+    val distanceUnit: DistanceUnit = DistanceUnit.KM,
+    val finds: List<FindEntity> = emptyList(),
+)
 
 @HiltViewModel
 class WalkSummaryViewModel @Inject constructor(
@@ -30,8 +35,8 @@ class WalkSummaryViewModel @Inject constructor(
 
     /** Null before the walk is read and after it is deleted. */
     val state: StateFlow<WalkSummaryState?> =
-        combine(walks.watch(id), settings.value) { walk, units ->
-            walk?.let { WalkSummaryState(it, units.distance) }
+        combine(walks.watch(id), settings.value, walks.watchFinds(id)) { walk, units, finds ->
+            walk?.let { WalkSummaryState(it, units.distance, finds) }
         }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(KEEP_AFTER_LEAVING_MS), null)
 
     fun saveNote(note: String) {

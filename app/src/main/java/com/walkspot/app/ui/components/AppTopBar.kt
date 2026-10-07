@@ -24,6 +24,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Dp
 import com.walkspot.app.R
 import com.walkspot.app.ui.theme.AppShadows
 import com.walkspot.app.ui.theme.AppTheme
@@ -39,18 +40,21 @@ fun CircleButton(
     modifier: Modifier = Modifier,
     tint: Color = AppTheme.colors.textPrimary,
     raised: Boolean = false,
+    // The ground of a button that lies on a photo.
+    ground: Color = Color.Unspecified,
+    size: Dp = Sizes.circle,
 ) {
-    val ground = if (raised) {
+    val under = if (raised) {
         Modifier
             .dropShadow(CircleShape, AppShadows.circleButton)
             .background(AppTheme.colors.surface, CircleShape)
     } else {
-        Modifier
+        Modifier.background(ground, CircleShape)
     }
     Box(
         modifier = modifier
-            .size(Sizes.circle)
-            .then(ground)
+            .size(size)
+            .then(under)
             .clip(CircleShape)
             .clickable(role = Role.Button, onClick = onClick),
         contentAlignment = Alignment.Center,
