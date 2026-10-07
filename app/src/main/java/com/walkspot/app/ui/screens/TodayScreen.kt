@@ -37,6 +37,7 @@ import com.walkspot.app.data.walk.sky
 import com.walkspot.app.ui.components.AppButton
 import com.walkspot.app.ui.components.CircleButton
 import com.walkspot.app.ui.components.GradientHeader
+import com.walkspot.app.ui.map.DiaryWalk
 import com.walkspot.app.ui.theme.AppTheme
 import com.walkspot.app.ui.theme.ParagraphStyle
 import com.walkspot.app.ui.theme.Spacing
@@ -69,10 +70,13 @@ fun TodayScreen(
     walking: Boolean,
     /** The weather outside; null until it is known. */
     weather: WalkWeather?,
+    /** The latest walk; null before the first one. */
+    lastWalk: DiaryWalk?,
     onAllowSteps: () -> Unit,
     onStartWalk: () -> Unit,
     onStats: () -> Unit,
     onHealth: () -> Unit,
+    onWalk: (String) -> Unit,
     onReminders: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -110,7 +114,12 @@ fun TodayScreen(
             )
             Spacer(Modifier.height(Spacing.l))
             WeekCard(state.week, onStats)
-            Spacer(Modifier.height(Spacing.ml))
+            Spacer(Modifier.height(Spacing.l))
+            if (lastWalk != null) {
+                val today = state.now.toLocalDate()
+                LastWalkCard(lastWalk, today, state.distanceUnit) { onWalk(lastWalk.walk.id) }
+                Spacer(Modifier.height(Spacing.l))
+            }
             HealthCard(state.health, state.units, state.now.toLocalDate(), onHealth)
         }
     }

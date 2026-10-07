@@ -59,6 +59,9 @@ interface WalkDao : SyncedDao<WalkEntity> {
     @Query("SELECT * FROM walks ORDER BY startedAt DESC")
     fun watchAll(): Flow<List<WalkEntity>>
 
+    @Query("SELECT * FROM walks ORDER BY startedAt DESC LIMIT 1")
+    fun watchLatest(): Flow<WalkEntity?>
+
     @Query("UPDATE walks SET note = :note, updatedAt = :now, synced = 0 WHERE id = :id")
     suspend fun setNote(id: String, note: String?, now: Instant)
 
@@ -80,9 +83,18 @@ interface FindDao : SyncedDao<FindEntity> {
     @Query("UPDATE finds SET synced = 1 WHERE id = :id AND updatedAt = :updatedAt")
     suspend fun markSynced(id: String, updatedAt: Instant)
 
-    /** The finds of a kind that are on the server and still have no name. */
-    @Query("SELECT * FROM finds WHERE kind = :kind AND name IS NULL AND synced = 1")
-    suspend fun unnamed(kind: FindKind): List<FindEntity>
+    /** The finds that were told what they show and still have no name. */
+    @Query("SELECT * FROM finds WHERE name IS NULL AND kind != 'UNKNOWN'")
+    suspend fun unnamed(): List<FindEntity>
+
+    @Query("SELECT * FROM finds WHERE id = :id")
+    fun watch(id: String): Flow<FindEntity?>
+
+    @Query("SELECT * FROM finds WHERE id = :id")
+    suspend fun get(id: String): FindEntity?
+
+    @Query("DELETE FROM finds WHERE id = :id")
+    suspend fun delete(id: String)
 
     /** The latest named finds nobody has looked up in Wikipedia yet. */
     @Query(

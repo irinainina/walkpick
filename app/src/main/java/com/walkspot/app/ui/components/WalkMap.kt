@@ -33,6 +33,7 @@ import com.google.maps.android.compose.MapProperties
 import com.google.maps.android.compose.MapUiSettings
 import com.google.maps.android.compose.Polyline
 import com.walkspot.app.R
+import com.walkspot.app.ui.find.KindLook
 import com.walkspot.app.ui.theme.AppTheme
 
 // Closer than this a street is a blank sheet; a route of a few metres would zoom that far.
@@ -159,6 +160,20 @@ fun UnvisitedPlacePin() {
         contentAlignment = Alignment.Center,
     ) {
         Icon(painterResource(R.drawable.ic_globe), null, Modifier.size(PlaceIcon), colors.unvisited)
+    }
+}
+
+/** A find on a map: a round pin in the colour of its kind with the icon of the kind. */
+@Composable
+fun FindPin(look: KindLook) {
+    Box(
+        Modifier
+            .size(PlacePin)
+            .background(look.color, CircleShape)
+            .border(StartBorder, AppTheme.colors.surface, CircleShape),
+        contentAlignment = Alignment.Center,
+    ) {
+        Icon(painterResource(look.icon), null, Modifier.size(PlaceIcon), AppTheme.colors.onAccent)
     }
 }
 

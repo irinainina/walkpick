@@ -36,5 +36,6 @@ fun WalkSummaryGallery() {
         onNote = {},
         onRename = {},
         onDelete = {},
+        onFind = {},
     )
 }

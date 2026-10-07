@@ -12,6 +12,7 @@ import com.walkspot.app.data.sync.RemoteTables
 import com.walkspot.app.data.sync.SyncedPart
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import java.io.IOException
 import java.time.Instant
 import javax.inject.Inject
 
@@ -68,35 +69,46 @@ internal fun FindEntity.described(summary: WikiSummary?, at: Instant): FindEntit
 )
 
 /**
- * Names the finds that have no name yet: plants by the server, birds by the model in the app, places
- * by the nearest article of Wikipedia; then adds the description from Wikipedia. It is a part of the
- * sync and stands after the photos: the server looks at the photo it already holds. A find that got
- * no answer stays as it is and is asked about with the next sync.
+ * Names a find and describes it: a plant by the server, which looks at the photo sent to it, a bird
+ * by the model in the app, a place by the nearest article of Wikipedia. It is asked right after the
+ * shot and again with every sync for the finds that got no answer then.
  */
 class FindIdentifier @Inject constructor(
     private val finds: FindDao,
     private val photos: PhotoStore,
     private val birds: BirdClassifier,
     private val wikipedia: Wikipedia,
+    private val remote: RemoteTables,
 ) : SyncedPart {
 
-    override suspend fun push(remote: RemoteTables) {
-        val plants = finds.unnamed(FindKind.PLANT).mapNotNull { find ->
-            remote.identify(find.id)?.let { find.named(it, Instant.now()) }
+    /** [find] with whatever could be found out now; the same find when nothing could, as offline. */
+    suspend fun identified(find: FindEntity): FindEntity = try {
+        val named = if (find.name == null && find.kind != FindKind.UNKNOWN) named(find) ?: find else find
+        if (named.name == null || named.description != null) {
+            named
+        } else {
+            named.described(wikipedia.summary(named.latinName ?: named.name), Instant.now())
         }
-        val winged = finds.unnamed(FindKind.BIRD).mapNotNull { find ->
-            birds.guesses(photos.file(find.photoPath))?.let { find.named(it, Instant.now()) }
+    } catch (_: IOException) {
+        find
+    }
+
+    private suspend fun named(find: FindEntity): FindEntity? = when (find.kind) {
+        FindKind.PLANT -> {
+            photos.send(find.photoPath, remote)
+            remote.identify(find.photoPath)?.let { find.named(it, Instant.now()) }
         }
-        val places = finds.unnamed(FindKind.PLACE).map { find ->
+        FindKind.BIRD -> birds.guesses(photos.file(find.photoPath))?.let { find.named(it, Instant.now()) }
+        FindKind.PLACE -> {
             val near = wikipedia.near(find.latitude, find.longitude, PLACE_RADIUS_M, PLACES)
             find.placed(parsePlaces(near), Instant.now())
         }
-        finds.save(plants + winged + places)
-        finds.save(
-            finds.undescribed(DESCRIBED_AT_ONCE).map { find ->
-                find.described(wikipedia.summary(find.latinName ?: find.name.orEmpty()), Instant.now())
-            },
-        )
+        FindKind.UNKNOWN -> null
+    }
+
+    override suspend fun push(remote: RemoteTables) {
+        val waiting = finds.unnamed() + finds.undescribed(DESCRIBED_AT_ONCE)
+        finds.save(waiting.distinctBy { it.id }.mapNotNull { find -> identified(find).takeIf { it != find } })
     }
 
     override suspend fun pull(remote: RemoteTables) = Unit

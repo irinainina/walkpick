@@ -1,6 +1,7 @@
 package com.walkspot.app.ui.screens
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -18,6 +19,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -54,7 +56,12 @@ private val LegendGap = 6.dp
 private val LegendSpace = 10.dp
 
 @Composable
-internal fun StatsChartCard(state: StatsState, onPickBar: (Int) -> Unit, modifier: Modifier = Modifier) {
+internal fun StatsChartCard(
+    state: StatsState,
+    onPickBar: (Int) -> Unit,
+    onPickDay: (LocalDate) -> Unit,
+    modifier: Modifier = Modifier,
+) {
     val colors = AppTheme.colors
     val current = state.today in state.range
     AppCard(modifier) {
@@ -85,7 +92,7 @@ internal fun StatsChartCard(state: StatsState, onPickBar: (Int) -> Unit, modifie
             }
         }
         when (state.tab) {
-            StatsTab.Month -> Calendar(state.calendar, state.today)
+            StatsTab.Month -> Calendar(state.calendar, state.today, onPickDay)
             else -> Bars(state, onPickBar)
         }
     }
@@ -121,7 +128,7 @@ private fun Bars(state: StatsState, onPickBar: (Int) -> Unit) {
 }
 
 @Composable
-private fun Calendar(days: List<CalendarDay>, today: LocalDate) {
+private fun Calendar(days: List<CalendarDay>, today: LocalDate, onPickDay: (LocalDate) -> Unit) {
     val colors = AppTheme.colors
     Column(Modifier.padding(start = Spacing.ml, top = Spacing.sm, end = Spacing.ml, bottom = LegendSpace)) {
         Row {
@@ -140,7 +147,9 @@ private fun Calendar(days: List<CalendarDay>, today: LocalDate) {
         cells.chunked(DayOfWeek.entries.size).forEach { week ->
             Spacer(Modifier.height(Spacing.xs))
             Row {
-                week.forEach { Box(Modifier.weight(1f), Alignment.Center) { if (it != null) Day(it, today) } }
+                week.forEach { day ->
+                    Box(Modifier.weight(1f), Alignment.Center) { if (day != null) Day(day, today, onPickDay) }
+                }
                 repeat(DayOfWeek.entries.size - week.size) { Spacer(Modifier.weight(1f)) }
             }
         }
@@ -160,14 +169,16 @@ private fun Calendar(days: List<CalendarDay>, today: LocalDate) {
 }
 
 @Composable
-private fun Day(day: CalendarDay, today: LocalDate) {
+private fun Day(day: CalendarDay, today: LocalDate, onPick: (LocalDate) -> Unit) {
     val colors = AppTheme.colors
     val ground = when {
         day.day == today -> Modifier.background(colors.accentGradient, CircleShape)
         day.walked -> Modifier.background(colors.surfaceTint, CircleShape)
         else -> Modifier
     }
-    Box(Modifier.size(DaySize).then(ground), contentAlignment = Alignment.Center) {
+    // A day with a walk leads to it.
+    val tap = if (day.walked) Modifier.clip(CircleShape).clickable { onPick(day.day) } else Modifier
+    Box(Modifier.size(DaySize).then(ground).then(tap), contentAlignment = Alignment.Center) {
         Text(
             text = day.day.dayOfMonth.toString(),
             style = with(MaterialTheme.typography) { if (ground == Modifier) bodyMedium else labelMedium },

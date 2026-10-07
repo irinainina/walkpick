@@ -116,19 +116,24 @@ internal fun diaryDays(walks: List<WalkEntity>, photos: List<WalkPhotos>, zone: 
 }
 
 /**
- * The route as points of a square 0..1 x 0..1 with the north up, the whole route inside it and its
- * proportions kept: the picture of a walk on its diary card.
+ * The route as shares 0..1 of the width and the height of a tile [aspect] times wider than high, with
+ * the north up, the whole route inside it and its proportions kept: the picture of a walk on a card.
  */
-internal fun routeSketch(places: List<Pair<Double, Double>>): List<Pair<Float, Float>> {
+internal fun routeSketch(places: List<Pair<Double, Double>>, aspect: Float = 1f): List<Pair<Float, Float>> {
     if (places.size < 2) return emptyList()
     // A degree of longitude is shorter than a degree of latitude away from the equator.
     val squeeze = cos(Math.toRadians(places.first().first))
     val xs = places.map { it.second * squeeze }
     val ys = places.map { it.first }
     val (left, bottom) = xs.min() to ys.min()
-    val side = maxOf(xs.max() - left, ys.max() - bottom).takeIf { it > 0 } ?: return emptyList()
-    val (padX, padY) = (side - (xs.max() - left)) / 2 to (side - (ys.max() - bottom)) / 2
+    val (wide, high) = xs.max() - left to ys.max() - bottom
+    // The tile in the units of the route: as high as the route, or higher when the route is too wide.
+    val tileHigh = maxOf(high, wide / aspect).takeIf { it > 0 } ?: return emptyList()
+    val tileWide = tileHigh * aspect
+    val (padX, padY) = (tileWide - wide) / 2 to (tileHigh - high) / 2
     return places.indices.map { index ->
-        ((xs[index] - left + padX) / side).toFloat() to (1 - (ys[index] - bottom + padY) / side).toFloat()
+        val x = (xs[index] - left + padX) / tileWide
+        val y = 1 - (ys[index] - bottom + padY) / tileHigh
+        x.toFloat() to y.toFloat()
     }
 }

@@ -51,6 +51,13 @@ internal fun NavGraphBuilder.cameraRoute(navController: NavHostController) {
             camera.imageCaptureFlashMode =
                 if (state.flash) ImageCapture.FLASH_MODE_ON else ImageCapture.FLASH_MODE_OFF
         }
+        // The card of the new find opens over the camera: back leads to the next shot.
+        LaunchedEffect(state.found) {
+            state.found?.let {
+                navController.navigate(findCardRoute(it))
+                model.shown()
+            }
+        }
         val taken = object : ImageCapture.OnImageCapturedCallback() {
             override fun onCaptureSuccess(image: ImageProxy) {
                 model.keep(image.toBitmap(), image.imageInfo.rotationDegrees)

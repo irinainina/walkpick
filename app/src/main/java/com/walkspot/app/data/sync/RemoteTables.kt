@@ -4,6 +4,7 @@ import com.walkspot.app.data.find.Guess
 import com.walkspot.app.data.local.SyncJson
 import com.walkspot.app.data.remote.SupabaseProvider
 import com.walkspot.app.data.remote.signedInSession
+import io.github.jan.supabase.exceptions.HttpRequestException
 import io.github.jan.supabase.exceptions.RestException
 import io.github.jan.supabase.functions.functions
 import io.github.jan.supabase.postgrest.from
@@ -14,6 +15,7 @@ import io.ktor.http.ContentType
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
+import java.io.IOException
 import javax.inject.Inject
 
 private const val IDENTIFY = "identify"
@@ -34,8 +36,11 @@ interface RemoteTables {
     /** Puts a JPEG into a bucket; a file already there is left as it is. */
     suspend fun upload(bucket: String, path: String, jpeg: ByteArray)
 
-    /** What is on the photo of a find; null when the service gave no answer. */
-    suspend fun identify(findId: String): List<Guess>?
+    /** A file of a bucket; null when it is not there or the server cannot be asked. */
+    suspend fun download(bucket: String, path: String): ByteArray?
+
+    /** The plant on a photo already sent to the bucket; null when the service gave no answer. */
+    suspend fun identify(photoPath: String): List<Guess>?
 }
 
 class SupabaseRemoteTables @Inject constructor(
@@ -62,16 +67,31 @@ class SupabaseRemoteTables @Inject constructor(
         supabase.client.from(table).delete { filter { eq("id", id) } }
     }
 
+    // The library has an error of its own for a lost network; the callers know IOException.
     override suspend fun upload(bucket: String, path: String, jpeg: ByteArray) {
         val files = supabase.client.storage.from(bucket)
-        if (!files.exists(path)) files.upload(path, jpeg) { contentType = ContentType.Image.JPEG }
+        try {
+            if (!files.exists(path)) files.upload(path, jpeg) { contentType = ContentType.Image.JPEG }
+        } catch (lost: HttpRequestException) {
+            throw IOException(lost)
+        }
     }
 
-    override suspend fun identify(findId: String): List<Guess>? = try {
-        val asked = JsonObject(mapOf("find_id" to JsonPrimitive(findId)))
+    override suspend fun download(bucket: String, path: String): ByteArray? = try {
+        supabase.client.storage.from(bucket).downloadAuthenticated(path)
+    } catch (_: RestException) {
+        null
+    } catch (_: HttpRequestException) {
+        null
+    }
+
+    override suspend fun identify(photoPath: String): List<Guess>? = try {
+        val asked = JsonObject(mapOf("photo_path" to JsonPrimitive(photoPath)))
         val reply = supabase.client.functions.invoke(IDENTIFY, asked)
         SyncJson.decodeFromString<Identified>(reply.bodyAsText()).guesses
     } catch (_: RestException) {
         null
+    } catch (lost: HttpRequestException) {
+        throw IOException(lost)
     }
 }

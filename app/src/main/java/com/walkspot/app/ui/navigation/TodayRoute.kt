@@ -12,6 +12,7 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.composable
 import com.walkspot.app.ui.screens.TodayScreen
+import com.walkspot.app.ui.today.LastWalkViewModel
 import com.walkspot.app.ui.today.TodayViewModel
 import com.walkspot.app.ui.today.WeatherViewModel
 import com.walkspot.app.ui.walk.ActiveWalkViewModel
@@ -22,6 +23,8 @@ internal fun NavGraphBuilder.todayRoute(navController: NavHostController, onShow
         val state by model.state.collectAsStateWithLifecycle()
         val sky: WeatherViewModel = hiltViewModel()
         val weather by sky.now.collectAsStateWithLifecycle()
+        val last: LastWalkViewModel = hiltViewModel()
+        val lastWalk by last.walk.collectAsStateWithLifecycle()
         val owner = LocalLifecycleOwner.current
         LaunchedEffect(owner) {
             owner.repeatOnLifecycle(Lifecycle.State.RESUMED) {
@@ -40,10 +43,12 @@ internal fun NavGraphBuilder.todayRoute(navController: NavHostController, onShow
             state = shown,
             walking = walking.recording,
             weather = weather,
+            lastWalk = lastWalk,
             onAllowSteps = allowSteps,
             onStartWalk = { navController.navigate(Screen.ActiveWalk.route) },
             onStats = { navController.navigate(Screen.Stats.route) },
             onHealth = { navController.navigate(Screen.Health.route) },
+            onWalk = { navController.navigate(walkSummaryRoute(it)) },
             onReminders = { navController.navigate(Screen.Settings.route) },
         )
     }

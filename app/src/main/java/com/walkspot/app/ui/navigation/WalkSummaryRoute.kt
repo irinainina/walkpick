@@ -24,6 +24,7 @@ internal fun NavGraphBuilder.walkSummaryRoute(navController: NavHostController) 
                 onNote = model::saveNote,
                 onRename = model::rename,
                 onDelete = { model.delete(onDone = { navController.popBackStack() }) },
+                onFind = { find -> navController.navigate(findCardRoute(find)) },
             )
         }
     }

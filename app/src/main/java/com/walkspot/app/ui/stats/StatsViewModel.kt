@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.walkspot.app.data.local.DailyStepsEntity
 import com.walkspot.app.data.local.WalkDao
+import com.walkspot.app.data.local.WalkEntity
 import com.walkspot.app.data.settings.DistanceUnit
 import com.walkspot.app.data.settings.SettingsStore
 import com.walkspot.app.data.steps.DayRange
@@ -60,6 +61,9 @@ data class StatsState(
     /** The days of the period shown that have a walk. */
     val walkDays: Int = 0,
     val longestStreak: Int = 0,
+    /** The day of the calendar tapped last and its walks, when it has several: a sheet offers them. */
+    val day: LocalDate? = null,
+    val dayWalks: List<WalkEntity> = emptyList(),
 )
 
 /** What the user chose: the tab, a day inside the period shown and the bar picked by hand. */
@@ -67,6 +71,7 @@ data class StatsChoice(
     val tab: StatsTab = StatsTab.Week,
     val anchor: LocalDate = LocalDate.now(),
     val bar: Int? = null,
+    val day: LocalDate? = null,
 )
 
 @HiltViewModel
@@ -80,11 +85,15 @@ class StatsViewModel @Inject constructor(
 
     private val unit = settings.value.map { it.distance }
 
-    private val walkDays = walks.watchStarts().map { starts -> starts.map { it.localDay() } }
+    private val all = walks.watchAll().stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
 
     val state: StateFlow<StatsState?> =
-        combine(steps.watchDays(), walkDays, choice, unit) { days, walked, choice, unit ->
-            statsState(days, walked, choice, LocalDate.now()).copy(distanceUnit = unit)
+        combine(steps.watchDays(), all, choice, unit) { days, walks, choice, unit ->
+            statsState(days, walks.map { it.startedAt.localDay() }, choice, LocalDate.now()).copy(
+                distanceUnit = unit,
+                day = choice.day,
+                dayWalks = walks.filter { it.startedAt.localDay() == choice.day },
+            )
         }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(KEEP_AFTER_LEAVING_MS), null)
 
     fun open(tab: StatsTab) = choice.update { StatsChoice(tab) }
@@ -100,6 +109,14 @@ class StatsViewModel @Inject constructor(
     }
 
     fun pick(bar: Int) = choice.update { it.copy(bar = bar) }
+
+    /** A day of the calendar is tapped: its only walk opens at once, several are offered in a sheet. */
+    fun pickDay(day: LocalDate, onWalk: (String) -> Unit) {
+        val ofDay = all.value.filter { it.startedAt.localDay() == day }
+        if (ofDay.size == 1) onWalk(ofDay.first().id) else choice.update { it.copy(day = day) }
+    }
+
+    fun closeDay() = choice.update { it.copy(day = null) }
 }
 
 internal fun statsState(

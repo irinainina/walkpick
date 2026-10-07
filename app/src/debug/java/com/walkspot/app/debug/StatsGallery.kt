@@ -95,5 +95,14 @@ fun StatsGallery(page: String) {
         "stats-all" -> all
         else -> week
     }
-    StatsScreen(state, onBack = {}, onTab = {}, onMove = {}, onPickBar = {})
+    StatsScreen(
+        state = state,
+        onBack = {},
+        onTab = {},
+        onMove = {},
+        onPickBar = {},
+        onPickDay = {},
+        onWalk = {},
+        onCloseDay = {},
+    )
 }

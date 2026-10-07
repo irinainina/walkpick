@@ -127,6 +127,14 @@ class WalkRecorder @Inject constructor(draft: WalkDraft) {
 
     fun add(find: FindEntity) = current.update { it?.copy(finds = it.finds + find) }
 
+    fun changeFind(id: String, transform: (FindEntity) -> FindEntity) = current.update { track ->
+        track?.copy(finds = track.finds.map { if (it.id == id) transform(it) else it })
+    }
+
+    fun removeFind(id: String) = current.update { track ->
+        track?.copy(finds = track.finds.filterNot { it.id == id })
+    }
+
     fun reportSteps(counter: Long) = current.update { it?.withCounter(counter) }
 
     fun pause(at: Instant) = current.update { it?.pausedAt(at) }

@@ -91,6 +91,7 @@ fun WalkSummaryScreen(
     onNote: (String) -> Unit,
     onRename: (String) -> Unit,
     onDelete: () -> Unit,
+    onFind: (String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val walk = state.walk
@@ -128,6 +129,8 @@ fun WalkSummaryScreen(
         ) {
             SummaryCard(state, onRename = { renaming = true })
             Spacer(Modifier.height(Spacing.l))
+            WalkFinds(state, onFind)
+            if (state.finds.isNotEmpty()) Spacer(Modifier.height(Spacing.l))
             NoteField(note, onChange = { note = it })
             Spacer(Modifier.height(Spacing.l))
             AppButton(stringResource(R.string.walk_done), onClick = leave)

@@ -18,6 +18,7 @@ class PhotoStoreTest {
     private class Bucket : RemoteTables {
         val uploads = mutableListOf<String>()
         var failing = false
+        var fetched: ByteArray? = null
 
         override suspend fun isSignedIn() = true
 
@@ -34,7 +35,9 @@ class PhotoStoreTest {
             uploads += "$bucket $path ${jpeg.size}"
         }
 
-        override suspend fun identify(findId: String): List<Guess>? = null
+        override suspend fun download(bucket: String, path: String): ByteArray? = fetched
+
+        override suspend fun identify(photoPath: String): List<Guess>? = null
     }
 
     @Test
@@ -49,6 +52,21 @@ class PhotoStoreTest {
 
         assertEquals(listOf("photos user-1/find-1.jpg 3"), bucket.uploads)
         assertTrue(photos.file("user-1/find-1.jpg").exists())
+    }
+
+    @Test
+    fun aPhotoThisPhoneDoesNotHaveIsFetchedOnceAndADeletedOneIsGone(@TempDir folder: File) = runTest {
+        val photos = PhotoStore(folder)
+        val bucket = Bucket()
+
+        assertEquals(null, photos.local("user-1/find-2.jpg", bucket))
+        bucket.fetched = ByteArray(5)
+        assertEquals(5L, photos.local("user-1/find-2.jpg", bucket)?.length())
+        bucket.fetched = null
+        assertEquals(5L, photos.local("user-1/find-2.jpg", bucket)?.length())
+
+        photos.delete("user-1/find-2.jpg")
+        assertEquals(null, photos.local("user-1/find-2.jpg", bucket))
     }
 
     @Test

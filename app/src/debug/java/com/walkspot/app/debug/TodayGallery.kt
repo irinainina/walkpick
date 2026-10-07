@@ -3,12 +3,14 @@ package com.walkspot.app.debug
 import androidx.compose.runtime.Composable
 import com.walkspot.app.data.local.HealthEntryEntity
 import com.walkspot.app.data.local.HealthKind
+import com.walkspot.app.data.local.WalkEntity
 import com.walkspot.app.data.steps.StepsAccess
 import com.walkspot.app.data.walk.WalkWeather
 import com.walkspot.app.ui.components.Bar
 import com.walkspot.app.ui.components.BarKind
 import com.walkspot.app.ui.health.HealthCurrent
 import com.walkspot.app.ui.health.HealthTile
+import com.walkspot.app.ui.map.DiaryWalk
 import com.walkspot.app.ui.screens.TodayScreen
 import com.walkspot.app.ui.today.TodayState
 import java.time.LocalDateTime
@@ -38,6 +40,28 @@ private val health = listOf(
     tile(HealthKind.GLUCOSE, 5.4, -0.1),
 )
 
+// The walk of the frame: yesterday at 18:40, its route shaped like the one drawn there.
+private val evening = LocalDateTime.of(2026, 9, 29, 18, 40).atZone(ZoneId.systemDefault()).toInstant()
+private val route = listOf(
+    0.00f to 0.73f, 0.07f to 0.24f, 0.60f to 0.14f, 0.62f to 0.00f, 0.92f to 0.00f, 0.98f to 0.30f,
+    1.00f to 0.60f, 0.86f to 0.92f, 0.44f to 1.00f, 0.00f to 0.73f,
+)
+private val lastWalk = DiaryWalk(
+    walk = WalkEntity(
+        id = "walk",
+        number = 312,
+        startedAt = evening,
+        endedAt = evening.plusSeconds(2880),
+        durationS = 2880,
+        steps = 5230,
+        distanceM = 3900,
+        name = "Misty Evening Walk",
+        updatedAt = evening,
+    ),
+    photos = 7,
+    sketch = route,
+)
+
 /** Today with the data of the Figma frames, for the comparison with the design. */
 @Composable
 fun TodayGallery(access: StepsAccess) {
@@ -56,10 +80,12 @@ fun TodayGallery(access: StepsAccess) {
         ),
         walking = false,
         weather = WalkWeather(code = 3, celsius = 13.0, windMs = 2.0),
+        lastWalk = lastWalk,
         onAllowSteps = {},
         onStartWalk = {},
         onStats = {},
         onHealth = {},
+        onWalk = {},
         onReminders = {},
     )
 }

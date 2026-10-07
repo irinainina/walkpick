@@ -46,7 +46,9 @@ class CloudSyncTest {
             calls += "upload $bucket $path ${jpeg.size}"
         }
 
-        override suspend fun identify(findId: String): List<Guess>? = null
+        override suspend fun download(bucket: String, path: String): ByteArray? = null
+
+        override suspend fun identify(photoPath: String): List<Guess>? = null
     }
 
     private class FakeDeletes(vararg rows: PendingDeleteEntity) : PendingDeleteDao {

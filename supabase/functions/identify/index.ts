@@ -1,9 +1,10 @@
-// Names the plant on the photo of a find.
+// Names the plant on a photo.
 //
 // The phone cannot ask Pl@ntNet itself: the key of the service would have to
-// ship inside the app. The caller says which find it means; the function reads
-// the find and its photo with the caller's own token, so row-level security
-// lets it see only what belongs to the caller.
+// ship inside the app. The caller names a photo it has sent to the bucket; the
+// function reads it with the caller's own token, so the policies of the bucket
+// let it see only what belongs to the caller. It does not look at the finds
+// table: a photo is named right after the shot, before its walk is saved.
 //
 // No CORS headers on purpose: the only caller is the app.
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
@@ -60,20 +61,12 @@ Deno.serve(async (request) => {
   const authorization = request.headers.get("Authorization");
   if (!authorization) return answer(401, { error: "no authorization header" });
   const asked = await request.json().catch(() => null);
-  if (typeof asked?.find_id !== "string") return answer(400, { error: "no find_id" });
+  if (typeof asked?.photo_path !== "string") return answer(400, { error: "no photo_path" });
 
   const caller = createClient(env("SUPABASE_URL"), env("SUPABASE_ANON_KEY"), {
     global: { headers: { Authorization: authorization } },
   });
-  const find = await caller
-    .from("finds")
-    .select("kind, photo_path")
-    .eq("id", asked.find_id)
-    .maybeSingle();
-  if (find.error || !find.data) return answer(404, { error: "no such find" });
-  if (find.data.kind !== "plant") return answer(400, { error: "not a plant" });
-
-  const photo = await caller.storage.from(BUCKET).download(find.data.photo_path);
+  const photo = await caller.storage.from(BUCKET).download(asked.photo_path);
   if (photo.error) return answer(404, { error: "the photo is not on the server yet" });
 
   const guesses = await plants(photo.data);

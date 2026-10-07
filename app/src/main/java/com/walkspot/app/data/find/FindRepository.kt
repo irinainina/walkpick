@@ -10,6 +10,7 @@ import com.walkspot.app.data.walk.TrackPoint
 import com.walkspot.app.data.walk.WalkRecorder
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import kotlinx.coroutines.withTimeoutOrNull
 import java.time.Instant
 import java.util.UUID
 import javax.inject.Inject
@@ -17,6 +18,9 @@ import javax.inject.Inject
 // Enough for a full-screen photo on a phone; the camera gives four times as many pixels.
 private const val LONGEST_SIDE = 1600
 private const val JPEG_QUALITY = 85
+
+// How long the camera shows "Identifying" before it gives up waiting for a name.
+private const val NAMING_WAIT_MS = 12_000L
 
 /** How much a photo is shrunk so that its longest side is [longest]; a small photo is never enlarged. */
 internal fun keptScale(width: Int, height: Int, longest: Int = LONGEST_SIDE): Float =
@@ -48,10 +52,12 @@ class FindRepository @Inject constructor(
     private val account: AccountStore,
     private val recorder: WalkRecorder,
     private val locations: LocationFinder,
+    private val identifier: FindIdentifier,
 ) {
     /**
      * Keeps [photo], which the camera gives [turned] degrees off, with the walk going on, as a find
-     * at the place the phone is; null without a walk, a place or an owner.
+     * at the place the phone is, and names it if that can be done at once; null without a walk,
+     * a place or an owner.
      */
     suspend fun add(photo: Bitmap, turned: Int, kind: FindKind): FindEntity? {
         val track = recorder.track.value ?: return null
@@ -68,6 +74,9 @@ class FindRepository @Inject constructor(
             photos.keep(find.photoPath) { kept.compress(Bitmap.CompressFormat.JPEG, JPEG_QUALITY, it) }
         }
         recorder.add(find)
+        // Without an answer in time the find keeps its kind and gets its name with a later sync.
+        val named = withTimeoutOrNull(NAMING_WAIT_MS) { identifier.identified(find) }
+        if (named != null && named != find) recorder.changeFind(find.id) { named }
         return find
     }
 }

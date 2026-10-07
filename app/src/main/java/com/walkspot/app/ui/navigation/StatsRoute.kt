@@ -21,6 +21,12 @@ internal fun NavGraphBuilder.statsRoute(navController: NavHostController) {
                 onTab = model::open,
                 onMove = model::move,
                 onPickBar = model::pick,
+                onPickDay = { day -> model.pickDay(day) { navController.navigate(walkSummaryRoute(it)) } },
+                onWalk = { walk ->
+                    model.closeDay()
+                    navController.navigate(walkSummaryRoute(walk))
+                },
+                onCloseDay = model::closeDay,
             )
         }
     }

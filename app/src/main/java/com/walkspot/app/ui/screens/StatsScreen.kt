@@ -40,6 +40,7 @@ import com.walkspot.app.ui.stats.StatsTab
 import com.walkspot.app.ui.theme.AppShadows
 import com.walkspot.app.ui.theme.AppTheme
 import com.walkspot.app.ui.theme.Spacing
+import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.util.Locale
 
@@ -59,6 +60,9 @@ fun StatsScreen(
     onTab: (StatsTab) -> Unit,
     onMove: (Long) -> Unit,
     onPickBar: (Int) -> Unit,
+    onPickDay: (LocalDate) -> Unit,
+    onWalk: (String) -> Unit,
+    onCloseDay: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Column(
@@ -79,7 +83,7 @@ fun StatsScreen(
         Spacer(Modifier.height(Spacing.m))
         Period(state, onMove)
         Spacer(Modifier.height(Spacing.m))
-        StatsChartCard(state, onPickBar, Modifier.padding(horizontal = Spacing.ml))
+        StatsChartCard(state, onPickBar, onPickDay, Modifier.padding(horizontal = Spacing.ml))
         Spacer(Modifier.height(Spacing.ml))
         Column(
             modifier = Modifier.padding(horizontal = Spacing.ml),
@@ -92,6 +96,9 @@ fun StatsScreen(
             }
         }
         Spacer(Modifier.height(Spacing.l))
+    }
+    if (state.day != null && state.dayWalks.isNotEmpty()) {
+        DayWalksSheet(state.day, state.dayWalks, onWalk, onCloseDay)
     }
 }
 

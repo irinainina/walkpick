@@ -1,7 +1,5 @@
 package com.walkspot.app.ui.screens
 
-import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -19,24 +17,17 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Path
-import androidx.compose.ui.graphics.StrokeCap
-import androidx.compose.ui.graphics.StrokeJoin
-import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.walkspot.app.R
 import com.walkspot.app.data.walk.title
 import com.walkspot.app.ui.components.AppCard
+import com.walkspot.app.ui.components.RouteSketch
 import com.walkspot.app.ui.components.RowChevron
 import com.walkspot.app.ui.counted
 import com.walkspot.app.ui.distanceText
 import com.walkspot.app.ui.grouped
-import com.walkspot.app.ui.map.DiaryDay
 import com.walkspot.app.ui.map.DiaryWalk
 import com.walkspot.app.ui.map.MapState
 import com.walkspot.app.ui.theme.AppTheme
@@ -48,14 +39,6 @@ import java.util.Locale
 import kotlin.math.roundToInt
 
 private val SketchSize = 104.dp
-private val SketchEdge = 20.dp
-private val SketchLine = 3.dp
-private val SketchStart = 8.dp
-private val SketchStartLine = 2.dp
-private val FlagHalfWidth = 3.dp
-private val FlagHalfHeight = 4.dp
-private val FlagNotch = 1.dp
-private val FlagLine = 1.5.dp
 private const val SECONDS_IN_MINUTE = 60.0
 
 private val ThisYear = DateTimeFormatter.ofPattern("EEE, MMM d", Locale.ENGLISH)
@@ -75,7 +58,7 @@ internal fun DiaryList(
             item(key = day.day.toEpochDay()) {
                 if (index > 0) Spacer(Modifier.height(Spacing.l))
                 Text(
-                    text = dayTitle(day, state.today),
+                    text = dayTitle(day.day, state.today),
                     style = MaterialTheme.typography.titleSmall,
                     color = AppTheme.colors.textPrimary,
                 )
@@ -90,12 +73,13 @@ internal fun DiaryList(
     }
 }
 
+/** A day as the diary calls it: Today, Yesterday, or its date. */
 @Composable
-private fun dayTitle(day: DiaryDay, today: LocalDate): String = when {
-    day.day == today -> stringResource(R.string.diary_today)
-    day.day == today.minusDays(1) -> stringResource(R.string.diary_yesterday)
-    day.day.year == today.year -> ThisYear.format(day.day)
-    else -> AnotherYear.format(day.day)
+internal fun dayTitle(day: LocalDate, today: LocalDate): String = when {
+    day == today -> stringResource(R.string.diary_today)
+    day == today.minusDays(1) -> stringResource(R.string.diary_yesterday)
+    day.year == today.year -> ThisYear.format(day)
+    else -> AnotherYear.format(day)
 }
 
 @Composable
@@ -111,7 +95,7 @@ private fun WalkCard(item: DiaryWalk, state: MapState, onWalk: (String) -> Unit)
             horizontalArrangement = Arrangement.spacedBy(Spacing.sm),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            RouteSketch(item.sketch)
+            RouteSketch(item.sketch, Modifier.size(SketchSize))
             Column(
                 modifier = Modifier
                     .weight(1f)
@@ -153,46 +137,5 @@ private fun WalkCard(item: DiaryWalk, state: MapState, onWalk: (String) -> Unit)
             }
             RowChevron()
         }
-    }
-}
-
-// The line of the walk alone, on a tile of the colour of the map: a real map in every card of a long
-// list would be too heavy.
-@Composable
-private fun RouteSketch(sketch: List<Pair<Float, Float>>) {
-    val colors = AppTheme.colors
-    Canvas(
-        Modifier
-            .size(SketchSize)
-            .clip(MaterialTheme.shapes.medium)
-            .background(colors.mapGround),
-    ) {
-        if (sketch.isEmpty()) return@Canvas
-        val edge = SketchEdge.toPx()
-        val side = size.width - edge * 2
-        val points = sketch.map { (x, y) -> Offset(edge + x * side, edge + y * side) }
-        val path = Path().apply {
-            moveTo(points.first().x, points.first().y)
-            points.drop(1).forEach { lineTo(it.x, it.y) }
-        }
-        drawPath(
-            path = path,
-            brush = Brush.horizontalGradient(listOf(colors.accent, colors.accentLight), edge, edge + side),
-            style = Stroke(SketchLine.toPx(), cap = StrokeCap.Round, join = StrokeJoin.Round),
-        )
-        drawCircle(colors.surface, SketchStart.toPx(), points.first())
-        drawCircle(colors.accent, SketchStart.toPx(), points.first(), style = Stroke(SketchStartLine.toPx()))
-        val (x, y) = points.first()
-        val (halfWidth, halfHeight) = FlagHalfWidth.toPx() to FlagHalfHeight.toPx()
-        val flag = Path().apply {
-            moveTo(x - halfWidth, y + halfHeight)
-            lineTo(x - halfWidth, y - halfHeight)
-            lineTo(x + halfWidth, y - halfHeight)
-            lineTo(x + halfWidth - FlagNotch.toPx(), y - halfHeight / 2)
-            lineTo(x + halfWidth, y)
-            lineTo(x - halfWidth, y)
-        }
-        val line = Stroke(FlagLine.toPx(), cap = StrokeCap.Round, join = StrokeJoin.Round)
-        drawPath(flag, colors.accent, style = line)
     }
 }

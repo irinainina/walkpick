@@ -20,6 +20,8 @@ data class CameraState(
     val identifying: Boolean = false,
     /** The last photo was not kept: the phone could not tell where it is. */
     val noPlace: Boolean = false,
+    /** The find just made, until its card is opened. */
+    val found: String? = null,
 )
 
 @HiltViewModel
@@ -38,7 +40,9 @@ class CameraViewModel @Inject constructor(private val finds: FindRepository) : V
         current.update { it.copy(identifying = true, noPlace = false) }
         viewModelScope.launch {
             val kept = finds.add(photo, turned, current.value.kind)
-            current.update { it.copy(identifying = false, noPlace = kept == null) }
+            current.update { it.copy(identifying = false, noPlace = kept == null, found = kept?.id) }
         }
     }
+
+    fun shown() = current.update { it.copy(found = null) }
 }
