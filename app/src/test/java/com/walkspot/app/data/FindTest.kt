@@ -1,11 +1,15 @@
 package com.walkspot.app.data
 
 import com.walkspot.app.data.find.Guess
+import com.walkspot.app.data.find.described
 import com.walkspot.app.data.find.keptScale
 import com.walkspot.app.data.find.named
 import com.walkspot.app.data.find.newFind
+import com.walkspot.app.data.find.placed
 import com.walkspot.app.data.local.FindAlternative
 import com.walkspot.app.data.local.FindKind
+import com.walkspot.app.data.places.Place
+import com.walkspot.app.data.places.parseSummary
 import com.walkspot.app.data.walk.TrackPoint
 import com.walkspot.app.data.walk.WalkDraft
 import com.walkspot.app.data.walk.WalkTrack
@@ -91,6 +95,30 @@ class FindTest {
         assertEquals(FindKind.UNKNOWN, unknown.kind)
         assertNull(unknown.name)
         assertFalse(unknown.synced)
+    }
+
+    @Test
+    fun aPlaceIsTheNearestArticleAndABirdTakesTheTitleOfItsArticle() {
+        val place = newFind("find-1", "user-1", "walk-1", here, noon, FindKind.PLACE)
+            .placed(listOf(Place(1, "Golden Gate", 50.45, 30.52), Place(2, "Opera", 50.45, 30.51)), noon)
+        assertEquals("Golden Gate", place.name)
+        assertNull(place.match)
+        assertEquals(listOf("Opera"), place.alternatives.map { it.name })
+
+        val article = parseSummary(
+            """{"title":"Great tit","extract":"A small bird.",
+                "content_urls":{"desktop":{"page":"https://en.wikipedia.org/wiki/Great_tit"}}}""",
+        )
+        val bird = newFind("find-2", "user-1", "walk-1", here, noon, FindKind.BIRD)
+            .named(listOf(Guess("Parus major", "Parus major", 0.82f)), noon)
+            .described(article, noon)
+        assertEquals("Great tit", bird.name)
+        assertEquals("Parus major", bird.latinName)
+        assertEquals("A small bird.", bird.description)
+        assertEquals("https://en.wikipedia.org/wiki/Great_tit", bird.wikipediaUrl)
+
+        assertEquals("", place.described(null, noon).description)
+        assertEquals(FindKind.UNKNOWN, place.placed(emptyList(), noon).kind)
     }
 
     @Test

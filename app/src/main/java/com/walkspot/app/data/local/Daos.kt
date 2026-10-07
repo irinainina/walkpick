@@ -81,6 +81,13 @@ interface FindDao : SyncedDao<FindEntity> {
     @Query("SELECT * FROM finds WHERE kind = :kind AND name IS NULL AND synced = 1")
     suspend fun unnamed(kind: FindKind): List<FindEntity>
 
+    /** The latest named finds nobody has looked up in Wikipedia yet. */
+    @Query(
+        "SELECT * FROM finds WHERE name IS NOT NULL AND description IS NULL " +
+            "ORDER BY takenAt DESC LIMIT :limit",
+    )
+    suspend fun undescribed(limit: Int): List<FindEntity>
+
     @Query("SELECT * FROM finds WHERE walkId = :walkId ORDER BY takenAt")
     fun watchOf(walkId: String): Flow<List<FindEntity>>
 
