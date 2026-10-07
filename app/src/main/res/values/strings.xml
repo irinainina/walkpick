@@ -133,6 +133,13 @@
     <string name="walk_minimize">Minimize</string>
     <string name="walk_locate">My location</string>
     <string name="walk_photo">Take a photo</string>
+    <string name="map_diary">Diary</string>
+    <string name="diary_today">Today</string>
+    <string name="diary_yesterday">Yesterday</string>
+    <string name="diary_steps">%1$s steps · %2$s</string>
+    <string name="diary_no_photos">No photos</string>
+    <string name="diary_photo">%d photo</string>
+    <string name="diary_photos">%d photos</string>
     <string name="walk_number">Walk %d</string>
     <string name="walk_time">time</string>
     <string name="walk_minutes">%d min</string>

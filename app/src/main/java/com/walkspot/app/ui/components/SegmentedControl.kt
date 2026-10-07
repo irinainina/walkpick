@@ -15,6 +15,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.dropShadow
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
 import com.walkspot.app.ui.theme.AppShadows
@@ -30,12 +31,14 @@ fun SegmentedControl(
     selectedIndex: Int,
     onSelect: (Int) -> Unit,
     modifier: Modifier = Modifier,
+    // White where the control lies over a map.
+    ground: Color = AppTheme.colors.surfaceTint,
 ) {
     Row(
         modifier = modifier
             .fillMaxWidth()
             .height(ControlHeight)
-            .background(AppTheme.colors.surfaceTint, PillShape)
+            .background(ground, PillShape)
             .padding(Spacing.xs),
     ) {
         options.forEachIndexed { index, option ->

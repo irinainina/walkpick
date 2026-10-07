@@ -28,6 +28,7 @@ import com.google.android.gms.maps.model.StrokeStyle
 import com.google.android.gms.maps.model.StyleSpan
 import com.google.maps.android.compose.CameraPositionState
 import com.google.maps.android.compose.GoogleMap
+import com.google.maps.android.compose.GoogleMapComposable
 import com.google.maps.android.compose.MapProperties
 import com.google.maps.android.compose.MapUiSettings
 import com.google.maps.android.compose.Polyline
@@ -39,6 +40,11 @@ private const val CLOSEST_ZOOM = 17f
 private const val ONE_POINT_ZOOM = 16f
 private val StartBorder = 3.dp
 private val FlagSize = 16.dp
+private val PlacePin = 36.dp
+private val PlaceIcon = 20.dp
+private val MeHalo = 48.dp
+private val MeSize = 20.dp
+private const val HALO_ALPHA = 0.24f
 
 // The screens draw their own buttons over the map.
 private val BareMap = MapUiSettings(
@@ -56,6 +62,12 @@ private val StillMap = BareMap.copy(
     zoomGesturesEnabled = false,
 )
 
+/** What is drawn on the map: lines and markers, not ordinary composables. */
+typealias MapContent =
+    @Composable
+    @GoogleMapComposable
+    () -> Unit
+
 /** Google Map in the colours of the design; routes and pins go into [content]. */
 @Composable
 fun WalkMap(
@@ -65,7 +77,7 @@ fun WalkMap(
     covered: PaddingValues = PaddingValues(),
     still: Boolean = false,
     onLoaded: () -> Unit = {},
-    content: @Composable () -> Unit = {},
+    content: MapContent = {},
 ) {
     val context = LocalContext.current
     val style = remember { MapStyleOptions.loadRawResourceStyle(context, R.raw.map_style) }
@@ -106,6 +118,48 @@ fun RouteLine(route: List<LatLng>, width: Dp) {
         startCap = RoundCap(),
         endCap = RoundCap(),
     )
+}
+
+/** An older route: one colour, paler the older it is. */
+@Composable
+fun PaleRouteLine(route: List<LatLng>, width: Dp, alpha: Float) {
+    if (route.size < 2) return
+    Polyline(
+        points = route,
+        color = AppTheme.colors.accent.copy(alpha = alpha),
+        width = with(LocalDensity.current) { width.toPx() },
+        jointType = JointType.ROUND,
+    )
+}
+
+/** Where the phone is: a dot in a halo; the content of a map marker. */
+@Composable
+fun MeDot() {
+    val colors = AppTheme.colors
+    val halo = colors.accentLight.copy(alpha = HALO_ALPHA)
+    Box(Modifier.size(MeHalo).background(halo, CircleShape), Alignment.Center) {
+        Box(
+            Modifier
+                .size(MeSize)
+                .background(colors.accent, CircleShape)
+                .border(StartBorder, colors.surface, CircleShape),
+        )
+    }
+}
+
+/** A place from Wikipedia not visited yet: pale beside the finds; the content of a map marker. */
+@Composable
+fun UnvisitedPlacePin() {
+    val colors = AppTheme.colors
+    Box(
+        Modifier
+            .size(PlacePin)
+            .background(colors.surface, CircleShape)
+            .border(StartBorder, colors.unvisitedRing, CircleShape),
+        contentAlignment = Alignment.Center,
+    ) {
+        Icon(painterResource(R.drawable.ic_globe), null, Modifier.size(PlaceIcon), colors.unvisited)
+    }
 }
 
 /** The round flag that marks where a walk began; the content of a map marker. */

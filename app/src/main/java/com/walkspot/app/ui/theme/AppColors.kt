@@ -29,6 +29,8 @@ data class AppColors(
     /** The same gradient turned 45 degrees: the steps ring. */
     val accentDiagonal: Brush,
     val canvas: Color,
+    /** The land of the map, for the pictures of routes drawn without one. */
+    val mapGround: Color,
     val surface: Color,
     /** A chart track and anything inactive. */
     val surfaceTint: Color,
@@ -37,6 +39,9 @@ data class AppColors(
     /** A chart bar of a day that is over and did not reach the goal. */
     val barPast: Color,
     val divider: Color,
+    /** A place of the map that was not visited yet: its icon and the ring around it. */
+    val unvisited: Color,
+    val unvisitedRing: Color,
     /** The dimmed screen under a sheet. */
     val scrim: Color,
     val streak: Color,
@@ -74,11 +79,14 @@ internal val walkSpotColors = AppColors(
     accentGradient = Brush.horizontalGradient(listOf(Blue, Cyan)),
     accentDiagonal = DiagonalGradient(listOf(Blue, Cyan)),
     canvas = Canvas,
+    mapGround = Fog,
     surface = White,
     surfaceTint = PaleBlue,
     switchOff = Mist,
     barPast = LightBlue,
     divider = Line,
+    unvisited = LightBlue,
+    unvisitedRing = Sky,
     scrim = Ink.copy(alpha = 0.48f),
     streak = Orange,
     streakTint = Peach,

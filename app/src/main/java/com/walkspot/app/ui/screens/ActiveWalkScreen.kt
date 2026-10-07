@@ -1,7 +1,6 @@
 package com.walkspot.app.ui.screens
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -40,6 +39,7 @@ import com.google.maps.android.compose.rememberCameraPositionState
 import com.google.maps.android.compose.rememberUpdatedMarkerState
 import com.walkspot.app.R
 import com.walkspot.app.ui.components.CircleButton
+import com.walkspot.app.ui.components.MeDot
 import com.walkspot.app.ui.components.RouteLine
 import com.walkspot.app.ui.components.StartFlag
 import com.walkspot.app.ui.components.WalkMap
@@ -63,11 +63,7 @@ private val CoveredTop = 184.dp
 private val CoveredBottom = 264.dp
 private val RouteEdge = 56.dp
 private val StartPin = 32.dp
-private val StartBorder = 3.dp
 private val StartLabelWidth = 56.dp
-private val MeHalo = 48.dp
-private val MeDot = 20.dp
-private const val HALO_ALPHA = 0.24f
 private val SmallIcon = 16.dp
 
 // The walk has left its start once it is this far from it; closer, "back to start" says nothing.
@@ -166,17 +162,7 @@ private fun Route(route: List<LatLng>) {
         }
     }
     route.lastOrNull()?.let { me ->
-        MarkerComposable(state = rememberUpdatedMarkerState(me), anchor = centre) {
-            val halo = colors.accentLight.copy(alpha = HALO_ALPHA)
-            Box(Modifier.size(MeHalo).background(halo, CircleShape), Alignment.Center) {
-                Box(
-                    Modifier
-                        .size(MeDot)
-                        .background(colors.accent, CircleShape)
-                        .border(StartBorder, colors.surface, CircleShape),
-                )
-            }
-        }
+        MarkerComposable(state = rememberUpdatedMarkerState(me), anchor = centre) { MeDot() }
     }
 }
 

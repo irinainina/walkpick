@@ -56,12 +56,18 @@ interface WalkDao : SyncedDao<WalkEntity> {
     @Query("SELECT * FROM walks WHERE id = :id")
     fun watch(id: String): Flow<WalkEntity?>
 
+    @Query("SELECT * FROM walks ORDER BY startedAt DESC")
+    fun watchAll(): Flow<List<WalkEntity>>
+
     @Query("UPDATE walks SET note = :note, updatedAt = :now, synced = 0 WHERE id = :id")
     suspend fun setNote(id: String, note: String?, now: Instant)
 
     @Query("DELETE FROM walks WHERE id = :id")
     suspend fun delete(id: String)
 }
+
+/** How many photos a walk has; every find is a photo. */
+data class WalkPhotos(val walkId: String, val photos: Int)
 
 @Dao
 interface FindDao : SyncedDao<FindEntity> {
@@ -73,6 +79,9 @@ interface FindDao : SyncedDao<FindEntity> {
 
     @Query("SELECT COUNT(*) FROM finds")
     fun watchCount(): Flow<Int>
+
+    @Query("SELECT walkId, COUNT(*) AS photos FROM finds GROUP BY walkId")
+    fun watchPhotoCounts(): Flow<List<WalkPhotos>>
 }
 
 @Dao

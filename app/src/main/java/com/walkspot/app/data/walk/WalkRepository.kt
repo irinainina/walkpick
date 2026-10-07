@@ -41,6 +41,9 @@ class WalkRepository @Inject constructor(
 ) {
     fun watch(id: String): Flow<WalkEntity?> = walks.watch(id)
 
+    /** Every walk, the latest first. */
+    fun watchAll(): Flow<List<WalkEntity>> = walks.watchAll()
+
     /** A note of blanks only is no note. */
     suspend fun setNote(id: String, note: String) {
         walks.setNote(id, note.trim().ifEmpty { null }, Instant.now())
