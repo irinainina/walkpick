@@ -28,6 +28,7 @@ import com.walkspot.app.R
 import com.walkspot.app.data.local.FindEntity
 import com.walkspot.app.data.walk.title
 import com.walkspot.app.ui.components.AppCard
+import com.walkspot.app.ui.components.EmptyState
 import com.walkspot.app.ui.components.FindPhoto
 import com.walkspot.app.ui.components.RouteSketch
 import com.walkspot.app.ui.components.RowChevron
@@ -65,6 +66,13 @@ internal fun DiaryList(
     content: PaddingValues,
     modifier: Modifier = Modifier,
 ) {
+    if (state.days.isEmpty()) {
+        if (!state.loaded) return
+        val title = stringResource(R.string.diary_empty_title)
+        val under = modifier.padding(top = content.calculateTopPadding())
+        EmptyState(R.drawable.ic_route, title, stringResource(R.string.diary_empty_text), under)
+        return
+    }
     LazyColumn(modifier, contentPadding = content) {
         state.days.forEachIndexed { index, day ->
             item(key = day.day.toEpochDay()) {

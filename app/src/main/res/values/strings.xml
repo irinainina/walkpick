@@ -178,6 +178,12 @@
     <string name="viewer_count">%1$d of %2$d</string>
     <string name="map_all">All</string>
     <string name="diary_more">+%1$d</string>
+    <string name="diary_empty_title">No walks yet</string>
+    <string name="diary_empty_text">Start a walk on Today and it will appear here with its route and photos</string>
+    <string name="gallery_empty_title">No photos yet</string>
+    <string name="gallery_empty_text">Photos of plants, birds and places you take on a walk gather here</string>
+    <string name="gallery_best_empty_title">No best photos yet</string>
+    <string name="gallery_best_empty_text">Star a photo and it will appear here</string>
     <string name="map_plants">Plants</string>
     <string name="map_birds">Birds</string>
     <string name="map_places">Places</string>

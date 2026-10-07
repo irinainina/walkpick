@@ -24,6 +24,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
@@ -56,6 +57,8 @@ data class DiaryDay(val day: LocalDate, val walks: List<DiaryWalk>)
 data class MapState(
     val tab: MapTab = MapTab.Map,
     val today: LocalDate = LocalDate.now(),
+    /** The walks have been read: until then an empty diary is not yet an empty one. */
+    val loaded: Boolean = false,
     /** The routes of the latest walks as (latitude, longitude), the latest first. */
     val routes: List<List<Pair<Double, Double>>> = emptyList(),
     val days: List<DiaryDay> = emptyList(),
@@ -102,12 +105,18 @@ class MapViewModel @Inject constructor(
         combine(diary, settings.value, chosen, finds.watchAll()) { (routes, days), units, chosen, finds ->
             chosen.copy(
                 today = LocalDate.now(),
+                loaded = true,
                 routes = routes,
                 days = days,
                 finds = finds,
                 distanceUnit = units.distance,
             )
         }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(KEEP_AFTER_LEAVING_MS), MapState())
+
+    init {
+        // Before the first walk there is no route to open the map on: it opens where the phone is.
+        viewModelScope.launch { if (diary.first().first.isEmpty() && canLocate) locate() }
+    }
 
     fun open(tab: MapTab) = chosen.update { it.copy(tab = tab) }
 

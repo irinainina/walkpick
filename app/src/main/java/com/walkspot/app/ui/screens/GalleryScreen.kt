@@ -44,6 +44,7 @@ import com.walkspot.app.data.walk.title
 import com.walkspot.app.ui.components.AppButton
 import com.walkspot.app.ui.components.AppButtonStyle
 import com.walkspot.app.ui.components.AppSheet
+import com.walkspot.app.ui.components.EmptyState
 import com.walkspot.app.ui.components.SegmentedControl
 import com.walkspot.app.ui.counted
 import com.walkspot.app.ui.gallery.GalleryGroup
@@ -76,6 +77,8 @@ class GalleryActions(
 @Composable
 fun GalleryScreen(state: GalleryState, actions: GalleryActions, modifier: Modifier = Modifier) {
     val selected = state.selected
+    val all = state.tab == GalleryTab.All
+    val empty = if (all) state.groups.isEmpty() else state.best.isEmpty()
     var deleting by rememberSaveable { mutableStateOf(false) }
     Box(
         modifier
@@ -83,7 +86,7 @@ fun GalleryScreen(state: GalleryState, actions: GalleryActions, modifier: Modifi
             .background(AppTheme.colors.canvas),
     ) {
         Column(Modifier.statusBarsPadding()) {
-            Heading(selected, actions)
+            Heading(selected, actions, canSelect = !empty)
             Spacer(Modifier.height(Spacing.sm))
             SegmentedControl(
                 options = listOf(stringResource(R.string.gallery_all), stringResource(R.string.gallery_best)),
@@ -91,7 +94,19 @@ fun GalleryScreen(state: GalleryState, actions: GalleryActions, modifier: Modifi
                 onSelect = { actions.onTab(GalleryTab.entries[it]) },
                 modifier = Modifier.padding(horizontal = Spacing.ml),
             )
-            Photos(state, actions)
+            when {
+                !empty -> Photos(state, actions)
+                all -> EmptyState(
+                    iconRes = R.drawable.ic_camera,
+                    title = stringResource(R.string.gallery_empty_title),
+                    text = stringResource(R.string.gallery_empty_text),
+                )
+                else -> EmptyState(
+                    iconRes = R.drawable.ic_star,
+                    title = stringResource(R.string.gallery_best_empty_title),
+                    text = stringResource(R.string.gallery_best_empty_text),
+                )
+            }
         }
         if (selected != null) {
             SelectionBar(
@@ -123,7 +138,7 @@ fun GalleryScreen(state: GalleryState, actions: GalleryActions, modifier: Modifi
 
 // "Gallery" and Select, or the number picked and Cancel.
 @Composable
-private fun Heading(selected: Set<String>?, actions: GalleryActions) {
+private fun Heading(selected: Set<String>?, actions: GalleryActions, canSelect: Boolean) {
     val colors = AppTheme.colors
     Row(
         modifier = Modifier.padding(start = Spacing.ml, top = Spacing.m, end = Spacing.ml),
@@ -137,6 +152,8 @@ private fun Heading(selected: Set<String>?, actions: GalleryActions) {
             color = colors.textPrimary,
         )
         val picking = selected != null
+        // Nothing to pick from: the word would lead nowhere.
+        if (!picking && !canSelect) return@Row
         Text(
             text = stringResource(if (picking) R.string.settings_cancel else R.string.gallery_select),
             modifier = Modifier.clickable(role = Role.Button) {
