@@ -25,6 +25,10 @@ import java.util.UUID
 import javax.inject.Inject
 import javax.inject.Singleton
 
+// Some phones switch the step sensor off behind a dark screen. A count below this share of the steps
+// the distance takes is such a cut, not a long stride.
+private const val TRUSTED_SHARE = 0.7
+
 /**
  * A walk being recorded. A new leg starts after every pause: the way from where the walk was paused to
  * where it went on is not walked distance.
@@ -67,6 +71,12 @@ data class WalkTrack(
     fun withCounter(reading: Long): WalkTrack {
         val added = lastCounter?.let { reading - it }?.takeIf { it > 0 && !paused } ?: 0
         return copy(steps = steps + added.toInt(), lastCounter = reading)
+    }
+
+    /** The counted steps, or the steps the distance takes when the counter fell far behind it. */
+    fun stepsWith(strideM: Double): Int {
+        val needed = (metres / strideM).toInt()
+        return if (steps < needed * TRUSTED_SHARE) needed else steps
     }
 
     fun pausedAt(at: Instant): WalkTrack = if (paused) this else copy(pausedAt = at)

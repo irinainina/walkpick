@@ -25,6 +25,11 @@
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_LOCATION" />
 
+    <!-- MIUI's battery page of the app is offered before a walk: see BatteryLimits. -->
+    <queries>
+        <package android:name="com.miui.powerkeeper" />
+    </queries>
+
     <application
         android:name=".WalkSpotApplication"
         android:allowBackup="false"

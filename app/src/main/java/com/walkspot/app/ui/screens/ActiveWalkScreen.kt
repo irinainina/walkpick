@@ -156,6 +156,23 @@ fun ActiveWalkScreen(
     }
 }
 
+/** Offered once on phones that take the step sensor away from an app behind a dark screen. */
+@Composable
+internal fun BatterySheet(onOpen: () -> Unit, onDismiss: () -> Unit) {
+    AppSheet(stringResource(R.string.walk_battery_title), onDismiss) {
+        Spacer(Modifier.height(Spacing.s))
+        Text(
+            text = stringResource(R.string.walk_battery_text),
+            style = MaterialTheme.typography.bodyLarge,
+            color = AppTheme.colors.textSecondary,
+        )
+        Spacer(Modifier.height(Spacing.l))
+        AppButton(stringResource(R.string.walk_battery_open), onClick = onOpen)
+        Spacer(Modifier.height(Spacing.sm))
+        AppButton(stringResource(R.string.walk_battery_later), onDismiss, style = AppButtonStyle.Secondary)
+    }
+}
+
 // The route in the gradient of the app, the start under its flag and the walker at the end of the line.
 @Composable
 private fun Route(route: List<LatLng>) {

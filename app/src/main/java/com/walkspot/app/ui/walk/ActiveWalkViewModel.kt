@@ -1,11 +1,15 @@
 package com.walkspot.app.ui.walk
 
+import android.content.Intent
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.walkspot.app.data.health.HealthRepository
 import com.walkspot.app.data.local.HealthKind
+import com.walkspot.app.data.profile.ProfileStore
+import com.walkspot.app.data.profile.strideM
 import com.walkspot.app.data.settings.DistanceUnit
 import com.walkspot.app.data.settings.SettingsStore
+import com.walkspot.app.data.walk.BatteryLimits
 import com.walkspot.app.data.walk.TrackPoint
 import com.walkspot.app.data.walk.WalkControl
 import com.walkspot.app.data.walk.WalkRecorder
@@ -16,6 +20,7 @@ import com.walkspot.app.data.walk.paceSecondsPerKm
 import com.walkspot.app.data.walk.walkCalories
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
@@ -50,8 +55,10 @@ class ActiveWalkViewModel @Inject constructor(
     private val recorder: WalkRecorder,
     private val control: WalkControl,
     private val walks: WalkRepository,
+    private val limits: BatteryLimits,
     health: HealthRepository,
     settings: SettingsStore,
+    profiles: ProfileStore,
 ) : ViewModel() {
 
     private val clock = flow {
@@ -64,12 +71,26 @@ class ActiveWalkViewModel @Inject constructor(
     private val weight = health.watchLatest(HealthKind.WEIGHT)
 
     val state: StateFlow<ActiveWalkState> =
-        combine(recorder.track, clock, weight, settings.value) { track, now, kg, units ->
-            activeWalkState(track, now, kg).copy(distanceUnit = units.distance)
+        combine(recorder.track, clock, weight, settings.value, profiles.value) { track, now, kg, units, me ->
+            val stride = strideM(me.sex, me.heightCm)
+            activeWalkState(track, now, kg, stride).copy(distanceUnit = units.distance)
         }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(KEEP_AFTER_LEAVING_MS), ActiveWalkState())
 
+    private val battery = MutableStateFlow<Intent?>(null)
+
+    /** The phone's battery page to offer; null when there is nothing to ask. */
+    val batteryPage: StateFlow<Intent?> = battery
+
     /** The location permission must be granted already. */
-    fun start() = control.start()
+    fun start() {
+        control.start()
+        viewModelScope.launch { battery.value = limits.pageToOffer() }
+    }
+
+    fun batteryAnswered() {
+        battery.value = null
+        viewModelScope.launch { limits.offered() }
+    }
 
     fun togglePause() {
         val now = Instant.now()
@@ -85,7 +106,12 @@ class ActiveWalkViewModel @Inject constructor(
     }
 }
 
-internal fun activeWalkState(track: WalkTrack?, now: Instant, weightKg: Double?): ActiveWalkState {
+internal fun activeWalkState(
+    track: WalkTrack?,
+    now: Instant,
+    weightKg: Double?,
+    strideM: Double,
+): ActiveWalkState {
     if (track == null) return ActiveWalkState()
     val seconds = track.movingSeconds(now).coerceAtLeast(0)
     val points = track.points
@@ -93,7 +119,7 @@ internal fun activeWalkState(track: WalkTrack?, now: Instant, weightKg: Double?)
         recording = true,
         paused = track.paused,
         seconds = seconds,
-        steps = track.steps,
+        steps = track.stepsWith(strideM),
         metres = track.metres,
         paceSecondsPerKm = paceSecondsPerKm(track.metres, seconds),
         calories = walkCalories(track.metres, seconds, weightKg),

@@ -20,6 +20,7 @@ import com.google.android.gms.location.LocationServices
 import com.google.android.gms.location.LocationSettingsRequest
 import com.google.android.gms.location.Priority
 import com.walkspot.app.ui.screens.ActiveWalkScreen
+import com.walkspot.app.ui.screens.BatterySheet
 import com.walkspot.app.ui.walk.ActiveWalkViewModel
 
 private const val LOCATION = Manifest.permission.ACCESS_FINE_LOCATION
@@ -51,6 +52,16 @@ internal fun NavGraphBuilder.activeWalkRoute(navController: NavHostController) {
             } else {
                 ask.launch(location)
             }
+        }
+        val batteryPage by model.batteryPage.collectAsStateWithLifecycle()
+        batteryPage?.let { page ->
+            BatterySheet(
+                onOpen = {
+                    model.batteryAnswered()
+                    activity?.startActivity(page)
+                },
+                onDismiss = model::batteryAnswered,
+            )
         }
         ActiveWalkScreen(
             state = state,

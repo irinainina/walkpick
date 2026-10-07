@@ -81,13 +81,15 @@ class WalkTrackTest {
     @Test
     fun aWalkThatNeverLeftItsSpotIsNotKept() {
         val standing = WalkTrack(start).with(point(0.0, 0))
-        assertNull(walkEntity(standing, 313, at(600), 64.2))
+        assertNull(walkEntity(standing, 313, at(600), 64.2, 0.7))
         val walked = standing.with(point(0.001, 60)).withCounter(10).withCounter(160)
-        val entry = walkEntity(walked, 313, at(600), 64.2)!!
+        val entry = walkEntity(walked, 313, at(600), 64.2, 0.7)!!
         assertEquals(313, entry.number)
         assertEquals(111, entry.distanceM)
         assertEquals(600, entry.durationS)
         assertEquals(150, entry.steps)
+        // The phone cut the counter off on the way: the steps are the ones 111 m take.
+        assertEquals(158, standing.with(point(0.001, 60)).withCounter(10).withCounter(40).stepsWith(0.7))
         assertEquals("30.520000 50.450000,30.520000 50.451000", entry.route)
         assertEquals(false, entry.synced)
     }

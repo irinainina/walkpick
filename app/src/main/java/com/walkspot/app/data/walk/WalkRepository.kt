@@ -6,6 +6,8 @@ import com.walkspot.app.data.local.PendingDeleteDao
 import com.walkspot.app.data.local.PendingDeleteEntity
 import com.walkspot.app.data.local.WalkDao
 import com.walkspot.app.data.local.WalkEntity
+import com.walkspot.app.data.profile.ProfileStore
+import com.walkspot.app.data.profile.strideM
 import com.walkspot.app.data.steps.StepsRepository
 import com.walkspot.app.data.sync.SyncScheduler
 import kotlinx.coroutines.flow.Flow
@@ -20,7 +22,13 @@ private const val WALKS_TABLE = "walks"
  * The finished walk as the diary keeps it, or null when it never left its spot and no photo was taken:
  * a walk with nothing to show is a slip of the finger, not an entry.
  */
-fun walkEntity(track: WalkTrack, number: Int, endedAt: Instant, weightKg: Double?): WalkEntity? {
+fun walkEntity(
+    track: WalkTrack,
+    number: Int,
+    endedAt: Instant,
+    weightKg: Double?,
+    strideM: Double,
+): WalkEntity? {
     val route = routeText(track.points)
     if (route == null && track.finds.isEmpty()) return null
     val seconds = track.movingSeconds(endedAt).coerceAtLeast(0)
@@ -30,7 +38,7 @@ fun walkEntity(track: WalkTrack, number: Int, endedAt: Instant, weightKg: Double
         startedAt = track.startedAt,
         endedAt = endedAt,
         durationS = seconds.toInt(),
-        steps = track.steps,
+        steps = track.stepsWith(strideM),
         distanceM = track.metres.roundToInt(),
         calories = walkCalories(track.metres, seconds, weightKg),
         route = route,
@@ -45,6 +53,7 @@ class WalkRepository @Inject constructor(
     private val sync: SyncScheduler,
     private val namer: WalkNamer,
     private val steps: StepsRepository,
+    private val profiles: ProfileStore,
 ) {
     fun watch(id: String): Flow<WalkEntity?> = walks.watch(id)
 
@@ -77,7 +86,8 @@ class WalkRepository @Inject constructor(
 
     /** Keeps the walk under the next number and sends it to the server; null when [walkEntity] refused it. */
     suspend fun save(track: WalkTrack, weightKg: Double?): WalkEntity? {
-        val kept = walkEntity(track, walks.lastNumber() + 1, Instant.now(), weightKg) ?: return null
+        val stride = profiles.value.first().let { strideM(it.sex, it.heightCm) }
+        val kept = walkEntity(track, walks.lastNumber() + 1, Instant.now(), weightKg, stride) ?: return null
         val walk = kept.copy(name = namer.name(track))
         walks.save(listOf(walk))
         steps.add(walk)

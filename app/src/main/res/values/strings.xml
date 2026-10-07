@@ -131,6 +131,10 @@
     <string name="walk_finish_text">It will be saved to your diary.</string>
     <string name="walk_finish">Finish walk</string>
     <string name="walk_keep_walking">Keep walking</string>
+    <string name="walk_battery_title">Count every step</string>
+    <string name="walk_battery_text">This phone switches the step sensor off a few minutes after the screen goes dark. Choose No restrictions for WalkSpot to keep counting.</string>
+    <string name="walk_battery_open">Open battery settings</string>
+    <string name="walk_battery_later">Not now</string>
     <string name="walk_back_to_start">%s back to start</string>
     <string name="walk_start">Start</string>
     <string name="walk_minimize">Minimize</string>

@@ -64,7 +64,7 @@ class FindTest {
         val standing = WalkTrack(noon).with(here)
         val find = newFind("find-1", "user-1", standing.id, here, noon, FindKind.PLANT)
 
-        val kept = walkEntity(standing.copy(finds = listOf(find)), 1, noon.plusSeconds(120), null)
+        val kept = walkEntity(standing.copy(finds = listOf(find)), 1, noon.plusSeconds(120), null, 0.7)
 
         assertEquals(standing.id, kept?.id)
         assertNull(kept?.route)
@@ -127,6 +127,6 @@ class FindTest {
             .with(TrackPoint(50.4500, 30.5200, noon, 8f))
             .with(TrackPoint(50.4510, 30.5200, noon.plusSeconds(90), 8f))
 
-        assertEquals(track.id, walkEntity(track, 1, noon.plusSeconds(120), null)?.id)
+        assertEquals(track.id, walkEntity(track, 1, noon.plusSeconds(120), null, 0.7)?.id)
     }
 }
