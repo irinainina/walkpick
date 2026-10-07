@@ -52,6 +52,15 @@ interface WalkDao : SyncedDao<WalkEntity> {
 
     @Query("SELECT COALESCE(MAX(number), 0) FROM walks")
     suspend fun lastNumber(): Int
+
+    @Query("SELECT * FROM walks WHERE id = :id")
+    fun watch(id: String): Flow<WalkEntity?>
+
+    @Query("UPDATE walks SET note = :note, updatedAt = :now, synced = 0 WHERE id = :id")
+    suspend fun setNote(id: String, note: String?, now: Instant)
+
+    @Query("DELETE FROM walks WHERE id = :id")
+    suspend fun delete(id: String)
 }
 
 @Dao

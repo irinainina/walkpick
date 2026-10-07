@@ -11,8 +11,8 @@ import com.walkspot.app.ui.theme.WalkSpotTheme
 /**
  * adb shell am start -n com.walkspot.app/.debug.GalleryActivity [--es page <page>]
  * Pages: charts, signin, steps, today, today-off, stats-week, stats-month, stats-year, stats-all,
- * health-mood, health-weight, health-pressure, health-glucose, health-empty, map, walk, active-walk, profile,
- * settings, settings-off.
+ * health-mood, health-weight, health-pressure, health-glucose, health-empty, map, walk, active-walk,
+ * walk-summary, profile, settings, settings-off.
  */
 class GalleryActivity : ComponentActivity() {
 
@@ -32,6 +32,7 @@ class GalleryActivity : ComponentActivity() {
                     "map" -> MapGallery()
                     "walk" -> WalkCheck()
                     "active-walk" -> ActiveWalkGallery()
+                    "walk-summary" -> WalkSummaryGallery()
                     "profile" -> ProfileGallery()
                     "settings" -> SettingsGallery(StepsAccess.COUNTING)
                     "settings-off" -> SettingsGallery(StepsAccess.NOT_ALLOWED)

@@ -76,12 +76,11 @@ class ActiveWalkViewModel @Inject constructor(
         if (recorder.track.value?.paused == true) recorder.resume(now) else recorder.pause(now)
     }
 
-    /** Ends the recording and keeps the walk; [onDone] runs once it is saved. */
-    fun stop(onDone: () -> Unit) {
+    /** Ends the recording and keeps the walk; [onDone] takes its id, or null when it was not kept. */
+    fun stop(onDone: (String?) -> Unit) {
         val track = control.stop()
         viewModelScope.launch {
-            if (track != null) walks.save(track, weight.first())
-            onDone()
+            onDone(track?.let { walks.save(it, weight.first()) }?.id)
         }
     }
 }

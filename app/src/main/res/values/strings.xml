@@ -133,6 +133,15 @@
     <string name="walk_minimize">Minimize</string>
     <string name="walk_locate">My location</string>
     <string name="walk_photo">Take a photo</string>
+    <string name="walk_number">Walk %d</string>
+    <string name="walk_time">time</string>
+    <string name="walk_minutes">%d min</string>
+    <string name="walk_note_hint">Add a note about this walk</string>
+    <string name="walk_done">Done</string>
+    <string name="walk_more">More</string>
+    <string name="walk_delete">Delete walk</string>
+    <string name="walk_delete_title">Delete this walk?</string>
+    <string name="walk_delete_text">Its route and note will be removed for good. This can\'t be undone.</string>
     <string name="walk_channel">Walk recording</string>
     <string name="walk_notification_title">Walk in progress</string>
     <string name="walk_notification_text">WalkSpot is recording your route</string>

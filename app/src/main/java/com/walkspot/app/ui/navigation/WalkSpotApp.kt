@@ -43,6 +43,7 @@ fun WalkSpotApp(signedIn: Boolean, walkAsked: Int, onStartShown: () -> Unit) {
             statsRoute(navController)
             healthRoute(navController)
             activeWalkRoute(navController)
+            walkSummaryRoute(navController)
             profileRoute(navController)
             settingsRoute(navController)
             val laidOut = setOf(

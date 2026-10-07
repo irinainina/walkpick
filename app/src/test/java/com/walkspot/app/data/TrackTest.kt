@@ -5,6 +5,7 @@ import com.walkspot.app.data.walk.continuesRoute
 import com.walkspot.app.data.walk.distanceM
 import com.walkspot.app.data.walk.paceSecondsPerKm
 import com.walkspot.app.data.walk.routeLengthM
+import com.walkspot.app.data.walk.routePlaces
 import com.walkspot.app.data.walk.routeText
 import com.walkspot.app.data.walk.walkCalories
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -75,6 +76,10 @@ class TrackTest {
     @Test
     fun theRouteIsWrittenAsLongitudeThenLatitude() {
         assertNull(routeText(listOf(origin)))
-        assertEquals("30.520000 50.450000,30.520000 50.451000", routeText(listOf(origin, point(0.001, 60))))
+        val text = routeText(listOf(origin, point(0.001, 60)))
+        assertEquals("30.520000 50.450000,30.520000 50.451000", text)
+        assertEquals(listOf(50.45 to 30.52, 50.451 to 30.52), routePlaces(text))
+        assertEquals(emptyList<Pair<Double, Double>>(), routePlaces(null))
+        assertEquals(listOf(50.45 to 30.52), routePlaces("30.52 50.45,broken"))
     }
 }

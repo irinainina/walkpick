@@ -29,26 +29,21 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.dropShadow
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import com.google.android.gms.maps.CameraUpdateFactory
-import com.google.android.gms.maps.model.JointType
 import com.google.android.gms.maps.model.LatLng
-import com.google.android.gms.maps.model.LatLngBounds
-import com.google.android.gms.maps.model.RoundCap
-import com.google.android.gms.maps.model.StrokeStyle
-import com.google.android.gms.maps.model.StyleSpan
 import com.google.maps.android.compose.CameraMoveStartedReason
 import com.google.maps.android.compose.MarkerComposable
-import com.google.maps.android.compose.Polyline
 import com.google.maps.android.compose.rememberCameraPositionState
 import com.google.maps.android.compose.rememberUpdatedMarkerState
 import com.walkspot.app.R
 import com.walkspot.app.ui.components.CircleButton
+import com.walkspot.app.ui.components.RouteLine
+import com.walkspot.app.ui.components.StartFlag
 import com.walkspot.app.ui.components.WalkMap
+import com.walkspot.app.ui.components.routeView
 import com.walkspot.app.ui.distanceText
 import com.walkspot.app.ui.theme.AppShadows
 import com.walkspot.app.ui.theme.AppTheme
@@ -58,7 +53,6 @@ import com.walkspot.app.ui.theme.Spacing
 import com.walkspot.app.ui.walk.ActiveWalkState
 import kotlinx.coroutines.launch
 
-private const val WALK_ZOOM = 16f
 private val TimerWidth = 200.dp
 private val TimerHeight = 72.dp
 private val RouteWidth = 6.dp
@@ -98,16 +92,7 @@ fun ActiveWalkScreen(
     LaunchedEffect(moved) { if (moved == CameraMoveStartedReason.GESTURE) following = false }
     val edge = with(LocalDensity.current) { RouteEdge.roundToPx() }
     // The start stays in the frame: the map shows the whole route, however far the walk has gone.
-    // Asked for only once the map is loaded: before that Google Maps cannot build a camera move.
-    val view = {
-        when {
-            route.size > 1 -> {
-                val bounds = LatLngBounds.builder().apply { route.forEach(::include) }.build()
-                CameraUpdateFactory.newLatLngBounds(bounds, edge)
-            }
-            else -> me?.let { CameraUpdateFactory.newLatLngZoom(it, WALK_ZOOM) }
-        }
-    }
+    val view = { routeView(route, edge) }
     var loaded by remember { mutableStateOf(false) }
     LaunchedEffect(me, following, loaded) {
         if (loaded && following) view()?.let { camera.animate(it) }
@@ -159,33 +144,14 @@ fun ActiveWalkScreen(
 @Composable
 private fun Route(route: List<LatLng>) {
     val colors = AppTheme.colors
-    if (route.size > 1) {
-        val (from, to) = colors.accent.toArgb() to colors.accentLight.toArgb()
-        val gradient = StrokeStyle.gradientBuilder(from, to).build()
-        Polyline(
-            points = route,
-            spans = listOf(StyleSpan(gradient, (route.size - 1).toDouble())),
-            width = with(LocalDensity.current) { RouteWidth.toPx() },
-            jointType = JointType.ROUND,
-            startCap = RoundCap(),
-            endCap = RoundCap(),
-        )
-    }
+    RouteLine(route, RouteWidth)
     val centre = Offset(0.5f, 0.5f)
     route.firstOrNull()?.let { start ->
         // The marker is anchored at the middle of the pin, the label hangs under it.
         val pinMiddle = Offset(0.5f, StartPin / 2 / (StartPin + Spacing.xs + Spacing.l))
         MarkerComposable(state = rememberUpdatedMarkerState(start), anchor = pinMiddle) {
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                Box(
-                    Modifier
-                        .size(StartPin)
-                        .background(colors.surface, CircleShape)
-                        .border(StartBorder, colors.accent, CircleShape),
-                    contentAlignment = Alignment.Center,
-                ) {
-                    Icon(painterResource(R.drawable.ic_flag), null, Modifier.size(SmallIcon), colors.accent)
-                }
+                StartFlag(StartPin)
                 Spacer(Modifier.height(Spacing.xs))
                 Box(
                     Modifier

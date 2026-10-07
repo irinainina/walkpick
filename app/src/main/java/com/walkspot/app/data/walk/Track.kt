@@ -77,6 +77,12 @@ fun walkCalories(metres: Double, movingSeconds: Long, weightKg: Double?): Int {
     return (met * (weightKg ?: USUAL_WEIGHT_KG) * hours).roundToInt()
 }
 
+/** A kept route back as (latitude, longitude) pairs; whatever cannot be read is left out. */
+fun routePlaces(route: String?): List<Pair<Double, Double>> = route.orEmpty().split(",").mapNotNull { place ->
+    val numbers = place.trim().split(" ").mapNotNull(String::toDoubleOrNull)
+    if (numbers.size == 2) numbers[1] to numbers[0] else null
+}
+
 /** The route as the walks table keeps it: "lon lat,lon lat"; null when there is no line to draw. */
 fun routeText(points: List<TrackPoint>): String? {
     if (points.size < 2) return null
