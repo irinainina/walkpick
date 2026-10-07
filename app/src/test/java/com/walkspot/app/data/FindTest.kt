@@ -1,7 +1,10 @@
 package com.walkspot.app.data
 
+import com.walkspot.app.data.find.Guess
 import com.walkspot.app.data.find.keptScale
+import com.walkspot.app.data.find.named
 import com.walkspot.app.data.find.newFind
+import com.walkspot.app.data.local.FindAlternative
 import com.walkspot.app.data.local.FindKind
 import com.walkspot.app.data.walk.TrackPoint
 import com.walkspot.app.data.walk.WalkDraft
@@ -18,6 +21,7 @@ import java.time.Instant
 class FindTest {
 
     private val noon = Instant.parse("2026-10-07T12:00:00Z")
+    private val here = TrackPoint(50.45, 30.52, noon, 8f)
 
     @Test
     fun aLargePhotoIsShrunkToItsLongestSideAndASmallOneIsLeftAlone() {
@@ -27,14 +31,15 @@ class FindTest {
     }
 
     @Test
-    fun aNewFindIsUnknownAndStandsWhereThePhoneWas() {
-        val find = newFind("find-1", "walk-1", TrackPoint(50.45, 30.52, noon, 8f), noon)
+    fun aNewFindHasTheChosenKindNoNameYetAndStandsWhereThePhoneWas() {
+        val find = newFind("find-1", "user-1", "walk-1", here, noon, FindKind.BIRD)
 
         assertEquals("walk-1", find.walkId)
         assertEquals(50.45, find.latitude)
         assertEquals(30.52, find.longitude)
-        assertEquals("find-1.jpg", find.photoPath)
-        assertEquals(FindKind.UNKNOWN, find.kind)
+        assertEquals("user-1/find-1.jpg", find.photoPath)
+        assertEquals(FindKind.BIRD, find.kind)
+        assertNull(find.name)
         assertFalse(find.synced)
     }
 
@@ -42,7 +47,7 @@ class FindTest {
     fun aPhotoOfAWalkGoingOnSurvivesTheEndOfTheApp(@TempDir folder: File) {
         val draft = WalkDraft(File(folder, "walk.json"))
         val track = WalkTrack(noon)
-        val find = newFind("find-1", track.id, TrackPoint(50.45, 30.52, noon, 8f), noon)
+        val find = newFind("find-1", "user-1", track.id, here, noon, FindKind.PLANT)
 
         draft.write(track.copy(finds = listOf(find)))
 
@@ -52,14 +57,40 @@ class FindTest {
 
     @Test
     fun aWalkThatNeverLeftItsSpotIsKeptForItsPhotos() {
-        val standing = WalkTrack(noon).with(TrackPoint(50.45, 30.52, noon, 8f))
-        val find = newFind("find-1", standing.id, TrackPoint(50.45, 30.52, noon, 8f), noon)
+        val standing = WalkTrack(noon).with(here)
+        val find = newFind("find-1", "user-1", standing.id, here, noon, FindKind.PLANT)
 
         val kept = walkEntity(standing.copy(finds = listOf(find)), 1, noon.plusSeconds(120), null)
 
         assertEquals(standing.id, kept?.id)
         assertNull(kept?.route)
         assertEquals(0, kept?.distanceM)
+    }
+
+    @Test
+    fun theBestGuessNamesTheFindAndTheOthersWaitAsAlternatives() {
+        val find = newFind("find-1", "user-1", "walk-1", here, noon, FindKind.PLANT).copy(synced = true)
+        val guesses = listOf(Guess("Common daisy", "Bellis perennis", 0.94f), Guess("Oxeye daisy", "", 0.03f))
+
+        val named = find.named(guesses, noon.plusSeconds(5))
+
+        assertEquals("Common daisy", named.name)
+        assertEquals("Bellis perennis", named.latinName)
+        assertEquals(0.94f, named.match)
+        assertEquals(listOf(FindAlternative("Oxeye daisy", null, 0.03f)), named.alternatives)
+        assertEquals(FindKind.PLANT, named.kind)
+        assertFalse(named.synced)
+    }
+
+    @Test
+    fun aFindTheServiceCouldNotNameBecomesUnknown() {
+        val find = newFind("find-1", "user-1", "walk-1", here, noon, FindKind.PLANT).copy(synced = true)
+
+        val unknown = find.named(emptyList(), noon.plusSeconds(5))
+
+        assertEquals(FindKind.UNKNOWN, unknown.kind)
+        assertNull(unknown.name)
+        assertFalse(unknown.synced)
     }
 
     @Test

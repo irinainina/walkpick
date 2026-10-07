@@ -1,5 +1,6 @@
 package com.walkspot.app.data
 
+import com.walkspot.app.data.find.Guess
 import com.walkspot.app.data.local.HealthEntryEntity
 import com.walkspot.app.data.local.HealthKind
 import com.walkspot.app.data.local.PendingDeleteDao
@@ -39,6 +40,13 @@ class CloudSyncTest {
         override suspend fun delete(table: String, id: String) {
             calls += "delete $table $id"
         }
+
+        override suspend fun upload(bucket: String, path: String, jpeg: ByteArray) {
+            check(!failing) { "no network" }
+            calls += "upload $bucket $path ${jpeg.size}"
+        }
+
+        override suspend fun identify(findId: String): List<Guess>? = null
     }
 
     private class FakeDeletes(vararg rows: PendingDeleteEntity) : PendingDeleteDao {

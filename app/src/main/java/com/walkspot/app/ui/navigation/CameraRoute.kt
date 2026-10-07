@@ -60,6 +60,7 @@ internal fun NavGraphBuilder.cameraRoute(navController: NavHostController) {
         CameraScreen(
             state = state,
             onClose = { navController.popBackStack() },
+            onKind = model::choose,
             onFlash = model::toggleFlash,
             onFlip = {
                 val back = camera.cameraSelector == CameraSelector.DEFAULT_BACK_CAMERA

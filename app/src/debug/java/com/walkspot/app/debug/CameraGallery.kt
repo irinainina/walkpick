@@ -17,7 +17,7 @@ private val Scene = Brush.linearGradient(listOf(Color(0xFFC3F0B8), Color(0xFF5AA
 @Composable
 fun CameraGallery(identifying: Boolean) {
     val state = CameraState(identifying = identifying)
-    CameraScreen(state, onClose = {}, onFlash = {}, onFlip = {}, onShutter = {}) {
+    CameraScreen(state, onClose = {}, onKind = {}, onFlash = {}, onFlip = {}, onShutter = {}) {
         Box(Modifier.fillMaxSize().background(Scene))
     }
 }

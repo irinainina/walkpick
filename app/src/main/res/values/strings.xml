@@ -132,6 +132,9 @@
     <string name="walk_start">Start</string>
     <string name="walk_minimize">Minimize</string>
     <string name="walk_locate">My location</string>
+    <string name="find_plant">Plant</string>
+    <string name="find_bird">Bird</string>
+    <string name="find_place">Place</string>
     <string name="camera_close">Close</string>
     <string name="camera_flash">Flash</string>
     <string name="camera_flip">Switch camera</string>

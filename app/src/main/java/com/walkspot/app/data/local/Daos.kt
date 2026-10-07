@@ -77,6 +77,10 @@ interface FindDao : SyncedDao<FindEntity> {
     @Query("UPDATE finds SET synced = 1 WHERE id = :id AND updatedAt = :updatedAt")
     suspend fun markSynced(id: String, updatedAt: Instant)
 
+    /** The finds of a kind that are on the server and still have no name. */
+    @Query("SELECT * FROM finds WHERE kind = :kind AND name IS NULL AND synced = 1")
+    suspend fun unnamed(kind: FindKind): List<FindEntity>
+
     @Query("SELECT * FROM finds WHERE walkId = :walkId ORDER BY takenAt")
     fun watchOf(walkId: String): Flow<List<FindEntity>>
 

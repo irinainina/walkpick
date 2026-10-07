@@ -33,6 +33,8 @@ fun SegmentedControl(
     modifier: Modifier = Modifier,
     // White where the control lies over a map.
     ground: Color = AppTheme.colors.surfaceTint,
+    selectedText: Color = AppTheme.colors.accent,
+    otherText: Color = AppTheme.colors.textInactive,
 ) {
     Row(
         modifier = modifier
@@ -62,7 +64,7 @@ fun SegmentedControl(
                 Text(
                     text = option,
                     style = with(MaterialTheme.typography) { if (selected) labelMedium else bodyMedium },
-                    color = if (selected) AppTheme.colors.accent else AppTheme.colors.textInactive,
+                    color = if (selected) selectedText else otherText,
                     maxLines = 1,
                 )
             }

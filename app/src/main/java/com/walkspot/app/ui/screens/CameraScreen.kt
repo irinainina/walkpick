@@ -41,8 +41,10 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.walkspot.app.R
+import com.walkspot.app.data.local.FindKind
 import com.walkspot.app.ui.camera.CameraState
 import com.walkspot.app.ui.components.CircleButton
+import com.walkspot.app.ui.components.SegmentedControl
 import com.walkspot.app.ui.theme.AppTheme
 import com.walkspot.app.ui.theme.CardShape
 import com.walkspot.app.ui.theme.PillShape
@@ -51,6 +53,14 @@ import com.walkspot.app.ui.theme.Spacing
 private val HintEdge = 40.dp
 private val HintHeight = 36.dp
 private val FocusSize = 196.dp
+private val PickerWidth = 224.dp
+
+// What a photo can be told to show; the rest is found out by the service of that kind.
+private val Kinds = listOf(
+    FindKind.PLANT to R.string.find_plant,
+    FindKind.BIRD to R.string.find_bird,
+    FindKind.PLACE to R.string.find_place,
+)
 private val FocusArm = 32.dp
 private val FocusLine = 3.dp
 private val BarTop = 36.dp
@@ -73,6 +83,7 @@ private const val FULL_TURN = 360f
 fun CameraScreen(
     state: CameraState,
     onClose: () -> Unit,
+    onKind: (FindKind) -> Unit,
     onFlash: () -> Unit,
     onFlip: () -> Unit,
     onShutter: () -> Unit,
@@ -117,7 +128,10 @@ fun CameraScreen(
             } else {
                 Spacer(Modifier.height(Spacing.l))
                 Hint(if (state.noPlace) R.string.camera_no_place else R.string.camera_hint)
-                Box(Modifier.weight(1f), contentAlignment = Alignment.Center) { FocusFrame() }
+                Box(Modifier.weight(1f), contentAlignment = Alignment.Center) {
+                    FocusFrame()
+                    KindPicker(state.kind, onKind, Modifier.align(Alignment.BottomCenter))
+                }
                 BottomBar(onShutter, onFlip)
             }
         }
@@ -142,6 +156,22 @@ private fun Hint(textRes: Int) {
             maxLines = 1,
         )
     }
+}
+
+@Composable
+private fun KindPicker(kind: FindKind, onKind: (FindKind) -> Unit, modifier: Modifier = Modifier) {
+    val colors = AppTheme.colors
+    SegmentedControl(
+        options = Kinds.map { stringResource(it.second) },
+        selectedIndex = Kinds.indexOfFirst { it.first == kind },
+        onSelect = { onKind(Kinds[it].first) },
+        modifier = modifier
+            .padding(bottom = Spacing.m)
+            .width(PickerWidth),
+        ground = colors.photoHint,
+        selectedText = colors.textPrimary,
+        otherText = colors.onAccent,
+    )
 }
 
 // Four corners of a square: where to keep the subject.

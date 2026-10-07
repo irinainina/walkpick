@@ -1,16 +1,15 @@
 package com.walkspot.app.data.find
 
-import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.Matrix
+import com.walkspot.app.data.account.AccountStore
 import com.walkspot.app.data.local.FindEntity
+import com.walkspot.app.data.local.FindKind
 import com.walkspot.app.data.walk.LocationFinder
 import com.walkspot.app.data.walk.TrackPoint
 import com.walkspot.app.data.walk.WalkRecorder
-import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import java.io.File
 import java.time.Instant
 import java.util.UUID
 import javax.inject.Inject
@@ -23,34 +22,42 @@ private const val JPEG_QUALITY = 85
 internal fun keptScale(width: Int, height: Int, longest: Int = LONGEST_SIDE): Float =
     (longest.toFloat() / maxOf(width, height)).coerceAtMost(1f)
 
-/** A photo just taken on the walk [walkId]: a find nobody has named yet. */
-internal fun newFind(id: String, walkId: String, place: TrackPoint, takenAt: Instant) = FindEntity(
+/** A photo [owner] has just taken on the walk [walkId]: a find nobody has named yet. */
+internal fun newFind(
+    id: String,
+    owner: String,
+    walkId: String,
+    place: TrackPoint,
+    takenAt: Instant,
+    kind: FindKind,
+) = FindEntity(
     id = id,
     walkId = walkId,
     takenAt = takenAt,
     latitude = place.latitude,
     longitude = place.longitude,
-    photoPath = "$id.jpg",
+    // The bucket lets a user into the folder named by the user's id only.
+    photoPath = "$owner/$id.jpg",
+    // What the walker said it is; the name comes from the service that knows this kind.
+    kind = kind,
     updatedAt = takenAt,
 )
 
 class FindRepository @Inject constructor(
-    @ApplicationContext context: Context,
+    private val photos: PhotoStore,
+    private val account: AccountStore,
     private val recorder: WalkRecorder,
     private val locations: LocationFinder,
 ) {
-    private val folder = File(context.filesDir, "photos")
-
-    fun file(find: FindEntity) = File(folder, find.photoPath)
-
     /**
      * Keeps [photo], which the camera gives [turned] degrees off, with the walk going on, as a find
-     * at the place the phone is; null without a walk or without a place.
+     * at the place the phone is; null without a walk, a place or an owner.
      */
-    suspend fun add(photo: Bitmap, turned: Int): FindEntity? {
+    suspend fun add(photo: Bitmap, turned: Int, kind: FindKind): FindEntity? {
         val track = recorder.track.value ?: return null
         val place = track.points.lastOrNull() ?: locations.find() ?: return null
-        val find = newFind(UUID.randomUUID().toString(), track.id, place, Instant.now())
+        val owner = account.lastUserId() ?: return null
+        val find = newFind(UUID.randomUUID().toString(), owner, track.id, place, Instant.now(), kind)
         withContext(Dispatchers.IO) {
             val scale = keptScale(photo.width, photo.height)
             val upright = Matrix().apply {
@@ -58,8 +65,7 @@ class FindRepository @Inject constructor(
                 postRotate(turned.toFloat())
             }
             val kept = Bitmap.createBitmap(photo, 0, 0, photo.width, photo.height, upright, true)
-            folder.mkdirs()
-            file(find).outputStream().use { kept.compress(Bitmap.CompressFormat.JPEG, JPEG_QUALITY, it) }
+            photos.keep(find.photoPath) { kept.compress(Bitmap.CompressFormat.JPEG, JPEG_QUALITY, it) }
         }
         recorder.add(find)
         return find
