@@ -38,6 +38,9 @@ import com.google.maps.android.compose.MarkerComposable
 import com.google.maps.android.compose.rememberCameraPositionState
 import com.google.maps.android.compose.rememberUpdatedMarkerState
 import com.walkspot.app.R
+import com.walkspot.app.ui.components.AppButton
+import com.walkspot.app.ui.components.AppButtonStyle
+import com.walkspot.app.ui.components.AppSheet
 import com.walkspot.app.ui.components.CircleButton
 import com.walkspot.app.ui.components.MeDot
 import com.walkspot.app.ui.components.RouteLine
@@ -90,6 +93,8 @@ fun ActiveWalkScreen(
     // The start stays in the frame: the map shows the whole route, however far the walk has gone.
     val view = { routeView(route, edge) }
     var loaded by remember { mutableStateOf(false) }
+    // A walk is not ended by a slip of the finger: Stop asks first.
+    var stopping by remember { mutableStateOf(false) }
     LaunchedEffect(me, following, loaded) {
         if (loaded && following) view()?.let { camera.animate(it) }
     }
@@ -131,7 +136,22 @@ fun ActiveWalkScreen(
                 tint = AppTheme.colors.accent,
                 raised = true,
             )
-            ActiveWalkPanel(state, onPause, onCamera, onStop)
+            ActiveWalkPanel(state, onPause, onCamera, onStop = { stopping = true })
+        }
+    }
+    if (stopping) {
+        AppSheet(stringResource(R.string.walk_finish_title), onDismiss = { stopping = false }) {
+            Spacer(Modifier.height(Spacing.s))
+            Text(
+                text = stringResource(R.string.walk_finish_text),
+                style = MaterialTheme.typography.bodyLarge,
+                color = AppTheme.colors.textSecondary,
+            )
+            Spacer(Modifier.height(Spacing.l))
+            AppButton(stringResource(R.string.walk_finish), onClick = onStop)
+            Spacer(Modifier.height(Spacing.sm))
+            val keep = stringResource(R.string.walk_keep_walking)
+            AppButton(keep, { stopping = false }, style = AppButtonStyle.Secondary)
         }
     }
 }

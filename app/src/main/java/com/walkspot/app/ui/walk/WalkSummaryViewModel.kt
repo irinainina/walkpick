@@ -44,6 +44,10 @@ class WalkSummaryViewModel @Inject constructor(
         if (note.trim() != kept) viewModelScope.launch { walks.setNote(id, note) }
     }
 
+    fun rename(name: String) {
+        viewModelScope.launch { walks.setName(id, name) }
+    }
+
     fun delete(onDone: () -> Unit) {
         viewModelScope.launch {
             walks.delete(id)

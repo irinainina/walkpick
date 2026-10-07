@@ -1,10 +1,8 @@
 package com.walkspot.app.data
 
 import com.walkspot.app.data.local.DailyStepsEntity
-import com.walkspot.app.data.steps.CounterReading
-import com.walkspot.app.data.steps.addSteps
-import com.walkspot.app.data.steps.splitByDay
-import com.walkspot.app.data.steps.stepsBetween
+import com.walkspot.app.data.local.WalkEntity
+import com.walkspot.app.data.steps.dayWith
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import java.time.Instant
@@ -15,55 +13,49 @@ class StepsTest {
 
     private val day = LocalDate.of(2026, 9, 29)
     private val now = Instant.parse("2026-09-29T18:00:00Z")
+    private val start = Instant.parse("2026-09-29T15:40:00Z")
 
-    private fun reading(boot: Int, steps: Long) = CounterReading(boot, steps, now)
-
-    private fun at(time: String) = Instant.parse("2026-09-$time:00Z")
-
-    private fun split(from: String, to: String, steps: Int) =
-        splitByDay(at(from), at(to), steps, ZoneOffset.UTC)
+    private val walk = WalkEntity(
+        id = "walk",
+        number = 312,
+        startedAt = start,
+        endedAt = start.plusSeconds(2880),
+        durationS = 2880,
+        steps = 5230,
+        distanceM = 3900,
+        updatedAt = start,
+    )
 
     @Test
-    fun theFirstReadingOnlySetsTheStartingPoint() {
-        assertEquals(0, stepsBetween(null, reading(7, 5230)))
+    fun theFirstWalkOfADayMakesTheDay() {
+        val made = dayWith(null, walk, sign = 1, goal = 10000, now = now, zone = ZoneOffset.UTC)
+
+        assertEquals(DailyStepsEntity(day, 5230, 3900, 48, 10000, now), made)
     }
 
     @Test
-    fun stepsAreTheGrowthOfTheCounter() {
-        assertEquals(110, stepsBetween(reading(7, 5230), reading(7, 5340)))
+    fun aSecondWalkIsAddedAndTheDayKeepsItsGoalAndIsSentAgain() {
+        val stored = DailyStepsEntity(day, 5230, 3900, 48, 8000, now.minusSeconds(3600), synced = true)
+        val evening = walk.copy(steps = 770, distanceM = 600, durationS = 420)
+
+        val grown = dayWith(stored, evening, 1, 10000, now)
+
+        assertEquals(DailyStepsEntity(day, 6000, 4500, 55, 8000, now), grown)
     }
 
     @Test
-    fun afterARestartTheCounterIsCountedFromZero() {
-        assertEquals(300, stepsBetween(reading(7, 5230), reading(8, 300)))
+    fun aDeletedWalkLeavesItsDayAndTheDayNeverGoesBelowNothing() {
+        val stored = DailyStepsEntity(day, 6000, 4500, 55, 8000, now.minusSeconds(3600), synced = true)
+
+        assertEquals(DailyStepsEntity(day, 770, 600, 7, 8000, now), dayWith(stored, walk, -1, 10000, now))
+        val empty = DailyStepsEntity(day, 100, 50, 1, 8000, now.minusSeconds(3600))
+        assertEquals(DailyStepsEntity(day, 0, 0, 0, 8000, now), dayWith(empty, walk, -1, 10000, now))
     }
 
     @Test
-    fun stepsOfOneDayStayInIt() {
-        assertEquals(mapOf(day to 110), split("29T08:00", "29T09:00", 110))
-    }
+    fun aWalkBelongsToTheDayItBeganOnInTheZoneOfThePhone() {
+        val late = walk.copy(startedAt = Instant.parse("2026-09-29T22:30:00Z"))
 
-    @Test
-    fun stepsOverMidnightAreSharedByTime() {
-        assertEquals(mapOf(day.minusDays(1) to 250, day to 750), split("28T23:00", "29T03:00", 1000))
-    }
-
-    @Test
-    fun aLongSleepSpreadsStepsOverItsDays() {
-        val shares = split("27T12:00", "29T12:00", 1000)
-        assertEquals(mapOf(day.minusDays(2) to 250, day.minusDays(1) to 500, day to 250), shares)
-    }
-
-    @Test
-    fun aNewDayTakesTodaysGoalAndItsEstimates() {
-        val rows = addSteps(emptyList(), mapOf(day to 5230), 10000, 0.7, now)
-        assertEquals(listOf(DailyStepsEntity(day, 5230, 3661, 130, 10000, now)), rows)
-    }
-
-    @Test
-    fun aGrownDayKeepsItsGoalAndIsSentAgain() {
-        val stored = DailyStepsEntity(day, 5230, 3661, 130, 8000, now.minusSeconds(3600), synced = true)
-        val rows = addSteps(listOf(stored), mapOf(day to 770), 10000, 0.7, now)
-        assertEquals(listOf(DailyStepsEntity(day, 6000, 4200, 150, 8000, now)), rows)
+        assertEquals(day.plusDays(1), dayWith(null, late, 1, 10000, now, ZoneOffset.ofHours(3)).day)
     }
 }

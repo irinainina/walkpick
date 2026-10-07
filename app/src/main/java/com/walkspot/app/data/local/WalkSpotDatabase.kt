@@ -1,5 +1,6 @@
 package com.walkspot.app.data.local
 
+import androidx.room.AutoMigration
 import androidx.room.Database
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
@@ -12,7 +13,8 @@ import androidx.room.TypeConverters
         HealthEntryEntity::class,
         PendingDeleteEntity::class,
     ],
-    version = 1,
+    version = 2,
+    autoMigrations = [AutoMigration(from = 1, to = 2)],
 )
 @TypeConverters(Converters::class)
 abstract class WalkSpotDatabase : RoomDatabase() {

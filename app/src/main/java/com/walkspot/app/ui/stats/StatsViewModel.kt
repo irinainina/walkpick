@@ -4,15 +4,13 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.walkspot.app.data.local.DailyStepsEntity
 import com.walkspot.app.data.local.WalkDao
-import com.walkspot.app.data.profile.ProfileRepository
 import com.walkspot.app.data.settings.DistanceUnit
 import com.walkspot.app.data.settings.SettingsStore
-import com.walkspot.app.data.steps.DEFAULT_DAILY_GOAL
 import com.walkspot.app.data.steps.DayRange
+import com.walkspot.app.data.steps.FULL_DAY_STEPS
 import com.walkspot.app.data.steps.MonthAverage
 import com.walkspot.app.data.steps.PeriodStats
 import com.walkspot.app.data.steps.StepsRepository
-import com.walkspot.app.data.steps.goalMet
 import com.walkspot.app.data.steps.longestStreak
 import com.walkspot.app.data.steps.monthOf
 import com.walkspot.app.data.steps.monthlyAverages
@@ -40,12 +38,9 @@ import javax.inject.Inject
 private const val KEEP_AFTER_LEAVING_MS = 5_000L
 private const val DAYS_IN_WEEK = 7
 
-// The goal stands at five sixths of the track, as the goal line of the design does.
-private const val TRACK_OVER_GOAL = 1.2f
-
 enum class StatsTab { Week, Month, Year, All }
 
-data class CalendarDay(val day: LocalDate, val goalMet: Boolean)
+data class CalendarDay(val day: LocalDate, val walked: Boolean)
 
 data class StatsState(
     val tab: StatsTab,
@@ -54,17 +49,16 @@ data class StatsState(
     val canGoBack: Boolean,
     val canGoForward: Boolean,
     val stats: PeriodStats,
-    val goal: Int,
     val distanceUnit: DistanceUnit = DistanceUnit.KM,
     /** Days for Week, months for Year and All. */
     val bars: List<Bar> = emptyList(),
-    /** Where the goal line crosses the track; Week only. */
-    val goalLine: Float? = null,
     val selectedBar: Int? = null,
     /** Month only. */
     val calendar: List<CalendarDay> = emptyList(),
     val bestMonth: YearMonth? = null,
     val walks: Int = 0,
+    /** The days of the period shown that have a walk. */
+    val walkDays: Int = 0,
     val longestStreak: Int = 0,
 )
 
@@ -78,7 +72,6 @@ data class StatsChoice(
 @HiltViewModel
 class StatsViewModel @Inject constructor(
     steps: StepsRepository,
-    profiles: ProfileRepository,
     settings: SettingsStore,
     walks: WalkDao,
 ) : ViewModel() {
@@ -87,13 +80,11 @@ class StatsViewModel @Inject constructor(
 
     private val unit = settings.value.map { it.distance }
 
-    private val goal = profiles.profile.map { it.dailyGoal }
-
     private val walkDays = walks.watchStarts().map { starts -> starts.map { it.localDay() } }
 
     val state: StateFlow<StatsState?> =
-        combine(steps.watchDays(), walkDays, choice, goal, unit) { days, walked, choice, goal, unit ->
-            statsState(days, walked, choice, LocalDate.now(), goal).copy(distanceUnit = unit)
+        combine(steps.watchDays(), walkDays, choice, unit) { days, walked, choice, unit ->
+            statsState(days, walked, choice, LocalDate.now()).copy(distanceUnit = unit)
         }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(KEEP_AFTER_LEAVING_MS), null)
 
     fun open(tab: StatsTab) = choice.update { StatsChoice(tab) }
@@ -116,7 +107,6 @@ internal fun statsState(
     walkDays: List<LocalDate>,
     choice: StatsChoice,
     today: LocalDate,
-    profileGoal: Int = DEFAULT_DAILY_GOAL,
 ): StatsState {
     val tab = choice.tab
     val first = days.minByOrNull { it.day.toEpochDay() }?.day ?: today
@@ -126,16 +116,16 @@ internal fun statsState(
         StatsTab.Year -> yearOf(choice.anchor)
         StatsTab.All -> DayRange(first, today)
     }
-    val goal = days.lastOrNull { it.day == today }?.goal ?: profileGoal
+    val walked = walkDays.toSet()
     val byDay = days.associateBy { it.day }
     val months = when (tab) {
         StatsTab.Year, StatsTab.All -> monthlyAverages(days, range, today)
         else -> emptyList()
     }
     val bars = when (tab) {
-        StatsTab.Week -> dayBars(byDay, range, goal, today)
+        StatsTab.Week -> dayBars(byDay, range, today)
         StatsTab.Month -> emptyList()
-        else -> monthBars(months, years = tab == StatsTab.All, goal, YearMonth.from(today))
+        else -> monthBars(months, years = tab == StatsTab.All, YearMonth.from(today))
     }
     // The current day or month is picked until the user picks another; All shows no tip of its own.
     val current = bars.indexOfFirst { it.kind == BarKind.Today }.takeIf { it >= 0 && tab != StatsTab.All }
@@ -146,45 +136,38 @@ internal fun statsState(
         canGoBack = tab != StatsTab.All && range.from > first,
         canGoForward = tab != StatsTab.All && range.to < today,
         stats = stepsStats(days, range, today),
-        goal = goal,
         bars = bars,
-        goalLine = (goal / trackTop(goal, byDay.steps(range))).takeIf { tab == StatsTab.Week },
         selectedBar = choice.bar ?: current,
-        calendar = monthDays(byDay, range).takeIf { tab == StatsTab.Month }.orEmpty(),
+        calendar = monthDays(walked, range).takeIf { tab == StatsTab.Month }.orEmpty(),
         bestMonth = months.filter { it.steps > 0 }.maxByOrNull { it.steps }?.month,
         walks = walkDays.size,
-        longestStreak = longestStreak(walkDays.toSet()),
+        walkDays = walked.count { it in range },
+        longestStreak = longestStreak(walked),
     )
 }
 
-private fun trackTop(goal: Int, values: List<Int>) =
-    maxOf(goal * TRACK_OVER_GOAL, values.maxOrNull()?.toFloat() ?: 0f)
+// A track holds a full day of steps, or the best value shown when that is more.
+private fun trackTop(values: List<Int>) = maxOf(FULL_DAY_STEPS, values.maxOrNull() ?: 0).toFloat()
 
 private fun Map<LocalDate, DailyStepsEntity>.steps(week: DayRange) =
     List(DAYS_IN_WEEK) { this[week.from.plusDays(it.toLong())]?.steps ?: 0 }
 
-private fun monthDays(byDay: Map<LocalDate, DailyStepsEntity>, month: DayRange) =
-    List(month.to.dayOfMonth) { month.from.plusDays(it.toLong()) }
-        .map { CalendarDay(it, byDay[it]?.goalMet == true) }
+private fun monthDays(walked: Set<LocalDate>, month: DayRange) =
+    List(month.to.dayOfMonth) { month.from.plusDays(it.toLong()) }.map { CalendarDay(it, it in walked) }
 
 private fun dayBars(
     byDay: Map<LocalDate, DailyStepsEntity>,
     week: DayRange,
-    goal: Int,
     today: LocalDate,
 ): List<Bar> {
     val values = byDay.steps(week)
-    val top = trackTop(goal, values)
+    val top = trackTop(values)
     return values.mapIndexed { index, steps ->
         val day = week.from.plusDays(index.toLong())
         Bar(
             fraction = steps / top,
             label = day.dayOfWeek.getDisplayName(TextStyle.NARROW, Locale.ENGLISH),
-            kind = when {
-                day == today -> BarKind.Today
-                byDay[day]?.goalMet == true -> BarKind.GoalReached
-                else -> BarKind.Past
-            },
+            kind = if (day == today) BarKind.Today else BarKind.Past,
             tip = grouped(steps).takeIf { steps > 0 },
         )
     }
@@ -194,10 +177,9 @@ private fun dayBars(
 private fun monthBars(
     months: List<MonthAverage>,
     years: Boolean,
-    goal: Int,
     thisMonth: YearMonth,
 ): List<Bar> {
-    val top = trackTop(goal, months.map { it.steps })
+    val top = trackTop(months.map { it.steps })
     return months.mapIndexed { index, (month, steps) ->
         Bar(
             fraction = steps / top,

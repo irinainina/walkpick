@@ -62,6 +62,9 @@ interface WalkDao : SyncedDao<WalkEntity> {
     @Query("UPDATE walks SET note = :note, updatedAt = :now, synced = 0 WHERE id = :id")
     suspend fun setNote(id: String, note: String?, now: Instant)
 
+    @Query("UPDATE walks SET name = :name, updatedAt = :now, synced = 0 WHERE id = :id")
+    suspend fun setName(id: String, name: String, now: Instant)
+
     @Query("DELETE FROM walks WHERE id = :id")
     suspend fun delete(id: String)
 }

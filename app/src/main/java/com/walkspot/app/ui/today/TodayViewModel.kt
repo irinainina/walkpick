@@ -13,11 +13,10 @@ import com.walkspot.app.data.profile.ProfileRepository
 import com.walkspot.app.data.settings.AppSettings
 import com.walkspot.app.data.settings.DistanceUnit
 import com.walkspot.app.data.settings.SettingsStore
-import com.walkspot.app.data.steps.DEFAULT_DAILY_GOAL
+import com.walkspot.app.data.steps.FULL_DAY_STEPS
 import com.walkspot.app.data.steps.StepsAccess
 import com.walkspot.app.data.steps.StepsRepository
 import com.walkspot.app.data.steps.currentStreak
-import com.walkspot.app.data.steps.goalMet
 import com.walkspot.app.data.steps.weekOf
 import com.walkspot.app.ui.components.Bar
 import com.walkspot.app.ui.components.BarKind
@@ -44,7 +43,7 @@ import java.time.format.TextStyle
 import java.util.Locale
 import javax.inject.Inject
 
-// The sensor is cheap to ask; this is how stale the ring may get while the screen is open.
+// How stale the clock and the answer about the sensor may get while the screen is open.
 private const val REFRESH_MS = 10_000L
 private const val KEEP_AFTER_LEAVING_MS = 5_000L
 
@@ -53,7 +52,6 @@ data class TodayState(
     val name: String? = null,
     val access: StepsAccess = StepsAccess.COUNTING,
     val steps: Int = 0,
-    val goal: Int = DEFAULT_DAILY_GOAL,
     val distanceM: Int = 0,
     val distanceUnit: DistanceUnit = DistanceUnit.KM,
     val activeMinutes: Int = 0,
@@ -82,10 +80,7 @@ class TodayViewModel @Inject constructor(
         starts.map { it.atZone(ZoneId.systemDefault()).toLocalDate() }.toSet()
     }
 
-    // The goal of the profile stands in until today has a row of its own.
-    private val who = combine(account.user, profiles.profile, settings.value) { user, profile, settings ->
-        Triple(user?.name, profile.dailyGoal, settings)
-    }
+    private val who = combine(account.user, settings.value) { user, settings -> user?.name to settings }
 
     // One tile for a tab turned on in Profile, with the change of this month, as Health opens.
     @OptIn(ExperimentalCoroutinesApi::class)
@@ -104,8 +99,8 @@ class TodayViewModel @Inject constructor(
     // Null until the days are read: zeros shown first would jump to the real numbers.
     val state: StateFlow<TodayState?> =
         combine(steps.watchDays(), walkDays, now, access, who) { days, walkDays, now, access, who ->
-            val (name, goal, units) = who
-            val shown = todayState(days, walkDays, now, access, name, goal)
+            val (name, units) = who
+            val shown = todayState(days, walkDays, now, access, name)
             shown.copy(distanceUnit = units.distance, units = units)
         }
             .combine(tiles) { state, tiles -> state.copy(health = tiles) }
@@ -127,7 +122,6 @@ class TodayViewModel @Inject constructor(
     suspend fun keepFresh() {
         while (true) {
             access.value = steps.access()
-            steps.refresh()
             now.value = LocalDateTime.now()
             delay(REFRESH_MS)
         }
@@ -140,7 +134,6 @@ internal fun todayState(
     now: LocalDateTime,
     access: StepsAccess,
     name: String?,
-    goal: Int = DEFAULT_DAILY_GOAL,
 ): TodayState {
     val today = now.toLocalDate()
     val byDay = days.associateBy { it.day }
@@ -151,7 +144,6 @@ internal fun todayState(
         name = name,
         access = access,
         steps = row?.steps ?: 0,
-        goal = row?.goal ?: goal,
         distanceM = row?.distanceM ?: 0,
         activeMinutes = row?.activeMinutes ?: 0,
         streak = currentStreak(walkDays, today),
@@ -159,13 +151,9 @@ internal fun todayState(
             val day = monday.plusDays(weekday.ordinal.toLong())
             val steps = byDay[day]
             Bar(
-                fraction = steps?.let { it.steps.toFloat() / it.goal } ?: 0f,
+                fraction = (steps?.steps ?: 0).toFloat() / FULL_DAY_STEPS,
                 label = weekday.getDisplayName(TextStyle.NARROW, Locale.ENGLISH),
-                kind = when {
-                    day == today -> BarKind.Today
-                    steps?.goalMet == true -> BarKind.GoalReached
-                    else -> BarKind.Past
-                },
+                kind = if (day == today) BarKind.Today else BarKind.Past,
             )
         },
     )

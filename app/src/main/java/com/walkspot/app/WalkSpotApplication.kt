@@ -3,7 +3,7 @@ package com.walkspot.app
 import android.app.Application
 import androidx.hilt.work.HiltWorkerFactory
 import androidx.work.Configuration
-import com.walkspot.app.data.steps.StepsSchedule
+import androidx.work.WorkManager
 import dagger.hilt.android.HiltAndroidApp
 import javax.inject.Inject
 
@@ -13,12 +13,10 @@ class WalkSpotApplication : Application(), Configuration.Provider {
     @Inject
     lateinit var workerFactory: HiltWorkerFactory
 
-    @Inject
-    lateinit var stepsSchedule: StepsSchedule
-
     override fun onCreate() {
         super.onCreate()
-        stepsSchedule.start()
+        // Earlier builds read the step sensor every hour; steps are counted on walks only now.
+        WorkManager.getInstance(this).cancelUniqueWork("steps_refresh")
     }
 
     override val workManagerConfiguration: Configuration

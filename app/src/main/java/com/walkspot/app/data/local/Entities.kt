@@ -39,6 +39,8 @@ data class WalkEntity(
     // "lon lat,lon lat": the inside of a WKT line
     @Serializable(RouteWkb::class) val route: String? = null,
     val note: String? = null,
+    // Null for a walk recorded before walks had names.
+    val name: String? = null,
     @SerialName("updated_at") @Serializable(InstantIso::class) val updatedAt: Instant,
     @Transient val synced: Boolean = false,
 )

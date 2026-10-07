@@ -40,7 +40,7 @@
     <string name="today_evening">Good evening</string>
     <string name="today_greeting_name">%1$s, %2$s</string>
     <string name="today_reminders">Reminders</string>
-    <string name="today_of_steps">of %1$s steps</string>
+    <string name="today_steps">steps on walks</string>
     <string name="today_min">%1$d min</string>
     <string name="today_distance">Distance</string>
     <string name="today_active_time">Active time</string>
@@ -67,11 +67,10 @@
     <string name="stats_steps_month">steps this month</string>
     <string name="stats_steps_year">steps this year</string>
     <string name="stats_steps_total">steps in total</string>
-    <string name="stats_goal">Goal %1$s</string>
-    <string name="stats_goal_reached">Goal reached</string>
+    <string name="stats_walk_day">Day with a walk</string>
     <string name="stats_total">Total steps</string>
     <string name="stats_average">Daily average</string>
-    <string name="stats_goal_days">Goal days</string>
+    <string name="stats_walk_days">Walk days</string>
     <string name="stats_days_of">%1$d of %2$d</string>
     <string name="stats_best_day">Best day</string>
     <string name="stats_best_day_on">Best day · %1$s</string>
@@ -83,9 +82,8 @@
     <string name="profile_steps">steps</string>
     <string name="profile_walks">walks</string>
     <string name="profile_photos">photos</string>
-    <string name="profile_goal">Daily goal</string>
     <string name="profile_body">Body</string>
-    <string name="profile_body_note">Used for stride length and calories</string>
+    <string name="profile_body_note">Used for calories</string>
     <string name="profile_sex">Sex</string>
     <string name="profile_female">Female</string>
     <string name="profile_male">Male</string>
@@ -127,7 +125,11 @@
     <string name="walk_kcal">kcal</string>
     <string name="walk_pause">Pause</string>
     <string name="walk_resume">Resume</string>
-    <string name="walk_hold_stop">Hold to stop</string>
+    <string name="walk_stop">Stop</string>
+    <string name="walk_finish_title">Finish this walk?</string>
+    <string name="walk_finish_text">It will be saved to your diary.</string>
+    <string name="walk_finish">Finish walk</string>
+    <string name="walk_keep_walking">Keep walking</string>
     <string name="walk_back_to_start">%s back to start</string>
     <string name="walk_start">Start</string>
     <string name="walk_minimize">Minimize</string>
@@ -151,7 +153,8 @@
     <string name="diary_no_photos">No photos</string>
     <string name="diary_photo">%d photo</string>
     <string name="diary_photos">%d photos</string>
-    <string name="walk_number">Walk %d</string>
+    <string name="walk_name_title">Walk name</string>
+    <string name="walk_rename">Rename walk</string>
     <string name="walk_time">time</string>
     <string name="walk_minutes">%d min</string>
     <string name="walk_note_hint">Add a note about this walk</string>

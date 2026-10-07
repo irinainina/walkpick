@@ -1,33 +1,31 @@
 package com.walkspot.app.data.steps
 
-import androidx.datastore.core.DataStore
-import androidx.datastore.preferences.core.Preferences
-import androidx.datastore.preferences.core.edit
-import androidx.datastore.preferences.core.intPreferencesKey
-import androidx.datastore.preferences.core.longPreferencesKey
 import com.walkspot.app.data.local.DailyStepsDao
 import com.walkspot.app.data.local.DailyStepsEntity
+import com.walkspot.app.data.local.WalkEntity
 import com.walkspot.app.data.profile.ProfileStore
-import com.walkspot.app.data.profile.strideM
 import com.walkspot.app.data.sync.SyncScheduler
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
-import java.time.Duration
 import java.time.Instant
-import java.time.LocalDate
 import java.time.ZoneId
 import javax.inject.Inject
 import kotlin.math.roundToInt
 
-// The goal of a profile nobody has touched yet.
+// Kept in the profile and in every day for the server; no screen shows or asks for it any more.
 const val DEFAULT_DAILY_GOAL = 10_000
 
-// A slow walk, set by the owner; active time is an estimate, the sensor gives steps only.
-private const val STEPS_PER_ACTIVE_MINUTE = 40
+/** The steps that fill the ring of a day and the track of a bar. Nobody is told it is a goal. */
+const val FULL_DAY_STEPS = 10_000
 
+private const val SECONDS_IN_MINUTE = 60.0
+
+/**
+ * The steps, the way and the time of every day. A day holds what its walks hold: steps are counted
+ * between Start and Stop only, the phone is not listened to the rest of the day.
+ */
 class StepsRepository @Inject constructor(
     private val counter: StepCounter,
-    private val store: DataStore<Preferences>,
     private val days: DailyStepsDao,
     private val profiles: ProfileStore,
     private val sync: SyncScheduler,
@@ -36,89 +34,36 @@ class StepsRepository @Inject constructor(
 
     fun watchDays(): Flow<List<DailyStepsEntity>> = days.watchAll()
 
-    // Adds the steps walked since the last reading to their days; false when steps cannot be read.
-    suspend fun refresh(): Boolean {
-        if (counter.access() != StepsAccess.COUNTING) return false
-        val now = counter.read() ?: return false
-        val last = lastReading()
-        val walked = stepsBetween(last, now)
-        if (last != null && walked > 0) {
-            val added = splitByDay(last.at, now.at, walked, ZoneId.systemDefault())
-            val from = added.keys.minBy { it.toEpochDay() }
-            val profile = profiles.value.first()
-            val stride = strideM(profile.sex, profile.heightCm)
-            days.save(addSteps(days.since(from), added, profile.dailyGoal, stride, now.at))
-            sync.pushSoon()
-        }
-        remember(now)
-        return true
-    }
+    /** Adds a finished walk to the day it began on. */
+    suspend fun add(walk: WalkEntity) = change(walk, sign = 1)
 
-    private suspend fun lastReading(): CounterReading? {
-        val saved = store.data.first()
-        val at = saved[READ_AT] ?: return null
-        return CounterReading(saved[BOOT] ?: 0, saved[COUNTER] ?: 0, Instant.ofEpochMilli(at))
-    }
+    /** Takes a deleted walk back out of its day. */
+    suspend fun remove(walk: WalkEntity) = change(walk, sign = -1)
 
-    private suspend fun remember(reading: CounterReading) {
-        store.edit {
-            it[BOOT] = reading.boot
-            it[COUNTER] = reading.steps
-            it[READ_AT] = reading.at.toEpochMilli()
-        }
-    }
-
-    private companion object {
-        val BOOT = intPreferencesKey("steps_boot")
-        val COUNTER = longPreferencesKey("steps_counter")
-        val READ_AT = longPreferencesKey("steps_read_at")
+    private suspend fun change(walk: WalkEntity, sign: Int) {
+        val day = walk.startedAt.atZone(ZoneId.systemDefault()).toLocalDate()
+        val stored = days.since(day).firstOrNull { it.day == day }
+        days.save(listOf(dayWith(stored, walk, sign, profiles.value.first().dailyGoal, Instant.now())))
+        sync.pushSoon()
     }
 }
 
-// The first reading only sets the starting point; after a restart the counter began again from zero.
-internal fun stepsBetween(last: CounterReading?, now: CounterReading): Int = when {
-    last == null -> 0L
-    last.boot != now.boot -> now.steps
-    else -> (now.steps - last.steps).coerceAtLeast(0)
-}.toInt()
-
-// When the app slept through midnight nobody knows on which side the steps were made:
-// they are shared by time, which is less wrong than one day taking all of them.
-internal fun splitByDay(from: Instant, to: Instant, steps: Int, zone: ZoneId): Map<LocalDate, Int> {
-    val lastDay = to.atZone(zone).toLocalDate()
-    val total = Duration.between(from, to).seconds
-    if (total <= 0) return mapOf(lastDay to steps)
-    val shares = mutableMapOf<LocalDate, Int>()
-    var day = from.atZone(zone).toLocalDate()
-    var start = from
-    while (day < lastDay) {
-        val midnight = day.plusDays(1).atStartOfDay(zone).toInstant()
-        shares[day] = (steps * Duration.between(start, midnight).seconds / total).toInt()
-        start = midnight
-        day = day.plusDays(1)
-    }
-    shares[lastDay] = steps - shares.values.sum()
-    return shares.filterValues { it > 0 }
-}
-
-internal fun addSteps(
-    stored: List<DailyStepsEntity>,
-    added: Map<LocalDate, Int>,
+/** The day [stored] (or an empty one) with [walk] added to it, or taken out of it when [sign] is -1. */
+internal fun dayWith(
+    stored: DailyStepsEntity?,
+    walk: WalkEntity,
+    sign: Int,
     goal: Int,
-    strideM: Double,
     now: Instant,
-): List<DailyStepsEntity> {
-    val known = stored.associateBy { it.day }
-    return added.map { (day, more) ->
-        val old = known[day]
-        val steps = (old?.steps ?: 0) + more
-        DailyStepsEntity(
-            day = day,
-            steps = steps,
-            distanceM = (steps * strideM).roundToInt(),
-            activeMinutes = steps / STEPS_PER_ACTIVE_MINUTE,
-            goal = old?.goal ?: goal,
-            updatedAt = now,
-        )
-    }
+    zone: ZoneId = ZoneId.systemDefault(),
+): DailyStepsEntity {
+    val minutes = (walk.durationS / SECONDS_IN_MINUTE).roundToInt()
+    return DailyStepsEntity(
+        day = stored?.day ?: walk.startedAt.atZone(zone).toLocalDate(),
+        steps = ((stored?.steps ?: 0) + sign * walk.steps).coerceAtLeast(0),
+        distanceM = ((stored?.distanceM ?: 0) + sign * walk.distanceM).coerceAtLeast(0),
+        activeMinutes = ((stored?.activeMinutes ?: 0) + sign * minutes).coerceAtLeast(0),
+        goal = stored?.goal ?: goal,
+        updatedAt = now,
+    )
 }

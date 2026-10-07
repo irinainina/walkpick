@@ -24,7 +24,6 @@ class GalleryActivity : ComponentActivity() {
                 when (val page = intent.getStringExtra("page")) {
                     "charts" -> ChartGallery()
                     "signin" -> SignInScreen(onGoogle = {}, onEmail = {})
-                    "steps" -> StepsCheck()
                     "today" -> TodayGallery(StepsAccess.COUNTING)
                     "today-off" -> TodayGallery(StepsAccess.NOT_ALLOWED)
                     "health-mood", "health-weight", "health-pressure", "health-glucose", "health-empty" ->

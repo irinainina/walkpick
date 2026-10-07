@@ -33,7 +33,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.time.Instant
 import javax.inject.Inject
@@ -44,7 +43,6 @@ private const val NOTIFICATION_ID = 2
 // A walker moves a few metres in this time; asking more often only costs battery.
 private const val UPDATE_MS = 2_000L
 private const val FASTEST_UPDATE_MS = 1_000L
-private const val STEPS_MS = 5_000L
 
 /**
  * Listens to GPS while a walk is recorded. A foreground service with a notification: Android stops
@@ -107,12 +105,7 @@ class WalkService : Service() {
     // The sensor is asked while the walk goes on; without the permission the walk has no steps.
     private fun countSteps() {
         if (counting?.isActive == true || steps.access() != StepsAccess.COUNTING) return
-        counting = scope.launch {
-            while (true) {
-                steps.read()?.let { recorder.reportSteps(it.steps) }
-                delay(STEPS_MS)
-            }
-        }
+        counting = scope.launch { steps.watch().collect(recorder::reportSteps) }
     }
 
     private fun notification() = NotificationCompat.Builder(this, channel())

@@ -114,10 +114,8 @@ internal fun ActiveWalkPanel(
                     tint = colors.onAccent,
                 )
             }
-            // A walk is not ended by a slip of the finger: the button answers to a long press only.
-            val hold = Modifier.pointerInput(onStop) { detectTapGestures(onLongPress = { onStop() }) }
-            val stop = stringResource(R.string.walk_hold_stop)
-            SideButton(R.drawable.ic_stop, stop, colors.dangerTint, colors.danger, hold)
+            val stop = stringResource(R.string.walk_stop)
+            SideButton(R.drawable.ic_stop, stop, colors.dangerTint, colors.danger, Modifier.tapped(onStop))
         }
     }
 }

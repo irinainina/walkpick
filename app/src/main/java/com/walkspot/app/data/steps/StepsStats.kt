@@ -23,13 +23,10 @@ data class PeriodStats(
     val steps: Int,
     val averageSteps: Int,
     val distanceM: Int,
-    val goalDays: Int,
     val bestDay: DailyStepsEntity?,
 )
 
 data class MonthAverage(val month: YearMonth, val steps: Int)
-
-val DailyStepsEntity.goalMet get() = steps >= goal
 
 // Takes every stored day: the average needs to know when the steps began.
 fun stepsStats(days: List<DailyStepsEntity>, range: DayRange, today: LocalDate): PeriodStats {
@@ -40,7 +37,6 @@ fun stepsStats(days: List<DailyStepsEntity>, range: DayRange, today: LocalDate):
         steps = steps,
         averageSteps = if (counted > 0) steps / counted else 0,
         distanceM = inRange.sumOf { it.distanceM },
-        goalDays = inRange.count { it.goalMet },
         bestDay = inRange.maxByOrNull { it.steps },
     )
 }

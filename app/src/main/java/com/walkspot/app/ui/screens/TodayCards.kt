@@ -23,6 +23,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
 import com.walkspot.app.R
+import com.walkspot.app.data.steps.FULL_DAY_STEPS
 import com.walkspot.app.ui.components.AppCard
 import com.walkspot.app.ui.components.Bar
 import com.walkspot.app.ui.components.BarChart
@@ -55,7 +56,7 @@ internal fun StepsCard(state: TodayState) {
                 .padding(top = Spacing.l, bottom = StatsBottom),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            ProgressRing(state.steps.toFloat() / state.goal, Modifier.size(RingSize)) {
+            ProgressRing(state.steps.toFloat() / FULL_DAY_STEPS, Modifier.size(RingSize)) {
                 // The design stands the two lines 2 above the centre of the ring.
                 Column(
                     modifier = Modifier.padding(bottom = Spacing.xs),
@@ -68,7 +69,7 @@ internal fun StepsCard(state: TodayState) {
                     )
                     Spacer(Modifier.height(Spacing.xs))
                     Text(
-                        text = stringResource(R.string.today_of_steps, grouped(state.goal)),
+                        text = stringResource(R.string.today_steps),
                         style = MaterialTheme.typography.bodyMedium,
                         color = colors.textSecondary,
                     )

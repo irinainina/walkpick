@@ -29,22 +29,22 @@ class TodayStateTest {
         val walked = setOf(LocalDate.parse("2026-09-28"), LocalDate.parse("2026-09-29"))
         val state = todayState(days, walked, now, StepsAccess.COUNTING, "Ira")
 
-        assertEquals(6420 to 8000, state.steps to state.goal)
+        assertEquals(6420, state.steps)
         assertEquals(4815 to 160, state.distanceM to state.activeMinutes)
         assertEquals(2, state.streak)
         assertEquals(listOf("M", "T", "W", "T", "F", "S", "S"), state.week.map { it.label })
-        assertEquals(listOf(1f, 0.5f, 0.8025f, 0f), state.week.take(4).map { it.fraction })
+        assertEquals(listOf(1f, 0.5f, 0.642f, 0f), state.week.take(4).map { it.fraction })
         assertEquals(
-            listOf(BarKind.GoalReached, BarKind.Past, BarKind.Today, BarKind.Past),
+            listOf(BarKind.Past, BarKind.Past, BarKind.Today, BarKind.Past),
             state.week.take(4).map { it.kind },
         )
     }
 
     @Test
-    fun aDayWithoutStepsShowsZerosAndTheDefaultGoal() {
+    fun aDayWithoutStepsShowsZeros() {
         val state = todayState(emptyList(), emptySet(), now, StepsAccess.NOT_ALLOWED, null)
 
-        assertEquals(0 to 10000, state.steps to state.goal)
+        assertEquals(0, state.steps)
         assertEquals(0, state.distanceM + state.activeMinutes + state.streak)
         assertEquals(7, state.week.size)
     }

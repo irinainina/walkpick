@@ -22,6 +22,7 @@ internal fun NavGraphBuilder.walkSummaryRoute(navController: NavHostController) 
                 state = it,
                 onBack = { navController.popBackStack() },
                 onNote = model::saveNote,
+                onRename = model::rename,
                 onDelete = { model.delete(onDone = { navController.popBackStack() }) },
             )
         }

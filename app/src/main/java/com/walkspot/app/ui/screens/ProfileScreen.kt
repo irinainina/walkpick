@@ -80,19 +80,6 @@ fun ProfileScreen(
         Header(statusBar, state.name, state.email)
         Column(Modifier.padding(Spacing.ml, statusBar + CardsTop, Spacing.ml, Spacing.l)) {
             TotalsCard(state)
-            Spacer(Modifier.height(Spacing.ml))
-            AppCard {
-                ListRow(
-                    label = stringResource(R.string.profile_goal),
-                    value = grouped(state.profile.dailyGoal),
-                    divider = false,
-                    onClick = { editing = ProfileField.Goal },
-                    leading = {
-                        val colors = AppTheme.colors
-                        IconBadge(R.drawable.ic_flame, colors.streakTint, colors.streak, Sizes.iconSmall)
-                    },
-                )
-            }
             ProfileBody(state, onEdit = { editing = it }, onWeigh = { weighing = true })
             ProfileTabs(state.profile, onChange)
             Spacer(Modifier.height(Spacing.ml))

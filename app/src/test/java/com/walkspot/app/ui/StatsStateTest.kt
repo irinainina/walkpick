@@ -33,14 +33,14 @@ class StatsStateTest {
         statsState(days, listOf(today.minusDays(1), today), StatsChoice(tab, anchor, bar), today)
 
     @Test
-    fun theWeekShowsItsDaysTheGoalLineAndTodayPicked() {
+    fun theWeekShowsItsDaysAndTodayPicked() {
         val week = state(StatsTab.Week)
 
         assertEquals(listOf("M", "T", "W", "T", "F", "S", "S"), week.bars.map { it.label })
-        val kinds = listOf(BarKind.GoalReached, BarKind.Past, BarKind.Today)
+        val kinds = listOf(BarKind.Past, BarKind.Past, BarKind.Today)
         assertEquals(kinds, week.bars.take(3).map { it.kind })
-        assertEquals(10000 / 12000f, week.goalLine)
-        assertEquals(6420 / 12000f, week.bars[2].fraction)
+        assertEquals(6420 / 10240f, week.bars[2].fraction)
+        assertEquals(2, week.walkDays)
         assertEquals(2 to "6,420", week.selectedBar to week.bars[2].tip)
         assertEquals(22860 to 7620, week.stats.steps to week.stats.averageSteps)
         assertTrue(week.canGoBack)
@@ -62,11 +62,12 @@ class StatsStateTest {
     }
 
     @Test
-    fun theMonthMarksItsGoalDays() {
+    fun theMonthMarksItsDaysWithAWalk() {
         val month = state(StatsTab.Month)
 
         assertEquals(30, month.calendar.size)
-        assertEquals(listOf(28), month.calendar.filter { it.goalMet }.map { it.day.dayOfMonth })
+        assertEquals(listOf(29, 30), month.calendar.filter { it.walked }.map { it.day.dayOfMonth })
+        assertEquals(2, month.walkDays)
         assertTrue(month.bars.isEmpty())
     }
 
@@ -79,7 +80,6 @@ class StatsStateTest {
         assertEquals(8, year.selectedBar)
         assertEquals("762", year.bars[8].tip)
         assertEquals(YearMonth.of(2026, 9), year.bestMonth)
-        assertEquals(null, year.goalLine)
     }
 
     @Test

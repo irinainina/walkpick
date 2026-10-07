@@ -21,7 +21,7 @@ import com.walkspot.app.ui.theme.Spacing
 import com.walkspot.app.ui.weightText
 
 /** What a row of Profile opens for editing. */
-enum class ProfileField { Goal, Sex, BirthDate, Height, TargetWeight, TargetPressure, TargetGlucose }
+enum class ProfileField { Sex, BirthDate, Height, TargetWeight, TargetPressure, TargetGlucose }
 
 @Composable
 internal fun ProfileBody(state: ProfileState, onEdit: (ProfileField) -> Unit, onWeigh: () -> Unit) {

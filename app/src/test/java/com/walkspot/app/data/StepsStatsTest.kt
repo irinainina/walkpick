@@ -42,7 +42,6 @@ class StepsStatsTest {
         assertEquals(18000, stats.steps)
         assertEquals(6000, stats.averageSteps)
         assertEquals(13500, stats.distanceM)
-        assertEquals(1, stats.goalDays)
         assertEquals(LocalDate.of(2026, 9, 28), stats.bestDay?.day)
     }
 
@@ -55,7 +54,7 @@ class StepsStatsTest {
     @Test
     fun anEmptyPeriodIsAllZeros() {
         val stats = stepsStats(emptyList(), weekOf(today), today)
-        assertEquals(0, stats.steps + stats.averageSteps + stats.distanceM + stats.goalDays)
+        assertEquals(0, stats.steps + stats.averageSteps + stats.distanceM)
         assertEquals(null, stats.bestDay)
     }
 

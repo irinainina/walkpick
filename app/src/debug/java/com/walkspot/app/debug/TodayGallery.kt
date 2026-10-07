@@ -4,6 +4,7 @@ import androidx.compose.runtime.Composable
 import com.walkspot.app.data.local.HealthEntryEntity
 import com.walkspot.app.data.local.HealthKind
 import com.walkspot.app.data.steps.StepsAccess
+import com.walkspot.app.data.walk.WalkWeather
 import com.walkspot.app.ui.components.Bar
 import com.walkspot.app.ui.components.BarKind
 import com.walkspot.app.ui.health.HealthCurrent
@@ -54,6 +55,7 @@ fun TodayGallery(access: StepsAccess) {
             health = health,
         ),
         walking = false,
+        weather = WalkWeather(code = 3, celsius = 13.0, windMs = 2.0),
         onAllowSteps = {},
         onStartWalk = {},
         onStats = {},

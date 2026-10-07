@@ -21,10 +21,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.drawWithContent
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
@@ -32,10 +29,9 @@ import androidx.compose.ui.zIndex
 import com.walkspot.app.ui.theme.AppColors
 import com.walkspot.app.ui.theme.AppTheme
 import com.walkspot.app.ui.theme.PillShape
-import com.walkspot.app.ui.theme.Sizes
 import com.walkspot.app.ui.theme.Spacing
 
-enum class BarKind { Past, Today, GoalReached }
+enum class BarKind { Past, Today }
 
 /**
  * [fraction] is 0..1 of the track; 0 leaves the track empty. [tip] is shown when the bar is picked.
@@ -52,8 +48,8 @@ data class Bar(
 private val TipSize = DpSize(72.dp, 28.dp)
 
 /**
- * Bars on tracks with a label under each; [goal] draws the dashed goal line at that fraction.
- * Each bar stands in a slot [slotWidth] wide, the slots are spread evenly.
+ * Bars on tracks with a label under each. Each bar stands in a slot [slotWidth] wide, the slots are
+ * spread evenly.
  */
 @Composable
 fun BarChart(
@@ -63,28 +59,12 @@ fun BarChart(
     modifier: Modifier = Modifier,
     slotWidth: Dp = 32.dp,
     labelGap: Dp = Spacing.xs,
-    goal: Float? = null,
     selected: Int? = null,
     onSelect: ((Int) -> Unit)? = null,
 ) {
     val colors = AppTheme.colors
     Row(
-        modifier = modifier
-            .fillMaxWidth()
-            .drawWithContent {
-                drawContent()
-                if (goal != null) {
-                    val y = trackHeight.toPx() * (1 - goal)
-                    val dash = Spacing.xs.toPx()
-                    drawLine(
-                        color = colors.streak,
-                        start = Offset(0f, y),
-                        end = Offset(size.width, y),
-                        strokeWidth = Sizes.hairline.toPx(),
-                        pathEffect = PathEffect.dashPathEffect(floatArrayOf(dash, dash)),
-                    )
-                }
-            },
+        modifier = modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween,
     ) {
         bars.forEachIndexed { index, bar ->
@@ -116,7 +96,6 @@ fun BarChart(
                     when (bar.kind) {
                         BarKind.Past -> Box(fill.background(colors.barPast, PillShape))
                         BarKind.Today -> Box(fill.background(today(colors), PillShape))
-                        BarKind.GoalReached -> Box(fill.background(colors.accent, PillShape))
                     }
                     if (index == selected && bar.tip != null) {
                         Tip(bar.tip, Modifier.padding(bottom = trackHeight * fraction + Spacing.s))

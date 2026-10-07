@@ -36,7 +36,7 @@ class RowJsonTest {
         assertEquals(
             setOf(
                 "id", "number", "started_at", "ended_at", "duration_s", "steps", "distance_m",
-                "calories", "route", "note", "updated_at",
+                "calories", "route", "note", "name", "updated_at",
             ),
             json.keys,
         )

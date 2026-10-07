@@ -5,6 +5,7 @@ import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -37,6 +38,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
 import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.compose.MarkerComposable
@@ -45,6 +47,7 @@ import com.google.maps.android.compose.rememberUpdatedMarkerState
 import com.walkspot.app.R
 import com.walkspot.app.data.walk.paceSecondsPerKm
 import com.walkspot.app.data.walk.routePlaces
+import com.walkspot.app.data.walk.title
 import com.walkspot.app.ui.components.AppButton
 import com.walkspot.app.ui.components.AppButtonStyle
 import com.walkspot.app.ui.components.AppCard
@@ -86,12 +89,14 @@ fun WalkSummaryScreen(
     state: WalkSummaryState,
     onBack: () -> Unit,
     onNote: (String) -> Unit,
+    onRename: (String) -> Unit,
     onDelete: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val walk = state.walk
     var note by rememberSaveable { mutableStateOf(walk.note.orEmpty()) }
     var deleting by rememberSaveable { mutableStateOf(false) }
+    var renaming by rememberSaveable { mutableStateOf(false) }
     // The note is kept on the way out, whichever way that is.
     val leave = {
         onNote(note)
@@ -121,11 +126,17 @@ fun WalkSummaryScreen(
                 .padding(start = Spacing.ml, top = CardTop, end = Spacing.ml, bottom = Spacing.l)
                 .navigationBarsPadding(),
         ) {
-            SummaryCard(state)
+            SummaryCard(state, onRename = { renaming = true })
             Spacer(Modifier.height(Spacing.l))
             NoteField(note, onChange = { note = it })
             Spacer(Modifier.height(Spacing.l))
             AppButton(stringResource(R.string.walk_done), onClick = leave)
+        }
+    }
+    if (renaming) {
+        WalkNameSheet(walk.title(), onDismiss = { renaming = false }) {
+            onRename(it)
+            renaming = false
         }
     }
     if (deleting) {
@@ -175,7 +186,7 @@ private fun RouteMap(state: WalkSummaryState) {
 }
 
 @Composable
-private fun SummaryCard(state: WalkSummaryState) {
+private fun SummaryCard(state: WalkSummaryState, onRename: () -> Unit) {
     val type = MaterialTheme.typography
     val colors = AppTheme.colors
     val walk = state.walk
@@ -183,8 +194,17 @@ private fun SummaryCard(state: WalkSummaryState) {
     val (from, to) = walk.startedAt.atZone(zone) to walk.endedAt.atZone(zone)
     AppCard {
         Column(Modifier.padding(Spacing.ml, Spacing.ml, Spacing.ml, CardBottom)) {
-            val title = stringResource(R.string.walk_number, walk.number)
-            Text(title, style = type.headlineMedium, color = colors.textPrimary)
+            // The name is the walker's to change: a tap on it opens the sheet.
+            Text(
+                text = walk.title(),
+                modifier = Modifier.clickable(
+                    onClickLabel = stringResource(R.string.walk_rename),
+                    role = Role.Button,
+                    onClick = onRename,
+                ),
+                color = colors.textPrimary,
+                style = type.headlineMedium,
+            )
             Spacer(Modifier.height(Spacing.xs))
             Text(
                 text = "${Day.format(from)} · ${Clock.format(from)} – ${Clock.format(to)}",

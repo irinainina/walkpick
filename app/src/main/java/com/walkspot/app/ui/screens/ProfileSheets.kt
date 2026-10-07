@@ -29,7 +29,6 @@ import java.time.DateTimeException
 import java.time.LocalDate
 
 // What a person can be: the limits only keep slips of the finger out.
-private val GoalRange = 1_000.0..100_000.0
 private val HeightRange = 50.0..260.0
 private val WeightRange = HealthLimits.weightKg
 private val SystolicRange = HealthLimits.systolic
@@ -50,12 +49,6 @@ internal fun ProfileSheet(
         onDismiss()
     }
     when (field) {
-        ProfileField.Goal -> NumberSheet(
-            title = stringResource(R.string.profile_goal),
-            initial = profile.dailyGoal.toString(),
-            range = GoalRange,
-            onDismiss = onDismiss,
-        ) { save { old -> old.copy(dailyGoal = it.toInt()) } }
         ProfileField.Height -> NumberSheet(
             title = stringResource(R.string.profile_height_cm),
             initial = profile.heightCm?.toString().orEmpty(),

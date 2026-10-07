@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
@@ -26,8 +27,10 @@ import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.StrokeJoin
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.walkspot.app.R
+import com.walkspot.app.data.walk.title
 import com.walkspot.app.ui.components.AppCard
 import com.walkspot.app.ui.components.RowChevron
 import com.walkspot.app.ui.counted
@@ -112,14 +115,19 @@ private fun WalkCard(item: DiaryWalk, state: MapState, onWalk: (String) -> Unit)
             Column(
                 modifier = Modifier
                     .weight(1f)
-                    .height(SketchSize)
+                    .heightIn(min = SketchSize)
                     .padding(top = Spacing.xs / 2),
             ) {
                 val minutes = (walk.durationS / SECONDS_IN_MINUTE).roundToInt()
                 val start = Clock.format(walk.startedAt.atZone(ZoneId.systemDefault()))
                 val distance = distanceText(walk.distanceM, state.distanceUnit)
-                val title = stringResource(R.string.walk_number, walk.number)
-                Text(title, style = type.labelLarge, color = colors.textPrimary)
+                Text(
+                    text = walk.title(),
+                    style = type.labelLarge,
+                    color = colors.textPrimary,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis,
+                )
                 Spacer(Modifier.height(Spacing.xs / 2))
                 Text(
                     text = "$start · ${stringResource(R.string.walk_minutes, minutes)}",

@@ -30,7 +30,10 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.walkspot.app.R
+import com.walkspot.app.data.settings.DistanceUnit
 import com.walkspot.app.data.steps.StepsAccess
+import com.walkspot.app.data.walk.WalkWeather
+import com.walkspot.app.data.walk.sky
 import com.walkspot.app.ui.components.AppButton
 import com.walkspot.app.ui.components.CircleButton
 import com.walkspot.app.ui.components.GradientHeader
@@ -41,6 +44,7 @@ import com.walkspot.app.ui.today.TodayState
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.util.Locale
+import kotlin.math.roundToInt
 
 // Below the status bar: the frame draws 248 with a status bar of 24.
 private val HeaderHeight = 224.dp
@@ -54,6 +58,8 @@ private val GreetingMinSize = 16.sp
 private const val NOON = 12
 private const val EVENING = 18
 private const val NIGHT_END = 5
+private const val FAHRENHEIT_PER_C = 1.8
+private const val FREEZING_F = 32
 private val Date = DateTimeFormatter.ofPattern("EEEE, MMMM d", Locale.ENGLISH)
 
 @Composable
@@ -61,6 +67,8 @@ fun TodayScreen(
     state: TodayState,
     /** A walk is being recorded: the button leads back to it. */
     walking: Boolean,
+    /** The weather outside; null until it is known. */
+    weather: WalkWeather?,
     onAllowSteps: () -> Unit,
     onStartWalk: () -> Unit,
     onStats: () -> Unit,
@@ -75,7 +83,8 @@ fun TodayScreen(
             .background(AppTheme.colors.canvas)
             .verticalScroll(rememberScrollState()),
     ) {
-        Header(statusBar, state.now, state.name, onReminders)
+        val sky = weather?.let { weatherText(it, state.distanceUnit) }
+        Header(statusBar, state.now, state.name, sky, onReminders)
         Column(
             Modifier.padding(
                 start = Spacing.ml,
@@ -108,7 +117,7 @@ fun TodayScreen(
 }
 
 @Composable
-private fun Header(statusBar: Dp, now: LocalDateTime, name: String?, onReminders: () -> Unit) {
+private fun Header(statusBar: Dp, now: LocalDateTime, name: String?, sky: String?, onReminders: () -> Unit) {
     val colors = AppTheme.colors
     GradientHeader(statusBar + HeaderHeight) {
         Column(Modifier.padding(top = statusBar + Spacing.sm)) {
@@ -152,13 +161,20 @@ private fun Header(statusBar: Dp, now: LocalDateTime, name: String?, onReminders
             )
             Spacer(Modifier.height(Spacing.xs))
             Text(
-                text = now.format(Date),
+                text = listOfNotNull(now.format(Date), sky).joinToString(" · "),
                 modifier = Modifier.padding(horizontal = Spacing.ml),
                 style = ParagraphStyle,
                 color = colors.onAccent,
             )
         }
     }
+}
+
+// Miles go with Fahrenheit: the app has no setting of its own for the temperature.
+private fun weatherText(weather: WalkWeather, unit: DistanceUnit): String {
+    val fahrenheit = unit == DistanceUnit.MI
+    val degrees = if (fahrenheit) weather.celsius * FAHRENHEIT_PER_C + FREEZING_F else weather.celsius
+    return "${degrees.roundToInt()}° ${weather.sky()}".trim()
 }
 
 @Composable

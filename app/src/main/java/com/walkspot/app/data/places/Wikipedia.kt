@@ -2,8 +2,7 @@ package com.walkspot.app.data.places
 
 import com.walkspot.app.BuildConfig
 import com.walkspot.app.data.local.SyncJson
-import io.ktor.client.HttpClient
-import io.ktor.client.engine.okhttp.OkHttp
+import com.walkspot.app.data.remote.webClient
 import io.ktor.client.request.get
 import io.ktor.client.request.header
 import io.ktor.client.request.parameter
@@ -52,11 +51,9 @@ internal fun parseSummary(answer: String): WikiSummary? = try {
 @Singleton
 class Wikipedia @Inject constructor() {
 
-    private val client by lazy { HttpClient(OkHttp) }
-
     /** The answer of GeoSearch for the articles about places around a point, the nearest first. */
     suspend fun near(latitude: Double, longitude: Double, radiusM: Int, limit: Int): String {
-        val answer = client.get(SEARCH_URL) {
+        val answer = webClient.get(SEARCH_URL) {
             header(HttpHeaders.UserAgent, ASKED_BY)
             parameter("action", "query")
             parameter("list", "geosearch")
@@ -71,7 +68,7 @@ class Wikipedia @Inject constructor() {
 
     /** The article called [title], a Latin name included; null when there is none. */
     suspend fun summary(title: String): WikiSummary? {
-        val answer = client.get(SUMMARY_URL + title.replace(' ', '_').encodeURLPathPart()) {
+        val answer = webClient.get(SUMMARY_URL + title.replace(' ', '_').encodeURLPathPart()) {
             header(HttpHeaders.UserAgent, ASKED_BY)
         }
         if (answer.status == HttpStatusCode.NotFound) return null

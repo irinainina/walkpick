@@ -18,9 +18,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.drawBehind
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -33,7 +30,6 @@ import com.walkspot.app.ui.stats.CalendarDay
 import com.walkspot.app.ui.stats.StatsState
 import com.walkspot.app.ui.stats.StatsTab
 import com.walkspot.app.ui.theme.AppTheme
-import com.walkspot.app.ui.theme.Sizes
 import com.walkspot.app.ui.theme.Spacing
 import java.time.DayOfWeek
 import java.time.LocalDate
@@ -51,8 +47,6 @@ private val AllBarStep = 17.dp
 private const val ALL_BARS_FITTING = 16
 
 // Three dashes of 4 with 2 between, as in the legend of the design.
-private val GoalMarkWidth = 16.dp
-private val GoalMarkGap = 2.dp
 
 private val DaySize = 32.dp
 private val LegendDot = 12.dp
@@ -89,33 +83,6 @@ internal fun StatsChartCard(state: StatsState, onPickBar: (Int) -> Unit, modifie
                     color = colors.textSecondary,
                 )
             }
-            if (state.tab == StatsTab.Week) {
-                Row(
-                    modifier = Modifier.padding(top = Spacing.xs),
-                    horizontalArrangement = Arrangement.spacedBy(Spacing.xs),
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    Box(
-                        Modifier
-                            .size(GoalMarkWidth, Sizes.hairline)
-                            .drawBehind {
-                                val dash = floatArrayOf(Spacing.xs.toPx(), GoalMarkGap.toPx())
-                                drawLine(
-                                    color = colors.streak,
-                                    start = Offset(0f, size.height / 2),
-                                    end = Offset(size.width, size.height / 2),
-                                    strokeWidth = size.height,
-                                    pathEffect = PathEffect.dashPathEffect(dash),
-                                )
-                            },
-                    )
-                    Text(
-                        text = stringResource(R.string.stats_goal, grouped(state.goal)),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = colors.streak,
-                    )
-                }
-            }
         }
         when (state.tab) {
             StatsTab.Month -> Calendar(state.calendar, state.today)
@@ -147,7 +114,6 @@ private fun Bars(state: StatsState, onPickBar: (Int) -> Unit) {
             modifier = width,
             slotWidth = if (state.tab == StatsTab.Week) DaySize else barWidth,
             labelGap = Spacing.s,
-            goal = state.goalLine,
             selected = state.selectedBar,
             onSelect = onPickBar,
         )
@@ -185,7 +151,7 @@ private fun Calendar(days: List<CalendarDay>, today: LocalDate) {
         ) {
             Box(Modifier.size(LegendDot).background(colors.surfaceTint, CircleShape))
             Text(
-                text = stringResource(R.string.stats_goal_reached),
+                text = stringResource(R.string.stats_walk_day),
                 style = MaterialTheme.typography.bodySmall,
                 color = colors.textSecondary,
             )
@@ -198,7 +164,7 @@ private fun Day(day: CalendarDay, today: LocalDate) {
     val colors = AppTheme.colors
     val ground = when {
         day.day == today -> Modifier.background(colors.accentGradient, CircleShape)
-        day.goalMet -> Modifier.background(colors.surfaceTint, CircleShape)
+        day.walked -> Modifier.background(colors.surfaceTint, CircleShape)
         else -> Modifier
     }
     Box(Modifier.size(DaySize).then(ground), contentAlignment = Alignment.Center) {
@@ -207,7 +173,7 @@ private fun Day(day: CalendarDay, today: LocalDate) {
             style = with(MaterialTheme.typography) { if (ground == Modifier) bodyMedium else labelMedium },
             color = when {
                 day.day == today -> colors.onAccent
-                day.goalMet -> colors.accent
+                day.walked -> colors.accent
                 day.day > today -> colors.textSecondary
                 else -> colors.textPrimary
             },

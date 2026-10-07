@@ -6,8 +6,10 @@ import com.walkspot.app.data.local.PendingDeleteDao
 import com.walkspot.app.data.local.PendingDeleteEntity
 import com.walkspot.app.data.local.WalkDao
 import com.walkspot.app.data.local.WalkEntity
+import com.walkspot.app.data.steps.StepsRepository
 import com.walkspot.app.data.sync.SyncScheduler
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.first
 import java.time.Instant
 import javax.inject.Inject
 import kotlin.math.roundToInt
@@ -41,6 +43,8 @@ class WalkRepository @Inject constructor(
     private val finds: FindDao,
     private val deletes: PendingDeleteDao,
     private val sync: SyncScheduler,
+    private val namer: WalkNamer,
+    private val steps: StepsRepository,
 ) {
     fun watch(id: String): Flow<WalkEntity?> = walks.watch(id)
 
@@ -56,8 +60,16 @@ class WalkRepository @Inject constructor(
         sync.pushSoon()
     }
 
+    /** A blank name is not a name: the walk keeps the one it has. */
+    suspend fun setName(id: String, name: String) {
+        if (name.isBlank()) return
+        walks.setName(id, name.trim(), Instant.now())
+        sync.pushSoon()
+    }
+
     /** Removes the walk from the phone at once and from the server with the next sync. */
     suspend fun delete(id: String) {
+        walks.watch(id).first()?.let { steps.remove(it) }
         walks.delete(id)
         deletes.add(PendingDeleteEntity(WALKS_TABLE, id))
         sync.pushSoon()
@@ -65,8 +77,10 @@ class WalkRepository @Inject constructor(
 
     /** Keeps the walk under the next number and sends it to the server; null when [walkEntity] refused it. */
     suspend fun save(track: WalkTrack, weightKg: Double?): WalkEntity? {
-        val walk = walkEntity(track, walks.lastNumber() + 1, Instant.now(), weightKg) ?: return null
+        val kept = walkEntity(track, walks.lastNumber() + 1, Instant.now(), weightKg) ?: return null
+        val walk = kept.copy(name = namer.name(track))
         walks.save(listOf(walk))
+        steps.add(walk)
         finds.save(track.finds)
         sync.pushSoon()
         return walk

@@ -13,15 +13,21 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.composable
 import com.walkspot.app.ui.screens.TodayScreen
 import com.walkspot.app.ui.today.TodayViewModel
+import com.walkspot.app.ui.today.WeatherViewModel
 import com.walkspot.app.ui.walk.ActiveWalkViewModel
 
 internal fun NavGraphBuilder.todayRoute(navController: NavHostController, onShown: () -> Unit) {
     composable(Screen.Today.route) {
         val model: TodayViewModel = hiltViewModel()
         val state by model.state.collectAsStateWithLifecycle()
+        val sky: WeatherViewModel = hiltViewModel()
+        val weather by sky.now.collectAsStateWithLifecycle()
         val owner = LocalLifecycleOwner.current
         LaunchedEffect(owner) {
-            owner.repeatOnLifecycle(Lifecycle.State.RESUMED) { model.keepFresh() }
+            owner.repeatOnLifecycle(Lifecycle.State.RESUMED) {
+                sky.refresh()
+                model.keepFresh()
+            }
         }
         // The screen notices the answer by itself: it looks at the permission every few seconds.
         val allowSteps = rememberPermissionRequest(STEPS_PERMISSION) {}
@@ -33,6 +39,7 @@ internal fun NavGraphBuilder.todayRoute(navController: NavHostController, onShow
         TodayScreen(
             state = shown,
             walking = walking.recording,
+            weather = weather,
             onAllowSteps = allowSteps,
             onStartWalk = { navController.navigate(Screen.ActiveWalk.route) },
             onStats = { navController.navigate(Screen.Stats.route) },

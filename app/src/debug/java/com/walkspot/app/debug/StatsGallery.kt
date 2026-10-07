@@ -34,24 +34,22 @@ private val week = StatsState(
     range = weekOf(today),
     canGoBack = true,
     canGoForward = true,
-    stats = PeriodStats(22860, 7620, 16800, 1, best(LocalDate.of(2026, 9, 28), 10240)),
-    goal = 10000,
+    stats = PeriodStats(22860, 7620, 16800, best(LocalDate.of(2026, 9, 28), 10240)),
     bars = bars(
         heights = listOf(104, 64, 64, 0, 0, 0, 0),
         labels = "MTWTFSS".map { it.toString() },
-        kinds = mapOf(0 to BarKind.GoalReached, 2 to BarKind.Today),
+        kinds = mapOf(2 to BarKind.Today),
         tips = mapOf(2 to "6,420"),
     ),
-    goalLine = 100 / TRACK,
     selectedBar = 2,
 )
 
 private val month = week.copy(
     tab = StatsTab.Month,
     range = monthOf(september),
-    stats = PeriodStats(214300, 7143, 0, 10, best(LocalDate.of(2026, 9, 13), 12480)),
+    stats = PeriodStats(214300, 7143, 0, best(LocalDate.of(2026, 9, 13), 12480)),
     bars = emptyList(),
-    goalLine = null,
+    walkDays = 10,
     calendar = List(september.lengthOfMonth()) { september.atDay(it + 1) }
         .map { CalendarDay(it, it.dayOfMonth in setOf(1, 8, 9, 13, 15, 18, 22, 25, 26, 28)) },
 )
@@ -59,15 +57,15 @@ private val month = week.copy(
 private val year = week.copy(
     tab = StatsTab.Year,
     range = yearOf(today),
-    stats = PeriodStats(1680000, 6150, 1209000, 96, null),
+    stats = PeriodStats(1680000, 6150, 1209000, null),
     bars = bars(
         heights = listOf(56, 60, 68, 72, 84, 80, 76, 80, 84, 0, 0, 0),
         labels = "JFMAMJJASOND".map { it.toString() },
         kinds = mapOf(8 to BarKind.Today),
         tips = mapOf(8 to "7,140"),
     ),
-    goalLine = null,
     selectedBar = 8,
+    walkDays = 96,
     bestMonth = september,
 )
 
@@ -76,14 +74,13 @@ private val all = week.copy(
     range = DayRange(LocalDate.of(2025, 6, 1), today),
     canGoBack = false,
     canGoForward = false,
-    stats = PeriodStats(2790000, 5740, 2009000, 120, best(LocalDate.of(2026, 5, 3), 18240)),
+    stats = PeriodStats(2790000, 5740, 2009000, best(LocalDate.of(2026, 5, 3), 18240)),
     bars = bars(
         heights = listOf(52, 56, 64, 68, 72, 60, 60, 56, 60, 68, 72, 84, 80, 76, 80, 84),
         labels = List(16) { if (it == 0) "2025" else if (it == 7) "2026" else "" },
         kinds = mapOf(15 to BarKind.Today),
         tips = emptyMap(),
     ),
-    goalLine = null,
     selectedBar = null,
     walks = 312,
     longestStreak = 21,

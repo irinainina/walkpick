@@ -169,7 +169,7 @@ private fun tiles(state: StatsState): List<Pair<String, String>> {
     val average = grouped(stats.averageSteps) to stringResource(R.string.stats_average)
     val distance = distanceText(stats.distanceM, state.distanceUnit) to
         stringResource(R.string.today_distance)
-    val goalDays = stringResource(R.string.stats_goal_days)
+    val walkDays = stringResource(R.string.stats_walk_days)
     val best = stats.bestDay?.takeIf { it.steps > 0 }
     val bestDay = (best?.let { grouped(it.steps) } ?: NOTHING) to when {
         best == null -> stringResource(R.string.stats_best_day)
@@ -181,13 +181,13 @@ private fun tiles(state: StatsState): List<Pair<String, String>> {
         StatsTab.Month -> listOf(
             total,
             average,
-            stringResource(R.string.stats_days_of, stats.goalDays, state.calendar.size) to goalDays,
+            stringResource(R.string.stats_days_of, state.walkDays, state.calendar.size) to walkDays,
             bestDay,
         )
         StatsTab.Year -> listOf(
             average,
             distance,
-            stats.goalDays.toString() to goalDays,
+            state.walkDays.toString() to walkDays,
             (state.bestMonth?.format(MonthName) ?: NOTHING) to stringResource(R.string.stats_best_month),
         )
         StatsTab.All -> listOf(
