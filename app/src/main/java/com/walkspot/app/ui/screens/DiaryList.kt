@@ -1,11 +1,14 @@
 package com.walkspot.app.ui.screens
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
@@ -17,21 +20,24 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.walkspot.app.R
+import com.walkspot.app.data.local.FindEntity
 import com.walkspot.app.data.walk.title
 import com.walkspot.app.ui.components.AppCard
+import com.walkspot.app.ui.components.FindPhoto
 import com.walkspot.app.ui.components.RouteSketch
 import com.walkspot.app.ui.components.RowChevron
-import com.walkspot.app.ui.counted
 import com.walkspot.app.ui.distanceText
 import com.walkspot.app.ui.grouped
 import com.walkspot.app.ui.map.DiaryWalk
 import com.walkspot.app.ui.map.MapState
 import com.walkspot.app.ui.theme.AppTheme
 import com.walkspot.app.ui.theme.Spacing
+import java.io.File
 import java.time.LocalDate
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
@@ -39,6 +45,11 @@ import java.util.Locale
 import kotlin.math.roundToInt
 
 private val SketchSize = 104.dp
+private val ThumbSize = 32.dp
+private const val THUMBS = 4
+
+// A thumbnail of 32 dp needs an eighth of the pixels of the photo at most.
+private const val THUMB_SAMPLE = 8
 private const val SECONDS_IN_MINUTE = 60.0
 
 private val ThisYear = DateTimeFormatter.ofPattern("EEE, MMM d", Locale.ENGLISH)
@@ -50,6 +61,7 @@ private val Clock = DateTimeFormatter.ofPattern("HH:mm", Locale.ENGLISH)
 internal fun DiaryList(
     state: MapState,
     onWalk: (String) -> Unit,
+    photo: suspend (FindEntity) -> File?,
     content: PaddingValues,
     modifier: Modifier = Modifier,
 ) {
@@ -67,7 +79,28 @@ internal fun DiaryList(
                 // 12 under the title of the day, 16 between the walks of one day.
                 val first = walk == day.walks.first()
                 Spacer(Modifier.height(if (first) Spacing.sm else Spacing.m))
-                WalkCard(walk, state, onWalk)
+                WalkCard(walk, state, onWalk, photo)
+            }
+        }
+    }
+}
+
+// The first photos of a walk; when there are more than fit, the last tile says how many more.
+@Composable
+private fun Thumbnails(finds: List<FindEntity>, photo: suspend (FindEntity) -> File?) {
+    val colors = AppTheme.colors
+    val shape = MaterialTheme.shapes.extraSmall
+    val hidden = (finds.size - THUMBS).coerceAtLeast(0)
+    Row(horizontalArrangement = Arrangement.spacedBy(Spacing.xs)) {
+        finds.take(THUMBS).forEachIndexed { index, find ->
+            Box(Modifier.size(ThumbSize).clip(shape), contentAlignment = Alignment.Center) {
+                FindPhoto(find, photo, Modifier.fillMaxSize(), THUMB_SAMPLE)
+                if (hidden > 0 && index == THUMBS - 1) {
+                    Box(Modifier.fillMaxSize().background(colors.scrim))
+                    // The tile itself is one of those it counts.
+                    val more = stringResource(R.string.diary_more, hidden + 1)
+                    Text(more, style = MaterialTheme.typography.labelSmall, color = colors.onAccent)
+                }
             }
         }
     }
@@ -83,7 +116,12 @@ internal fun dayTitle(day: LocalDate, today: LocalDate): String = when {
 }
 
 @Composable
-private fun WalkCard(item: DiaryWalk, state: MapState, onWalk: (String) -> Unit) {
+private fun WalkCard(
+    item: DiaryWalk,
+    state: MapState,
+    onWalk: (String) -> Unit,
+    photo: suspend (FindEntity) -> File?,
+) {
     val type = MaterialTheme.typography
     val colors = AppTheme.colors
     val walk = item.walk
@@ -125,15 +163,12 @@ private fun WalkCard(item: DiaryWalk, state: MapState, onWalk: (String) -> Unit)
                     color = colors.accent,
                 )
                 Spacer(Modifier.height(Spacing.s))
-                Text(
-                    text = if (item.photos == 0) {
-                        stringResource(R.string.diary_no_photos)
-                    } else {
-                        counted(item.photos, R.string.diary_photo, R.string.diary_photos)
-                    },
-                    style = type.bodyMedium,
-                    color = colors.textSecondary,
-                )
+                if (item.finds.isEmpty()) {
+                    val none = stringResource(R.string.diary_no_photos)
+                    Text(none, style = type.bodyMedium, color = colors.textSecondary)
+                } else {
+                    Thumbnails(item.finds, photo)
+                }
             }
             RowChevron()
         }

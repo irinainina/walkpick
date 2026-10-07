@@ -15,8 +15,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.produceState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -26,7 +24,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.walkspot.app.R
 import com.walkspot.app.data.local.FindEntity
-import com.walkspot.app.ui.components.PhotoBox
+import com.walkspot.app.ui.components.FindPhoto
 import com.walkspot.app.ui.theme.AppTheme
 import com.walkspot.app.ui.theme.Sizes
 import com.walkspot.app.ui.theme.Spacing
@@ -64,7 +62,6 @@ internal fun TileRow(finds: List<FindEntity>, columns: Int, gap: Dp, selected: S
 private fun RowScope.Tile(find: FindEntity, selected: Set<String>?, look: TileLook) {
     val colors = AppTheme.colors
     val picked = selected?.contains(find.id) == true
-    val file by produceState<File?>(null, find.id) { value = look.photo(find) }
     val frame = if (picked) Modifier.border(PickedBorder, colors.accent, look.shape) else Modifier
     Box(
         Modifier
@@ -73,7 +70,7 @@ private fun RowScope.Tile(find: FindEntity, selected: Set<String>?, look: TileLo
             .clip(look.shape)
             .combinedClickable(onClick = { look.onTap(find) }, onLongClick = { look.onHold(find) }),
     ) {
-        PhotoBox(file, Modifier.fillMaxSize(), THUMB_SAMPLE)
+        FindPhoto(find, look.photo, Modifier.fillMaxSize(), THUMB_SAMPLE)
         Box(Modifier.fillMaxSize().then(frame))
         if (find.isBest) {
             Box(

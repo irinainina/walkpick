@@ -2,12 +2,14 @@ package com.walkspot.app.ui.map
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.walkspot.app.data.find.FindStore
 import com.walkspot.app.data.local.FindDao
+import com.walkspot.app.data.local.FindEntity
 import com.walkspot.app.data.local.WalkEntity
-import com.walkspot.app.data.local.WalkPhotos
 import com.walkspot.app.data.places.Place
 import com.walkspot.app.data.places.PlaceCell
 import com.walkspot.app.data.places.PlacesRepository
+import com.walkspot.app.data.places.Wikipedia
 import com.walkspot.app.data.places.placeCell
 import com.walkspot.app.data.settings.DistanceUnit
 import com.walkspot.app.data.settings.SettingsStore
@@ -26,6 +28,8 @@ import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import java.io.File
+import java.io.IOException
 import java.time.LocalDate
 import java.time.ZoneId
 import javax.inject.Inject
@@ -39,7 +43,13 @@ const val ROUTES_ON_MAP = 5
 enum class MapTab { Map, Diary }
 
 /** A walk in the diary: what its card shows. */
-data class DiaryWalk(val walk: WalkEntity, val photos: Int, val sketch: List<Pair<Float, Float>>)
+data class DiaryWalk(
+    val walk: WalkEntity,
+    val photos: Int,
+    val sketch: List<Pair<Float, Float>>,
+    /** The finds of the walk in the order they were taken, for the thumbnails of its card. */
+    val finds: List<FindEntity> = emptyList(),
+)
 
 data class DiaryDay(val day: LocalDate, val walks: List<DiaryWalk>)
 
@@ -54,6 +64,11 @@ data class MapState(
     val located: Int = 0,
     /** Places from Wikipedia around the middle of the map. */
     val places: List<Place> = emptyList(),
+    /** Every find, for the pins of the map. */
+    val finds: List<FindEntity> = emptyList(),
+    val filter: MapFilter = MapFilter.All,
+    /** The pin tapped last; the card under the map shows it. */
+    val pick: MapPick? = null,
     val distanceUnit: DistanceUnit = DistanceUnit.KM,
 )
 
@@ -64,23 +79,60 @@ class MapViewModel @Inject constructor(
     settings: SettingsStore,
     private val locations: LocationFinder,
     private val places: PlacesRepository,
+    private val store: FindStore,
+    private val wikipedia: Wikipedia,
 ) : ViewModel() {
 
     private val chosen = MutableStateFlow(MapState())
     private var looked: PlaceCell? = null
 
     // The diary of a year is hundreds of routes to redraw: off the main thread.
-    private val diary = combine(walks.watchAll(), finds.watchPhotoCounts()) { walks, photos ->
+    private val diary = combine(walks.watchAll(), finds.watchAll()) { walks, finds ->
         val routes = walks.take(ROUTES_ON_MAP).map { routePlaces(it.route) }.filter { it.size > 1 }
-        routes to diaryDays(walks, photos, ZoneId.systemDefault())
+        routes to diaryDays(walks, finds, ZoneId.systemDefault())
     }.flowOn(Dispatchers.Default)
 
+    // A photo is looked for once in the life of the screen, found or not.
+    private val photos = mutableMapOf<String, File?>()
+
+    suspend fun photo(find: FindEntity): File? =
+        if (find.id in photos) photos[find.id] else store.photo(find).also { photos[find.id] = it }
+
     val state: StateFlow<MapState> =
-        combine(diary, settings.value, chosen) { (routes, days), units, chosen ->
-            chosen.copy(today = LocalDate.now(), routes = routes, days = days, distanceUnit = units.distance)
+        combine(diary, settings.value, chosen, finds.watchAll()) { (routes, days), units, chosen, finds ->
+            chosen.copy(
+                today = LocalDate.now(),
+                routes = routes,
+                days = days,
+                finds = finds,
+                distanceUnit = units.distance,
+            )
         }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(KEEP_AFTER_LEAVING_MS), MapState())
 
     fun open(tab: MapTab) = chosen.update { it.copy(tab = tab) }
+
+    fun filter(filter: MapFilter) = chosen.update { it.copy(filter = filter, pick = null) }
+
+    /** Shows the card of a pin, or takes the card away with null; its photo and text come when found. */
+    fun pick(pick: MapPick?) {
+        chosen.update { it.copy(pick = pick) }
+        if (pick == null) return
+        viewModelScope.launch {
+            val shown = try {
+                pick.find?.let { pick.copy(photo = store.photo(it)) } ?: described(pick)
+            } catch (_: IOException) {
+                pick
+            }
+            // The answer may come after another pin was tapped.
+            chosen.update { if (it.pick == pick) it.copy(pick = shown) else it }
+        }
+    }
+
+    // A place of Wikipedia brings the first lines of its article and its picture.
+    private suspend fun described(pick: MapPick): MapPick {
+        val article = pick.title?.let { wikipedia.summary(it) } ?: return pick
+        return pick.copy(text = article.extract, photo = wikipedia.picture(article))
+    }
 
     /** The map has stopped at this point: shows the places around it. */
     fun lookAround(latitude: Double, longitude: Double) {
@@ -105,13 +157,17 @@ class MapViewModel @Inject constructor(
 }
 
 /** The walks by the day they began on, the latest day and the latest walk of a day first. */
-internal fun diaryDays(walks: List<WalkEntity>, photos: List<WalkPhotos>, zone: ZoneId): List<DiaryDay> {
-    val count = photos.associate { it.walkId to it.photos }
+internal fun diaryDays(walks: List<WalkEntity>, finds: List<FindEntity>, zone: ZoneId): List<DiaryDay> {
+    val byWalk = finds.groupBy { it.walkId }
     return walks
         .sortedByDescending { it.startedAt }
         .groupBy { it.startedAt.localDay(zone) }
         .map { (day, ofDay) ->
-            DiaryDay(day, ofDay.map { DiaryWalk(it, count[it.id] ?: 0, routeSketch(routePlaces(it.route))) })
+            val cards = ofDay.map { walk ->
+                val taken = byWalk[walk.id].orEmpty().sortedBy { it.takenAt }
+                DiaryWalk(walk, taken.size, routeSketch(routePlaces(walk.route)), taken)
+            }
+            DiaryDay(day, cards)
         }
 }
 

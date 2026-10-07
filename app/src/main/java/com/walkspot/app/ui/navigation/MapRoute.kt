@@ -2,12 +2,14 @@ package com.walkspot.app.ui.navigation
 
 import android.Manifest
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.composable
 import com.walkspot.app.ui.map.MapViewModel
+import com.walkspot.app.ui.screens.MapActions
 import com.walkspot.app.ui.screens.MapScreen
 
 internal fun NavGraphBuilder.mapRoute(navController: NavHostController) {
@@ -18,13 +20,26 @@ internal fun NavGraphBuilder.mapRoute(navController: NavHostController) {
         val ask = rememberPermissionRequest(Manifest.permission.ACCESS_FINE_LOCATION) { granted ->
             if (granted) model.locate()
         }
-        MapScreen(
-            state = state,
-            onTab = model::open,
-            onLook = model::lookAround,
-            onPlace = { navController.navigate(placeCardRoute(it)) },
-            onLocate = { if (model.canLocate) model.locate() else ask() },
-            onWalk = { navController.navigate(walkSummaryRoute(it)) },
-        )
+        val actions = remember(model, ask) {
+            MapActions(
+                onTab = model::open,
+                onFilter = model::filter,
+                onLook = model::lookAround,
+                onPick = model::pick,
+                onOpen = { pick ->
+                    // A find opens its card; a place of Wikipedia the card of a place nearby.
+                    val find = pick.find
+                    val place = pick.place
+                    if (find != null) {
+                        navController.navigate(findCardRoute(find.id))
+                    } else if (place != null) {
+                        navController.navigate(placeCardRoute(place))
+                    }
+                },
+                onLocate = { if (model.canLocate) model.locate() else ask() },
+                onWalk = { navController.navigate(walkSummaryRoute(it)) },
+            )
+        }
+        MapScreen(state, actions, model::photo)
     }
 }

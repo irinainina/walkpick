@@ -72,9 +72,6 @@ interface WalkDao : SyncedDao<WalkEntity> {
     suspend fun delete(id: String)
 }
 
-/** How many photos a walk has; every find is a photo. */
-data class WalkPhotos(val walkId: String, val photos: Int)
-
 @Dao
 interface FindDao : SyncedDao<FindEntity> {
     @Query("SELECT * FROM finds WHERE synced = 0")
@@ -112,9 +109,6 @@ interface FindDao : SyncedDao<FindEntity> {
 
     @Query("SELECT COUNT(*) FROM finds")
     fun watchCount(): Flow<Int>
-
-    @Query("SELECT walkId, COUNT(*) AS photos FROM finds GROUP BY walkId")
-    fun watchPhotoCounts(): Flow<List<WalkPhotos>>
 }
 
 @Dao

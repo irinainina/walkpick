@@ -7,6 +7,8 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -42,6 +44,7 @@ private const val ONE_POINT_ZOOM = 16f
 private val StartBorder = 3.dp
 private val FlagSize = 16.dp
 private val PlacePin = 36.dp
+private val ClusterSize = 40.dp
 private val PlaceIcon = 20.dp
 private val MeHalo = 48.dp
 private val MeSize = 20.dp
@@ -78,6 +81,8 @@ fun WalkMap(
     covered: PaddingValues = PaddingValues(),
     still: Boolean = false,
     onLoaded: () -> Unit = {},
+    /** The map is tapped where there is no pin. */
+    onTap: () -> Unit = {},
     content: MapContent = {},
 ) {
     val context = LocalContext.current
@@ -89,6 +94,7 @@ fun WalkMap(
         uiSettings = if (still) StillMap else BareMap,
         contentPadding = covered,
         onMapLoaded = onLoaded,
+        onMapClick = { onTap() },
         content = content,
     )
 }
@@ -150,11 +156,11 @@ fun MeDot() {
 
 /** A place from Wikipedia not visited yet: pale beside the finds; the content of a map marker. */
 @Composable
-fun UnvisitedPlacePin() {
+fun UnvisitedPlacePin(size: Dp = PlacePin) {
     val colors = AppTheme.colors
     Box(
         Modifier
-            .size(PlacePin)
+            .size(size)
             .background(colors.surface, CircleShape)
             .border(StartBorder, colors.unvisitedRing, CircleShape),
         contentAlignment = Alignment.Center,
@@ -165,15 +171,30 @@ fun UnvisitedPlacePin() {
 
 /** A find on a map: a round pin in the colour of its kind with the icon of the kind. */
 @Composable
-fun FindPin(look: KindLook) {
+fun FindPin(look: KindLook, size: Dp = PlacePin) {
     Box(
         Modifier
-            .size(PlacePin)
+            .size(size)
             .background(look.color, CircleShape)
             .border(StartBorder, AppTheme.colors.surface, CircleShape),
         contentAlignment = Alignment.Center,
     ) {
         Icon(painterResource(look.icon), null, Modifier.size(PlaceIcon), AppTheme.colors.onAccent)
+    }
+}
+
+/** Several finds too close to tell apart: a white circle with their number. */
+@Composable
+fun ClusterPin(count: Int) {
+    val colors = AppTheme.colors
+    Box(
+        Modifier
+            .size(ClusterSize)
+            .background(colors.surface, CircleShape)
+            .border(StartBorder, colors.accent, CircleShape),
+        contentAlignment = Alignment.Center,
+    ) {
+        Text(count.toString(), style = MaterialTheme.typography.labelLarge, color = colors.accent)
     }
 }
 

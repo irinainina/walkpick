@@ -1,7 +1,8 @@
 package com.walkspot.app.ui
 
+import com.walkspot.app.data.local.FindEntity
+import com.walkspot.app.data.local.FindKind
 import com.walkspot.app.data.local.WalkEntity
-import com.walkspot.app.data.local.WalkPhotos
 import com.walkspot.app.ui.map.diaryDays
 import com.walkspot.app.ui.map.routeSketch
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -23,6 +24,11 @@ class DiaryTest {
         updatedAt = Instant.EPOCH,
     )
 
+    private fun find(id: String, walk: String, takenAt: Long): FindEntity {
+        val taken = Instant.ofEpochSecond(takenAt)
+        return FindEntity(id, walk, taken, 50.45, 30.52, "", FindKind.PLANT, updatedAt = Instant.EPOCH)
+    }
+
     @Test
     fun walksAreGroupedByDayWithTheLatestFirst() {
         val walks = listOf(
@@ -30,10 +36,12 @@ class DiaryTest {
             walk(312, "2026-09-29T18:40:00Z"),
             walk(311, "2026-09-27T17:30:00Z"),
         )
-        val days = diaryDays(walks, listOf(WalkPhotos("walk312", 7)), ZoneOffset.UTC)
+        val finds = listOf(find("late", "walk312", 20), find("early", "walk312", 10), find("far", "walk9", 5))
+        val days = diaryDays(walks, finds, ZoneOffset.UTC)
         assertEquals(listOf(LocalDate.of(2026, 9, 29), LocalDate.of(2026, 9, 27)), days.map { it.day })
         assertEquals(listOf(311, 310), days[1].walks.map { it.walk.number })
-        assertEquals(7, days[0].walks.single().photos)
+        assertEquals(2, days[0].walks.single().photos)
+        assertEquals(listOf("early", "late"), days[0].walks.single().finds.map { it.id })
         assertEquals(0, days[1].walks.first().photos)
     }
 

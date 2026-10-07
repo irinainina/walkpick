@@ -12,10 +12,23 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
+import com.walkspot.app.data.local.FindEntity
 import com.walkspot.app.ui.theme.AppTheme
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.File
+
+/** The photo of a find, looked for by [photo] once the tile comes into sight. */
+@Composable
+fun FindPhoto(
+    find: FindEntity,
+    photo: suspend (FindEntity) -> File?,
+    modifier: Modifier = Modifier,
+    sample: Int = 1,
+) {
+    val file by produceState<File?>(null, find.id) { value = photo(find) }
+    PhotoBox(file, modifier, sample)
+}
 
 /**
  * A photo from its file, cropped to fill the box. A pale ground stands in while it is read and when
