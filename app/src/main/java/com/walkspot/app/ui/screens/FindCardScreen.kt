@@ -1,6 +1,7 @@
 package com.walkspot.app.ui.screens
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
@@ -47,6 +48,7 @@ fun FindCardScreen(
     onBack: () -> Unit,
     onBest: () -> Unit,
     onDelete: () -> Unit,
+    onPhoto: () -> Unit,
     onWalk: (String) -> Unit,
     onChoose: (Int) -> Unit,
     onRename: (String) -> Unit,
@@ -64,7 +66,11 @@ fun FindCardScreen(
             .background(colors.surface)
             .verticalScroll(rememberScrollState()),
     ) {
-        PhotoBox(state.photo, Modifier.fillMaxWidth().height(PhotoHeight))
+        val photo = Modifier
+            .fillMaxWidth()
+            .height(PhotoHeight)
+            .clickable(onClick = onPhoto)
+        PhotoBox(state.photo, photo)
         Row(
             modifier = Modifier
                 .fillMaxWidth()

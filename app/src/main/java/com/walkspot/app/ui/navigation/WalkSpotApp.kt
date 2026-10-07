@@ -8,6 +8,9 @@ import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
@@ -31,6 +34,8 @@ fun WalkSpotApp(signedIn: Boolean, walkAsked: Int, onStartShown: () -> Unit) {
     // Until the first destination reports itself the start screen stands in, or the bar pops in late.
     val route = entry?.destination?.route ?: start.route
     val tab = Screen.entries.firstOrNull { it.route == route }?.tab
+    // While photos are picked in the gallery its two actions stand in place of the tabs.
+    var selecting by remember { mutableStateOf(false) }
 
     Column(
         Modifier
@@ -47,6 +52,8 @@ fun WalkSpotApp(signedIn: Boolean, walkAsked: Int, onStartShown: () -> Unit) {
             cameraRoute(navController)
             findCardRoute(navController)
             placeCardRoute(navController)
+            photoViewerRoute(navController)
+            galleryRoute(navController, onSelecting = { selecting = it })
             mapRoute(navController)
             profileRoute(navController)
             settingsRoute(navController)
@@ -58,6 +65,8 @@ fun WalkSpotApp(signedIn: Boolean, walkAsked: Int, onStartShown: () -> Unit) {
                 Screen.ActiveWalk,
                 Screen.Camera,
                 Screen.FindCard,
+                Screen.Gallery,
+                Screen.PhotoViewer,
                 Screen.Map,
                 Screen.Profile,
                 Screen.Settings,
@@ -72,7 +81,7 @@ fun WalkSpotApp(signedIn: Boolean, walkAsked: Int, onStartShown: () -> Unit) {
                 }
             }
         }
-        if (tab != null) {
+        if (tab != null && !selecting) {
             Box(
                 Modifier
                     .background(AppTheme.colors.surface)

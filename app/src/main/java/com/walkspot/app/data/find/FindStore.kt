@@ -34,6 +34,9 @@ class FindStore @Inject constructor(
         track?.finds?.firstOrNull { it.id == id } ?: saved
     }
 
+    /** The find as it is now; null when there is none. */
+    suspend fun watchNow(id: String): FindEntity? = drafted(id) ?: finds.get(id)
+
     /** The photo of a find on this phone, fetched from the server when need be; null when there is none. */
     suspend fun photo(find: FindEntity): File? = photos.local(find.photoPath, remote)
 

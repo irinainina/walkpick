@@ -87,6 +87,10 @@ interface FindDao : SyncedDao<FindEntity> {
     @Query("SELECT * FROM finds WHERE name IS NULL AND kind != 'UNKNOWN'")
     suspend fun unnamed(): List<FindEntity>
 
+    /** Every find, the latest first. */
+    @Query("SELECT * FROM finds ORDER BY takenAt DESC")
+    fun watchAll(): Flow<List<FindEntity>>
+
     @Query("SELECT * FROM finds WHERE id = :id")
     fun watch(id: String): Flow<FindEntity?>
 

@@ -23,6 +23,7 @@ internal fun NavGraphBuilder.findCardRoute(navController: NavHostController) {
                 onBack = { navController.popBackStack() },
                 onBest = model::toggleBest,
                 onDelete = { model.delete(onDone = { navController.popBackStack() }) },
+                onPhoto = { navController.navigate(photoViewerRoute(it.find.id)) },
                 onWalk = { walk -> navController.navigate(walkSummaryRoute(walk)) },
                 onChoose = model::choose,
                 onRename = model::rename,

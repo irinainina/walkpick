@@ -8,6 +8,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.produceState
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
@@ -21,13 +22,19 @@ import java.io.File
  * there is no file. [sample] reads every n-th pixel: a thumbnail needs no more.
  */
 @Composable
-fun PhotoBox(file: File?, modifier: Modifier = Modifier, sample: Int = 1) {
+fun PhotoBox(
+    file: File?,
+    modifier: Modifier = Modifier,
+    sample: Int = 1,
+    scale: ContentScale = ContentScale.Crop,
+    ground: Color = AppTheme.colors.surfaceTint,
+) {
     val picture by produceState<ImageBitmap?>(null, file) {
         value = withContext(Dispatchers.IO) {
             val options = BitmapFactory.Options().apply { inSampleSize = sample }
             file?.let { BitmapFactory.decodeFile(it.path, options) }?.asImageBitmap()
         }
     }
-    val ground = modifier.background(AppTheme.colors.surfaceTint)
-    picture?.let { Image(it, null, ground, contentScale = ContentScale.Crop) } ?: Box(ground)
+    val box = modifier.background(ground)
+    picture?.let { Image(it, null, box, contentScale = scale) } ?: Box(box)
 }

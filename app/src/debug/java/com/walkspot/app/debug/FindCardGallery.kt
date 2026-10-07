@@ -60,6 +60,7 @@ fun FindCardGallery(unknown: Boolean) {
         onBack = {},
         onBest = {},
         onDelete = {},
+        onPhoto = {},
         onWalk = {},
         onChoose = {},
         onRename = {},

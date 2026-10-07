@@ -49,6 +49,8 @@ data class AppColors(
     val photoButton: Color,
     val photoHint: Color,
     val photoBar: Color,
+    /** The ground of a button or a caption over a photo shown on the dark ground. */
+    val photoChrome: Color,
     val streak: Color,
     /** The badge behind a streak or notice icon. */
     val streakTint: Color,
@@ -97,6 +99,7 @@ internal val walkSpotColors = AppColors(
     photoButton = Black.copy(alpha = 0.32f),
     photoHint = Black.copy(alpha = 0.4f),
     photoBar = Black.copy(alpha = 0.48f),
+    photoChrome = White.copy(alpha = 0.12f),
     streak = Orange,
     streakTint = Peach,
     positive = Green,
