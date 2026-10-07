@@ -49,6 +49,9 @@ interface WalkDao : SyncedDao<WalkEntity> {
 
     @Query("SELECT startedAt FROM walks")
     fun watchStarts(): Flow<List<Instant>>
+
+    @Query("SELECT COALESCE(MAX(number), 0) FROM walks")
+    suspend fun lastNumber(): Int
 }
 
 @Dao

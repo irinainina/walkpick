@@ -1,9 +1,23 @@
 package com.walkspot.app.data.walk
 
+import android.content.Context
+import com.walkspot.app.data.local.InstantIso
+import com.walkspot.app.data.local.SyncJson
+import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.getAndUpdate
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.SerializationException
+import java.io.File
+import java.io.IOException
 import java.time.Duration
 import java.time.Instant
 import javax.inject.Inject
@@ -13,10 +27,11 @@ import javax.inject.Singleton
  * A walk being recorded. A new leg starts after every pause: the way from where the walk was paused to
  * where it went on is not walked distance.
  */
+@Serializable
 data class WalkTrack(
-    val startedAt: Instant,
+    @Serializable(InstantIso::class) val startedAt: Instant,
     val legs: List<List<TrackPoint>> = listOf(emptyList()),
-    val pausedAt: Instant? = null,
+    @Serializable(InstantIso::class) val pausedAt: Instant? = null,
     val pausedSeconds: Long = 0,
     val steps: Int = 0,
     /** The last reading of the phone's step counter, which counts from the start of the phone. */
@@ -60,12 +75,44 @@ data class WalkTrack(
     }
 }
 
+/** The walk going on, kept in a file: Android may end the app in the middle of a walk. */
+class WalkDraft(private val file: File) {
+
+    @Inject
+    constructor(@ApplicationContext context: Context) : this(File(context.filesDir, "walk.json"))
+
+    /** The unfinished walk, or null when there is none or the file cannot be read. */
+    fun read(): WalkTrack? = try {
+        if (file.exists()) SyncJson.decodeFromString(WalkTrack.serializer(), file.readText()) else null
+    } catch (_: IOException) {
+        null
+    } catch (_: SerializationException) {
+        null
+    }
+
+    fun write(track: WalkTrack?) {
+        if (track == null) {
+            file.delete()
+        } else {
+            file.writeText(SyncJson.encodeToString(WalkTrack.serializer(), track))
+        }
+    }
+}
+
 /** The walk going on now, shared by the service that listens to GPS and the screens that show it. */
 @Singleton
-class WalkRecorder @Inject constructor() {
-    private val current = MutableStateFlow<WalkTrack?>(null)
+class WalkRecorder @Inject constructor(draft: WalkDraft) {
+    // A walk the app was ended in the middle of goes on from where it was.
+    private val current = MutableStateFlow(draft.read())
 
     val track: StateFlow<WalkTrack?> = current
+
+    init {
+        // Written off the main thread; of several changes in a row only the last one matters.
+        CoroutineScope(SupervisorJob() + Dispatchers.IO).launch {
+            current.drop(1).collectLatest(draft::write)
+        }
+    }
 
     /** Starts a walk unless one is going on. */
     fun start(at: Instant) = current.update { it ?: WalkTrack(at) }

@@ -59,6 +59,8 @@ private val Date = DateTimeFormatter.ofPattern("EEEE, MMMM d", Locale.ENGLISH)
 @Composable
 fun TodayScreen(
     state: TodayState,
+    /** A walk is being recorded: the button leads back to it. */
+    walking: Boolean,
     onAllowSteps: () -> Unit,
     onStartWalk: () -> Unit,
     onStats: () -> Unit,
@@ -91,7 +93,9 @@ fun TodayScreen(
             StreakCard(state.streak)
             Spacer(Modifier.height(Spacing.ml))
             AppButton(
-                text = stringResource(R.string.today_start_walk),
+                text = stringResource(
+                    if (walking) R.string.today_back_to_walk else R.string.today_start_walk,
+                ),
                 onClick = onStartWalk,
                 iconRes = R.drawable.ic_play,
             )

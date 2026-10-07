@@ -41,10 +41,7 @@ internal fun NavGraphBuilder.activeWalkRoute(navController: NavHostController) {
             onMinimize = { navController.popBackStack() },
             onPause = model::togglePause,
             onCamera = { navController.navigate(Screen.Camera.route) },
-            onStop = {
-                model.stop()
-                navController.popBackStack()
-            },
+            onStop = { model.stop(onDone = { navController.popBackStack() }) },
         )
     }
 }

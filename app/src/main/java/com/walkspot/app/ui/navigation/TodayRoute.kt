@@ -13,6 +13,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.composable
 import com.walkspot.app.ui.screens.TodayScreen
 import com.walkspot.app.ui.today.TodayViewModel
+import com.walkspot.app.ui.walk.ActiveWalkViewModel
 
 internal fun NavGraphBuilder.todayRoute(navController: NavHostController, onShown: () -> Unit) {
     composable(Screen.Today.route) {
@@ -24,10 +25,14 @@ internal fun NavGraphBuilder.todayRoute(navController: NavHostController, onShow
         }
         // The screen notices the answer by itself: it looks at the permission every few seconds.
         val allowSteps = rememberPermissionRequest(STEPS_PERMISSION) {}
+        // The walk going on is known to the whole app; this screen only needs to know there is one.
+        val walk: ActiveWalkViewModel = hiltViewModel()
+        val walking by walk.state.collectAsStateWithLifecycle()
         val shown = state ?: return@composable
         SideEffect(onShown)
         TodayScreen(
             state = shown,
+            walking = walking.recording,
             onAllowSteps = allowSteps,
             onStartWalk = { navController.navigate(Screen.ActiveWalk.route) },
             onStats = { navController.navigate(Screen.Stats.route) },

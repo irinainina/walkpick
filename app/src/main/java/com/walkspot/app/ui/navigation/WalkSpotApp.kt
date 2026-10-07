@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -21,7 +22,7 @@ import com.walkspot.app.ui.theme.AppTheme
 
 /** [onStartShown] is called once the first screen has something to show. */
 @Composable
-fun WalkSpotApp(signedIn: Boolean, onStartShown: () -> Unit) {
+fun WalkSpotApp(signedIn: Boolean, walkAsked: Int, onStartShown: () -> Unit) {
     val navController = rememberNavController()
     // Above the NavHost: the three sign-in screens share it.
     val auth: AuthViewModel = hiltViewModel()
@@ -77,6 +78,13 @@ fun WalkSpotApp(signedIn: Boolean, onStartShown: () -> Unit) {
                     }
                 })
             }
+        }
+    }
+    // [walkAsked] grows with every tap on the notification of a walk; placed after the NavHost, which
+    // must have its graph before anything can be opened.
+    LaunchedEffect(walkAsked) {
+        if (signedIn && walkAsked > 0) {
+            navController.navigate(Screen.ActiveWalk.route) { launchSingleTop = true }
         }
     }
 }

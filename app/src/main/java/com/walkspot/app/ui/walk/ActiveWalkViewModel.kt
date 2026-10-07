@@ -9,6 +9,7 @@ import com.walkspot.app.data.settings.SettingsStore
 import com.walkspot.app.data.walk.TrackPoint
 import com.walkspot.app.data.walk.WalkControl
 import com.walkspot.app.data.walk.WalkRecorder
+import com.walkspot.app.data.walk.WalkRepository
 import com.walkspot.app.data.walk.WalkTrack
 import com.walkspot.app.data.walk.distanceM
 import com.walkspot.app.data.walk.paceSecondsPerKm
@@ -18,8 +19,10 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 import java.time.Instant
 import javax.inject.Inject
 
@@ -46,6 +49,7 @@ data class ActiveWalkState(
 class ActiveWalkViewModel @Inject constructor(
     private val recorder: WalkRecorder,
     private val control: WalkControl,
+    private val walks: WalkRepository,
     health: HealthRepository,
     settings: SettingsStore,
 ) : ViewModel() {
@@ -72,8 +76,13 @@ class ActiveWalkViewModel @Inject constructor(
         if (recorder.track.value?.paused == true) recorder.resume(now) else recorder.pause(now)
     }
 
-    fun stop() {
-        control.stop()
+    /** Ends the recording and keeps the walk; [onDone] runs once it is saved. */
+    fun stop(onDone: () -> Unit) {
+        val track = control.stop()
+        viewModelScope.launch {
+            if (track != null) walks.save(track, weight.first())
+            onDone()
+        }
     }
 }
 

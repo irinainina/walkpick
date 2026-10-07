@@ -1,5 +1,7 @@
 package com.walkspot.app.data.walk
 
+import com.walkspot.app.data.local.InstantIso
+import kotlinx.serialization.Serializable
 import java.time.Duration
 import java.time.Instant
 import java.util.Locale
@@ -12,7 +14,13 @@ import kotlin.math.sin
 import kotlin.math.sqrt
 
 /** A place the phone reported during a walk; [accuracyM] is the radius the phone vouches for. */
-data class TrackPoint(val latitude: Double, val longitude: Double, val at: Instant, val accuracyM: Float)
+@Serializable
+data class TrackPoint(
+    val latitude: Double,
+    val longitude: Double,
+    @Serializable(InstantIso::class) val at: Instant,
+    val accuracyM: Float,
+)
 
 private const val EARTH_RADIUS_M = 6_371_000.0
 private const val MILLIS_IN_SECOND = 1000.0

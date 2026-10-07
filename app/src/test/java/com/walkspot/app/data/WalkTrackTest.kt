@@ -1,12 +1,16 @@
 package com.walkspot.app.data
 
 import com.walkspot.app.data.walk.TrackPoint
+import com.walkspot.app.data.walk.WalkDraft
 import com.walkspot.app.data.walk.WalkRecorder
 import com.walkspot.app.data.walk.WalkTrack
+import com.walkspot.app.data.walk.walkEntity
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.io.TempDir
+import java.io.File
 import java.time.Instant
 
 class WalkTrackTest {
@@ -63,8 +67,34 @@ class WalkTrackTest {
     }
 
     @Test
-    fun theRecorderHoldsOneWalkAndHandsItOverAtTheEnd() {
-        val recorder = WalkRecorder()
+    fun aWalkTheAppWasEndedInGoesOnFromItsFile(@TempDir folder: File) {
+        val draft = WalkDraft(File(folder, "walk.json"))
+        assertNull(WalkRecorder(draft).track.value)
+        val walked = WalkTrack(start).with(point(0.0, 0)).with(point(0.001, 60))
+        val track = walked.withCounter(100).pausedAt(at(90))
+        draft.write(track)
+        assertEquals(track, WalkRecorder(draft).track.value)
+        draft.write(null)
+        assertNull(draft.read())
+    }
+
+    @Test
+    fun aWalkThatNeverLeftItsSpotIsNotKept() {
+        val standing = WalkTrack(start).with(point(0.0, 0))
+        assertNull(walkEntity(standing, 313, at(600), 64.2))
+        val walked = standing.with(point(0.001, 60)).withCounter(10).withCounter(160)
+        val entry = walkEntity(walked, 313, at(600), 64.2)!!
+        assertEquals(313, entry.number)
+        assertEquals(111, entry.distanceM)
+        assertEquals(600, entry.durationS)
+        assertEquals(150, entry.steps)
+        assertEquals("30.520000 50.450000,30.520000 50.451000", entry.route)
+        assertEquals(false, entry.synced)
+    }
+
+    @Test
+    fun theRecorderHoldsOneWalkAndHandsItOverAtTheEnd(@TempDir folder: File) {
+        val recorder = WalkRecorder(WalkDraft(File(folder, "walk.json")))
         recorder.report(point(0.0, 0))
         assertNull(recorder.track.value)
         recorder.start(start)

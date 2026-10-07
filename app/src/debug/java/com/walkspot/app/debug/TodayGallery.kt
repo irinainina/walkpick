@@ -53,6 +53,7 @@ fun TodayGallery(access: StepsAccess) {
             week = week,
             health = health,
         ),
+        walking = false,
         onAllowSteps = {},
         onStartWalk = {},
         onStats = {},
