@@ -33,6 +33,8 @@ data class FindCardState(
     val photo: File? = null,
     /** Null while the walk of the find is still going on. */
     val walk: WalkEntity? = null,
+    /** The services are being asked for a name right now. */
+    val identifying: Boolean = false,
 )
 
 @HiltViewModel
@@ -44,6 +46,7 @@ class FindCardViewModel @Inject constructor(
 
     private val id: String = checkNotNull(saved[FIND_ID])
     private val photo = MutableStateFlow<File?>(null)
+    private val identifying = MutableStateFlow(false)
 
     /** Null before the find is read and after it is deleted. */
     @OptIn(ExperimentalCoroutinesApi::class)
@@ -52,7 +55,9 @@ class FindCardViewModel @Inject constructor(
             if (find == null) {
                 flowOf(null)
             } else {
-                combine(photo, walks.watch(find.walkId)) { file, walk -> FindCardState(find, file, walk) }
+                combine(photo, walks.watch(find.walkId), identifying) { file, walk, asking ->
+                    FindCardState(find, file, walk, asking)
+                }
             }
         }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(KEEP_AFTER_LEAVING_MS), null)
@@ -75,8 +80,13 @@ class FindCardViewModel @Inject constructor(
     // A new name wants its own description, a new kind its own service: both are asked at once.
     private fun change(transform: (FindEntity) -> FindEntity) {
         viewModelScope.launch {
-            finds.change(id, transform)
-            finds.identify(id)
+            identifying.value = true
+            try {
+                finds.change(id, transform)
+                finds.identify(id)
+            } finally {
+                identifying.value = false
+            }
         }
     }
 

@@ -2,6 +2,7 @@ package com.walkspot.app.ui.navigation
 
 import android.Manifest
 import android.app.Activity
+import android.location.LocationManager
 import android.os.Build
 import androidx.activity.compose.LocalActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -9,6 +10,7 @@ import androidx.activity.result.IntentSenderRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.core.location.LocationManagerCompat
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavGraphBuilder
@@ -81,6 +83,8 @@ internal fun NavGraphBuilder.activeWalkRoute(navController: NavHostController) {
 
 // With the location switched off in the phone the walk would wait for a signal for ever.
 private fun Activity.askToTurnLocationOn(show: (IntentSenderRequest) -> Unit) {
+    // Google also asks for Wi-Fi scanning when only Wi-Fi is off; GPS alone records a walk.
+    if (LocationManagerCompat.isLocationEnabled(getSystemService(LocationManager::class.java))) return
     val needed = LocationRequest.Builder(Priority.PRIORITY_HIGH_ACCURACY, 0).build()
     val request = LocationSettingsRequest.Builder().addLocationRequest(needed).build()
     LocationServices.getSettingsClient(this).checkLocationSettings(request).addOnFailureListener { off ->

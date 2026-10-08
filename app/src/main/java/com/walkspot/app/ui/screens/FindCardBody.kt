@@ -84,6 +84,7 @@ internal fun FindCardBody(
         Spacer(Modifier.height(Spacing.sm))
         val (name, under) = when {
             find.name != null -> find.name to find.latinName
+            state.identifying -> stringResource(R.string.camera_identifying) to null
             find.kind == FindKind.UNKNOWN -> {
                 stringResource(R.string.find_unknown_title) to stringResource(R.string.find_unknown_text)
             }
@@ -93,7 +94,7 @@ internal fun FindCardBody(
         if (under != null) Text(under, style = ParagraphStyle, color = colors.textSecondary)
         if (find.name != null) {
             Match(find.match, onNotThis)
-        } else {
+        } else if (!state.identifying) {
             UnnamedControls(unknown = find.kind == FindKind.UNKNOWN, onName, onRetry)
         }
         if (!find.description.isNullOrBlank()) {
