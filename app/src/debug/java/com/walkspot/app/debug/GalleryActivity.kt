@@ -6,12 +6,15 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.runtime.Composable
 import com.walkspot.app.data.steps.StepsAccess
+import com.walkspot.app.ui.screens.SignInCodeScreen
+import com.walkspot.app.ui.screens.SignInEmailScreen
 import com.walkspot.app.ui.screens.SignInScreen
 import com.walkspot.app.ui.theme.WalkSpotTheme
 
 /**
  * adb shell am start -n com.walkspot.app/.debug.GalleryActivity [--es page <page>]
- * Pages: charts, signin, steps, today, today-off, today-walking, stats-week, stats-month, stats-year,
+ * Pages: charts, signin, signin-email, signin-code, steps, today, today-off, today-walking,
+ * stats-week, stats-month, stats-year,
  * stats-all,
  * health-mood, health-weight, health-pressure, health-glucose, health-empty, map, walk, active-walk,
  * walk-summary, profile, settings, settings-off; a new user's screens: today-new, stats-new,
@@ -36,6 +39,8 @@ private fun Page(page: String) {
     when (page) {
         "charts" -> ChartGallery()
         "signin" -> SignInScreen(onGoogle = {}, onEmail = {})
+        "signin-email" -> SignInEmailScreen("ira@example.com", {}, {}, {}, busy = false, problem = null)
+        "signin-code" -> SignInCodeScreen("ira@example.com", "42", {}, {}, 48, {}, {}, problem = null)
         "today" -> TodayGallery(StepsAccess.COUNTING)
         "today-off" -> TodayGallery(StepsAccess.NOT_ALLOWED)
         "today-walking" -> TodayGallery(StepsAccess.COUNTING, walkSeconds = 1935)

@@ -133,7 +133,8 @@ private fun RowScope.Tile(
                 else -> value
             }
             val ink = if (newMood) colors.accent else colors.textPrimary
-            Text(title, style = type.labelLarge, color = ink, maxLines = 1)
+            // "Add mood" is wider than any value: on a narrow phone it fits only a size smaller.
+            Text(title, style = if (newMood) type.labelMedium else type.labelLarge, color = ink, maxLines = 1)
             Text(
                 text = when {
                     newMood -> stringResource(R.string.today_for_today)
