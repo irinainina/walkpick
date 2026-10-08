@@ -58,6 +58,7 @@ internal fun NavGraphBuilder.signInRoutes(
             code = auth.code,
             onCodeChange = auth::editCode,
             onCodeComplete = { auth.verifyCode(enter) },
+            resendIn = auth.resendIn,
             onResend = { auth.sendCode() },
             onBack = back,
             problem = auth.problem,

@@ -14,11 +14,6 @@ import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
@@ -31,10 +26,6 @@ import com.walkspot.app.ui.components.AppTopBar
 import com.walkspot.app.ui.components.CodeField
 import com.walkspot.app.ui.theme.AppTheme
 import com.walkspot.app.ui.theme.Spacing
-import kotlinx.coroutines.delay
-
-// The letter can take a couple of minutes, and asking again kills the code still on its way.
-private const val RESEND_PAUSE_SECONDS = 60
 
 @StringRes
 fun AuthProblem.messageRes(): Int = when (this) {
@@ -84,18 +75,12 @@ fun SignInCodeScreen(
     code: String,
     onCodeChange: (String) -> Unit,
     onCodeComplete: () -> Unit,
+    /** The seconds until another code may be asked for. */
+    resendIn: Int,
     onResend: () -> Unit,
     onBack: () -> Unit,
     problem: AuthProblem?,
 ) {
-    // Reaching this screen means a letter has just gone out, so the wait starts here.
-    var secondsLeft by rememberSaveable { mutableIntStateOf(RESEND_PAUSE_SECONDS) }
-    LaunchedEffect(secondsLeft) {
-        if (secondsLeft > 0) {
-            delay(1000)
-            secondsLeft--
-        }
-    }
     SignInStep(
         title = stringResource(R.string.auth_code_title),
         subtitle = stringResource(R.string.auth_code_subtitle, email),
@@ -117,19 +102,16 @@ fun SignInCodeScreen(
             textAlign = TextAlign.Center,
         )
         Spacer(Modifier.weight(1f))
-        val waiting = secondsLeft > 0
+        val waiting = resendIn > 0
         Text(
             text = if (waiting) {
-                stringResource(R.string.auth_resend_in, secondsLeft)
+                stringResource(R.string.auth_resend_in, resendIn)
             } else {
                 stringResource(R.string.auth_resend)
             },
             modifier = Modifier
                 .fillMaxWidth()
-                .clickable(enabled = !waiting) {
-                    secondsLeft = RESEND_PAUSE_SECONDS
-                    onResend()
-                }
+                .clickable(enabled = !waiting, onClick = onResend)
                 .padding(vertical = Spacing.m),
             style = MaterialTheme.typography.titleSmall,
             color = if (waiting) AppTheme.colors.textSecondary else AppTheme.colors.accent,

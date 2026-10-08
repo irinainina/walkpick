@@ -33,7 +33,7 @@
     <string name="auth_resend_in">Resend code in %1$d s</string>
     <string name="auth_offline">No internet connection. Check it and try again.</string>
     <string name="auth_no_answer">The server didn\'t answer. Try again.</string>
-    <string name="auth_too_often">Too many codes asked for. Wait a minute.</string>
+    <string name="auth_too_often">A new code can be sent once a minute. Wait a little and try again.</string>
     <string name="auth_no_google">Google didn\'t sign you in. Use the email code instead.</string>
     <string name="today_morning">Good morning</string>
     <string name="today_afternoon">Good afternoon</string>

@@ -3,6 +3,7 @@ package com.walkspot.app.ui.account
 import androidx.activity.compose.LocalActivity
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -25,9 +26,14 @@ import dagger.hilt.android.components.ActivityComponent
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
+
+// The server sends an address one code a minute, and a new code kills the one still on its way.
+private const val RESEND_PAUSE_SECONDS = 60
+private const val SECOND_MS = 1_000L
 
 /** The sign-in: one request at a time, and a reason when it does not go through. */
 @HiltViewModel
@@ -46,6 +52,11 @@ class AuthViewModel @Inject constructor(
         private set
     var problem by mutableStateOf<AuthProblem?>(null)
         private set
+
+    /** The seconds until another code may be asked for; 0 when it may. */
+    var resendIn by mutableIntStateOf(0)
+        private set
+    private var sentTo = ""
 
     fun editEmail(value: String) {
         email = value
@@ -68,8 +79,29 @@ class AuthViewModel @Inject constructor(
             problem = AuthProblem.InvalidEmail
             return
         }
+        // The letter to this address is on its way: asking again would only be refused.
+        if (address == sentTo && resendIn > 0) {
+            problem = null
+            onSent()
+            return
+        }
         code = ""
-        request(refused = AuthProblem.InvalidEmail, onDone = onSent) { auth.sendCode(address) }
+        val sent = {
+            sentTo = address
+            countDown()
+            onSent()
+        }
+        request(refused = AuthProblem.InvalidEmail, onDone = sent) { auth.sendCode(address) }
+    }
+
+    private fun countDown() {
+        resendIn = RESEND_PAUSE_SECONDS
+        viewModelScope.launch {
+            while (resendIn > 0) {
+                delay(SECOND_MS)
+                resendIn--
+            }
+        }
     }
 
     fun verifyCode(onSignedIn: () -> Unit) {
