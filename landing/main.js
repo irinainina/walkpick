@@ -1,5 +1,7 @@
 const MOBILE = window.matchMedia('(max-width: 767px)');
 const SVG_NS = 'http://www.w3.org/2000/svg';
+const WAITLIST_URL = 'https://qangmeeugxafvlfcuxyp.supabase.co/functions/v1/waitlist';
+const SEND_FAILED = "Couldn't save it. Please try again.";
 
 // [kind, x, y, size, rotation] in design coordinates: 1440px desktop, 375px mobile
 const DECOR = {
@@ -65,12 +67,31 @@ function initMenu() {
 function initWaitlist() {
   const form = document.querySelector('.waitlist');
   const message = form.querySelector('.waitlist-message');
+  const button = form.querySelector('.waitlist-button');
 
-  form.addEventListener('submit', (event) => {
+  form.addEventListener('submit', async (event) => {
     event.preventDefault();
-    const valid = form.email.checkValidity() && form.email.value.trim() !== '';
-    message.textContent = valid ? "Thanks! You're on the list." : 'Please enter a valid email.';
-    if (valid) form.reset();
+    const email = form.email.value.trim();
+    if (!form.email.checkValidity() || email === '') {
+      message.textContent = 'Please enter a valid email.';
+      return;
+    }
+    button.disabled = true;
+    try {
+      const reply = await fetch(WAITLIST_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email }),
+      });
+      if (reply.ok) form.reset();
+      message.textContent = reply.ok
+        ? "Thanks! You're on the list."
+        : reply.status === 400 ? 'Please enter a valid email.' : SEND_FAILED;
+    } catch {
+      message.textContent = SEND_FAILED;
+    } finally {
+      button.disabled = false;
+    }
   });
 }
 
