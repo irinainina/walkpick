@@ -23,10 +23,16 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.LinkAnnotation
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.TextLinkStyles
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.walkspot.app.R
+import com.walkspot.app.ui.PRIVACY_URL
+import com.walkspot.app.ui.TERMS_URL
 import com.walkspot.app.ui.components.AppButton
 import com.walkspot.app.ui.components.AppButtonStyle
 import com.walkspot.app.ui.components.GradientHeader
@@ -104,8 +110,18 @@ fun SignInScreen(
                 textAlign = TextAlign.Center,
             )
             Spacer(Modifier.height(LegalTop))
+            val terms = stringResource(R.string.settings_terms)
+            val privacy = stringResource(R.string.settings_privacy)
+            val legal = stringResource(R.string.sign_in_legal, terms, privacy)
+            val link = TextLinkStyles(SpanStyle(color = colors.accent))
             Text(
-                text = stringResource(R.string.sign_in_legal),
+                text = buildAnnotatedString {
+                    append(legal)
+                    listOf(terms to TERMS_URL, privacy to PRIVACY_URL).forEach { (words, url) ->
+                        val start = legal.indexOf(words)
+                        addLink(LinkAnnotation.Url(url, link), start, start + words.length)
+                    }
+                },
                 style = MaterialTheme.typography.bodySmall,
                 color = colors.textSecondary,
                 textAlign = TextAlign.Center,

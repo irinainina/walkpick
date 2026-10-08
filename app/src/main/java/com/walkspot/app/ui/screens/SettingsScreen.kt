@@ -19,11 +19,14 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.walkspot.app.R
 import com.walkspot.app.data.settings.AppSettings
 import com.walkspot.app.data.steps.StepsAccess
+import com.walkspot.app.ui.PRIVACY_URL
+import com.walkspot.app.ui.TERMS_URL
 import com.walkspot.app.ui.components.AppButton
 import com.walkspot.app.ui.components.AppCard
 import com.walkspot.app.ui.components.AppSwitch
@@ -108,8 +111,9 @@ fun SettingsScreen(state: SettingsState, actions: SettingsActions, modifier: Mod
         }
         Section(R.string.settings_data) { StepCounting(state.steps, actions.onAllowSteps) }
         Section(R.string.settings_about) {
-            ListRow(stringResource(R.string.settings_privacy), trailing = {})
-            ListRow(stringResource(R.string.settings_terms), trailing = {})
+            val links = LocalUriHandler.current
+            ListRow(stringResource(R.string.settings_privacy), onClick = { links.openUri(PRIVACY_URL) })
+            ListRow(stringResource(R.string.settings_terms), onClick = { links.openUri(TERMS_URL) })
             ListRow(stringResource(R.string.settings_version), value = state.version, divider = false) {}
         }
         Section(R.string.settings_account) {

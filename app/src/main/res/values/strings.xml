@@ -19,7 +19,7 @@
     <string name="sign_in_google">Continue with Google</string>
     <string name="sign_in_email">Continue with email</string>
     <string name="sign_in_email_hint">We\'ll email you a code. No password needed.</string>
-    <string name="sign_in_legal">By continuing you agree to the Terms and Privacy Policy</string>
+    <string name="sign_in_legal">By continuing you agree to the %1$s and %2$s</string>
     <string name="auth_email_title">Your email</string>
     <string name="auth_email_label">Email address</string>
     <string name="auth_send_code">Send code</string>
