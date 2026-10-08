@@ -12,11 +12,11 @@ import java.time.ZoneId
 import javax.inject.Inject
 import kotlin.math.roundToInt
 
-// Kept in the profile and in every day for the server; no screen shows or asks for it any more.
-const val DEFAULT_DAILY_GOAL = 10_000
-
-/** The steps that fill the ring of a day and the track of a bar. Nobody is told it is a goal. */
-const val FULL_DAY_STEPS = 10_000
+/**
+ * The steps that fill the ring of a day and the track of a bar until the walker sets their own in
+ * Settings. Steps are counted on walks only, so it is half of the usual ten thousand.
+ */
+const val DEFAULT_DAILY_GOAL = 5_000
 
 private const val SECONDS_IN_MINUTE = 60.0
 

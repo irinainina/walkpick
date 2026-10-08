@@ -5,10 +5,12 @@ import com.walkspot.app.data.walk.WalkWeather
 import com.walkspot.app.data.walk.parseWeather
 import com.walkspot.app.data.walk.season
 import com.walkspot.app.data.walk.sky
+import com.walkspot.app.data.walk.skyWord
+import com.walkspot.app.data.walk.temperatureWord
 import com.walkspot.app.data.walk.timeOfDay
 import com.walkspot.app.data.walk.title
 import com.walkspot.app.data.walk.walkName
-import com.walkspot.app.data.walk.weatherWord
+import com.walkspot.app.data.walk.weatherEvent
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Test
@@ -44,17 +46,25 @@ class WalkNameTest {
     }
 
     @Test
-    fun theWeatherGivesOneWordOrNone() {
-        assertEquals("Misty", weatherWord(weather(45)))
-        assertEquals("Rainy", weatherWord(weather(61)))
-        assertEquals("Rainy", weatherWord(weather(80)))
-        assertEquals("Snowy", weatherWord(weather(73)))
-        assertEquals("Stormy", weatherWord(weather(95)))
-        assertEquals("Frosty", weatherWord(weather(0, celsius = -3.0)))
-        assertEquals("Sunny", weatherWord(weather(1, celsius = 27.0)))
-        assertEquals("Cloudy", weatherWord(weather(3)))
-        assertEquals("Windy", weatherWord(weather(0, windMs = 11.0)))
-        assertNull(weatherWord(weather(0)))
+    fun whatHappensInTheWeatherHasAWord() {
+        assertEquals("Misty", weatherEvent(weather(45)))
+        assertEquals("Rainy", weatherEvent(weather(61)))
+        assertEquals("Rainy", weatherEvent(weather(80)))
+        assertEquals("Snowy", weatherEvent(weather(73)))
+        assertEquals("Stormy", weatherEvent(weather(95)))
+        assertEquals("Windy", weatherEvent(weather(0, windMs = 11.0)))
+        assertNull(weatherEvent(weather(3)))
+    }
+
+    @Test
+    fun theTemperatureAndTheSkyHaveWords() {
+        val words = listOf(-3.0, 5.0, 12.0, 20.0, 27.0).map(::temperatureWord)
+
+        assertEquals(listOf("Frosty", "Cold", "Cool", "Warm", "Hot"), words)
+        assertEquals("Sunny", skyWord(weather(1), hour = 9))
+        assertEquals("Clear", skyWord(weather(1), hour = 20))
+        assertEquals("Cloudy", skyWord(weather(3), hour = 9))
+        assertNull(skyWord(weather(61), hour = 9))
     }
 
     @Test
@@ -65,12 +75,41 @@ class WalkNameTest {
         assertEquals(words, codes.map { weather(it).sky() })
     }
 
+    // Every minute of a month of evenings: enough starts to meet every name.
+    private fun names(weather: WalkWeather?, south: Boolean = false) =
+        (0L until 30 * 24 * 60).map { walkName(evening.plusMinutes(it).withHour(18), weather, south) }.toSet()
+
     @Test
-    fun aWalkIsNamedByItsWeatherOrItsSeasonAndItsTimeOfDay() {
-        assertEquals("Misty Evening Walk", walkName(evening, weather(48)))
-        assertEquals("Autumn Evening Walk", walkName(evening, weather(0)))
-        assertEquals("Autumn Evening Walk", walkName(evening, weather = null))
-        assertEquals("Spring Morning Walk", walkName(evening.withHour(8), null, south = true))
+    fun aWalkIsNamedByTwoOfItsWordsInOneOrder() {
+        val days = listOf("Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday")
+        val nouns = listOf("Autumn") + days + listOf("Evening", "Walk")
+        val order = listOf("Cool", "Cloudy") + nouns
+
+        val names = names(weather(3))
+
+        val pairs = names.map { it.split(" ") }
+        assertEquals(true, pairs.all { it.size == 2 && order.indexOf(it[0]) < order.indexOf(it[1]) })
+        assertEquals(false, "Cool Cloudy" in names)
+        val met = listOf("Cool Evening", "Cloudy Walk", "Autumn Evening", "Evening Walk")
+        assertEquals(true, names.containsAll(met))
+    }
+
+    @Test
+    fun whatHappensInTheWeatherAlwaysComesFirst() {
+        assertEquals(setOf("Misty"), names(weather(48)).map { it.substringBefore(" ") }.toSet())
+    }
+
+    @Test
+    fun withoutTheWeatherAWalkIsNamedByItsDate() {
+        val words = names(weather = null, south = true).flatMap { it.split(" ") }.toSet()
+
+        assertEquals(true, "Spring" in words && "Evening" in words && "Walk" in words)
+        assertEquals(false, "Autumn" in words || "Cloudy" in words)
+    }
+
+    @Test
+    fun theSameWalkAlwaysGetsTheSameName() {
+        assertEquals(walkName(evening, weather(3)), walkName(evening, weather(3)))
     }
 
     @Test
@@ -87,8 +126,10 @@ class WalkNameTest {
         val start = Instant.parse("2026-10-05T15:48:00Z")
         val walk = WalkEntity("walk", 337, start, start.plusSeconds(3240), 3240, updatedAt = start)
 
-        assertEquals("Autumn Afternoon Walk", walk.title(ZoneOffset.UTC))
-        assertEquals("Autumn Evening Walk", walk.title(ZoneOffset.ofHours(3)))
+        val local = LocalDateTime.of(2026, 10, 5, 18, 48)
+
+        assertEquals(walkName(local.withHour(15), weather = null), walk.title(ZoneOffset.UTC))
+        assertEquals(walkName(local, weather = null), walk.title(ZoneOffset.ofHours(3)))
         assertEquals("To the old mill", walk.copy(name = "To the old mill").title(ZoneOffset.UTC))
     }
 }

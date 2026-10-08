@@ -11,7 +11,8 @@ import com.walkspot.app.ui.theme.WalkSpotTheme
 
 /**
  * adb shell am start -n com.walkspot.app/.debug.GalleryActivity [--es page <page>]
- * Pages: charts, signin, steps, today, today-off, stats-week, stats-month, stats-year, stats-all,
+ * Pages: charts, signin, steps, today, today-off, today-walking, stats-week, stats-month, stats-year,
+ * stats-all,
  * health-mood, health-weight, health-pressure, health-glucose, health-empty, map, walk, active-walk,
  * walk-summary, profile, settings, settings-off; a new user's screens: today-new, stats-new,
  * stats-month-new, map-new, diary-new, gallery-new, gallery-best-new, profile-new.
@@ -37,6 +38,7 @@ private fun Page(page: String) {
         "signin" -> SignInScreen(onGoogle = {}, onEmail = {})
         "today" -> TodayGallery(StepsAccess.COUNTING)
         "today-off" -> TodayGallery(StepsAccess.NOT_ALLOWED)
+        "today-walking" -> TodayGallery(StepsAccess.COUNTING, walkSeconds = 1935)
         "health-mood", "health-weight", "health-pressure", "health-glucose", "health-empty" ->
             HealthGallery(page)
         "map" -> MapGallery()

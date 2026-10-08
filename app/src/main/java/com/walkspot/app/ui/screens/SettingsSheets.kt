@@ -35,6 +35,9 @@ import java.time.LocalTime
 import java.time.format.TextStyle
 import java.util.Locale
 
+// Five hundred steps are a feat for some and twenty thousand a habit for others.
+private val DAILY_STEPS = 100..100_000
+
 @Composable
 internal fun SettingsSheets(
     sheet: SettingsSheet,
@@ -85,6 +88,10 @@ internal fun SettingsSheets(
             Choice(R.string.health_glucose, units.map { it.symbol }, onDismiss) {
                 choose { old -> old.copy(glucose = units[it]) }
             }
+        }
+        SettingsSheet.Steps -> StepsSheet(state.dailySteps, onDismiss) {
+            actions.onDailySteps(it)
+            onDismiss()
         }
         SettingsSheet.Delete -> DeleteSheet(state, actions.onDelete, onDismiss)
     }
@@ -141,6 +148,34 @@ private fun TimeSheet(current: LocalTime, onDismiss: () -> Unit, onSave: (LocalT
                 autoFocus = false,
             )
         }
+        Spacer(Modifier.height(Spacing.xl))
+        AppButton(stringResource(R.string.profile_save), onClick = submit)
+    }
+}
+
+@Composable
+private fun StepsSheet(current: Int, onDismiss: () -> Unit, onSave: (Int) -> Unit) {
+    var text by rememberSaveable { mutableStateOf(current.toString()) }
+    val steps = text.trim().toIntOrNull()?.takeIf { it in DAILY_STEPS }
+    val submit = { steps?.let(onSave) ?: Unit }
+    AppSheet(stringResource(R.string.settings_daily_steps), onDismiss) {
+        Spacer(Modifier.height(Spacing.s))
+        Text(
+            text = stringResource(R.string.settings_daily_steps_hint),
+            style = ParagraphStyle,
+            color = AppTheme.colors.textSecondary,
+        )
+        Spacer(Modifier.height(Spacing.m))
+        AppTextField(
+            value = text,
+            onValueChange = { text = it },
+            label = stringResource(R.string.settings_daily_steps),
+            keyboardType = KeyboardType.Number,
+            onDone = submit,
+            error = stringResource(R.string.settings_daily_steps_wrong).takeIf {
+                text.isNotBlank() && steps == null
+            },
+        )
         Spacer(Modifier.height(Spacing.xl))
         AppButton(stringResource(R.string.profile_save), onClick = submit)
     }

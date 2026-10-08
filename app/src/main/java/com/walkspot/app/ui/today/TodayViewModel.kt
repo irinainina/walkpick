@@ -13,7 +13,7 @@ import com.walkspot.app.data.profile.ProfileRepository
 import com.walkspot.app.data.settings.AppSettings
 import com.walkspot.app.data.settings.DistanceUnit
 import com.walkspot.app.data.settings.SettingsStore
-import com.walkspot.app.data.steps.FULL_DAY_STEPS
+import com.walkspot.app.data.steps.DEFAULT_DAILY_GOAL
 import com.walkspot.app.data.steps.StepsAccess
 import com.walkspot.app.data.steps.StepsRepository
 import com.walkspot.app.data.steps.currentStreak
@@ -52,6 +52,8 @@ data class TodayState(
     val name: String? = null,
     val access: StepsAccess = StepsAccess.COUNTING,
     val steps: Int = 0,
+    /** The steps of a full day, as set in Settings. */
+    val dailySteps: Int = DEFAULT_DAILY_GOAL,
     val distanceM: Int = 0,
     val distanceUnit: DistanceUnit = DistanceUnit.KM,
     val activeMinutes: Int = 0,
@@ -80,7 +82,9 @@ class TodayViewModel @Inject constructor(
         starts.map { it.atZone(ZoneId.systemDefault()).toLocalDate() }.toSet()
     }
 
-    private val who = combine(account.user, settings.value) { user, settings -> user?.name to settings }
+    private val who = combine(account.user, settings.value, profiles.profile) { user, settings, me ->
+        Triple(user?.name, settings, me.dailyGoal)
+    }
 
     // One tile for a tab turned on in Profile, with the change of this month, as Health opens.
     @OptIn(ExperimentalCoroutinesApi::class)
@@ -99,8 +103,8 @@ class TodayViewModel @Inject constructor(
     // Null until the days are read: zeros shown first would jump to the real numbers.
     val state: StateFlow<TodayState?> =
         combine(steps.watchDays(), walkDays, now, access, who) { days, walkDays, now, access, who ->
-            val (name, units) = who
-            val shown = todayState(days, walkDays, now, access, name)
+            val (name, units, dailySteps) = who
+            val shown = todayState(days, walkDays, now, access, name, dailySteps)
             shown.copy(distanceUnit = units.distance, units = units)
         }
             .combine(tiles) { state, tiles -> state.copy(health = tiles) }
@@ -134,6 +138,7 @@ internal fun todayState(
     now: LocalDateTime,
     access: StepsAccess,
     name: String?,
+    dailySteps: Int,
 ): TodayState {
     val today = now.toLocalDate()
     val byDay = days.associateBy { it.day }
@@ -144,6 +149,7 @@ internal fun todayState(
         name = name,
         access = access,
         steps = row?.steps ?: 0,
+        dailySteps = dailySteps,
         distanceM = row?.distanceM ?: 0,
         activeMinutes = row?.activeMinutes ?: 0,
         streak = currentStreak(walkDays, today),
@@ -151,7 +157,7 @@ internal fun todayState(
             val day = monday.plusDays(weekday.ordinal.toLong())
             val steps = byDay[day]
             Bar(
-                fraction = (steps?.steps ?: 0).toFloat() / FULL_DAY_STEPS,
+                fraction = (steps?.steps ?: 0).toFloat() / dailySteps,
                 label = weekday.getDisplayName(TextStyle.NARROW, Locale.ENGLISH),
                 kind = if (day == today) BarKind.Today else BarKind.Past,
             )

@@ -33,6 +33,7 @@ import com.walkspot.app.ui.components.AppSwitch
 import com.walkspot.app.ui.components.AppTopBar
 import com.walkspot.app.ui.components.IconBadge
 import com.walkspot.app.ui.components.ListRow
+import com.walkspot.app.ui.grouped
 import com.walkspot.app.ui.settings.SettingsState
 import com.walkspot.app.ui.theme.AppTheme
 import com.walkspot.app.ui.theme.Sizes
@@ -46,11 +47,12 @@ private val AllowButtonHeight = 48.dp
 private val Clock = DateTimeFormatter.ofPattern("HH:mm", Locale.ENGLISH)
 
 /** What a row of Settings opens. */
-enum class SettingsSheet { Time, Days, Distance, Weight, Glucose, Delete }
+enum class SettingsSheet { Time, Days, Distance, Weight, Glucose, Steps, Delete }
 
 class SettingsActions(
     val onBack: () -> Unit,
     val onChange: ((AppSettings) -> AppSettings) -> Unit,
+    val onDailySteps: (Int) -> Unit,
     /** Asks Android for the right to show notifications first. */
     val onReminders: (Boolean) -> Unit,
     val onAllowSteps: () -> Unit,
@@ -109,7 +111,14 @@ fun SettingsScreen(state: SettingsState, actions: SettingsActions, modifier: Mod
                 )
             }
         }
-        Section(R.string.settings_data) { StepCounting(state.steps, actions.onAllowSteps) }
+        Section(R.string.settings_data) {
+            ListRow(
+                label = stringResource(R.string.settings_daily_steps),
+                value = grouped(state.dailySteps),
+                onClick = { sheet = SettingsSheet.Steps },
+            )
+            StepCounting(state.steps, actions.onAllowSteps)
+        }
         Section(R.string.settings_about) {
             val links = LocalUriHandler.current
             ListRow(stringResource(R.string.settings_privacy), onClick = { links.openUri(PRIVACY_URL) })

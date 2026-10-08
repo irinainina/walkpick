@@ -44,6 +44,7 @@ import com.walkspot.app.R
 import com.walkspot.app.data.local.FindKind
 import com.walkspot.app.ui.camera.CameraState
 import com.walkspot.app.ui.components.CircleButton
+import com.walkspot.app.ui.components.DarkSystemBars
 import com.walkspot.app.ui.components.SegmentedControl
 import com.walkspot.app.ui.theme.AppTheme
 import com.walkspot.app.ui.theme.CardShape
@@ -90,6 +91,7 @@ fun CameraScreen(
     modifier: Modifier = Modifier,
     viewfinder: @Composable () -> Unit,
 ) {
+    DarkSystemBars()
     val colors = AppTheme.colors
     Box(
         modifier

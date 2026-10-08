@@ -48,7 +48,7 @@ private val walk = WalkEntity(
     startedAt = taken.minusSeconds(720),
     endedAt = taken.plusSeconds(2160),
     durationS = 2880,
-    name = "Misty Evening Walk",
+    name = "Misty Evening",
     updatedAt = taken,
 )
 

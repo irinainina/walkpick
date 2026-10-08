@@ -26,9 +26,9 @@ private val AppColorScheme = with(walkSpotColors) {
     )
 }
 
-// How a tap on a row is answered: a neutral grey, Android draws the wave at about a fifth of the colour.
+// How a tap is answered: the blue of the buttons' glow, Android draws the wave at about a fifth of it.
 @OptIn(ExperimentalMaterial3Api::class)
-private val SoftRipple = RippleConfiguration(color = Grey)
+private val SoftRipple = RippleConfiguration(color = Blue)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

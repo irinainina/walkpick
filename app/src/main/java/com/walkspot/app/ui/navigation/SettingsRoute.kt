@@ -33,6 +33,7 @@ internal fun NavGraphBuilder.settingsRoute(navController: NavHostController) {
             actions = SettingsActions(
                 onBack = { navController.popBackStack() },
                 onChange = model::change,
+                onDailySteps = model::setDailySteps,
                 onReminders = { on ->
                     if (on && Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                         allowReminders()

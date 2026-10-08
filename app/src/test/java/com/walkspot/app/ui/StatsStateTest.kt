@@ -30,7 +30,7 @@ class StatsStateTest {
     )
 
     private fun state(tab: StatsTab, anchor: LocalDate = today, bar: Int? = null) =
-        statsState(days, listOf(today.minusDays(1), today), StatsChoice(tab, anchor, bar), today)
+        statsState(days, listOf(today.minusDays(1), today), StatsChoice(tab, anchor, bar), today, 10_000)
 
     @Test
     fun theWeekShowsItsDaysAndTodayPicked() {

@@ -22,7 +22,7 @@ fun WalkSummaryGallery() {
             WalkEntity(
                 id = "walk",
                 number = 312,
-                name = "Misty Evening Walk",
+                name = "Misty Evening",
                 startedAt = evening(18, 40),
                 endedAt = evening(19, 28),
                 durationS = 48 * 60,

@@ -27,8 +27,8 @@ private fun finds(walk: WalkEntity, count: Int, best: Set<Int>) = List(count) { 
     FindEntity("${walk.id}-$index", walk.id, taken, 50.45, 30.52, "", isBest = starred, updatedAt = taken)
 }
 
-private val evening = walk("evening", "Misty Evening Walk", 29, 18)
-private val morning = walk("morning", "Sunny Morning Walk", 27, 9)
+private val evening = walk("evening", "Misty Evening", 29, 18)
+private val morning = walk("morning", "Sunny Morning", 27, 9)
 private val groups = listOf(
     GalleryGroup(evening, finds(evening, 7, setOf(0, 4))),
     GalleryGroup(morning, finds(morning, 3, setOf(1))),

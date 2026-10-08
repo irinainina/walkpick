@@ -45,6 +45,7 @@ import com.walkspot.app.R
 import com.walkspot.app.data.local.FindEntity
 import com.walkspot.app.data.walk.title
 import com.walkspot.app.ui.components.CircleButton
+import com.walkspot.app.ui.components.DarkSystemBars
 import com.walkspot.app.ui.components.PhotoBox
 import com.walkspot.app.ui.find.PhotoViewerState
 import com.walkspot.app.ui.theme.AppTheme
@@ -76,6 +77,7 @@ fun PhotoViewerScreen(
     onFind: (String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    DarkSystemBars()
     val colors = AppTheme.colors
     val pager = rememberPagerState(initialPage = state.start) { state.finds.size }
     // The photo in front may be gone for an instant after a deletion elsewhere.

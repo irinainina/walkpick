@@ -18,6 +18,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -42,11 +43,21 @@ import kotlin.math.roundToInt
 
 private val BadgeSize = 36.dp
 private const val NOTHING = "–"
+private const val WEIGHT_DAYS = 7L
 private val ShortDay = DateTimeFormatter.ofPattern("MMM d", Locale.ENGLISH)
 
-/** The latest entry of every Health tab that is turned on; a tap opens Health. */
+/**
+ * The latest entry of every Health tab that is turned on; a tap opens Health. A tile that asks for
+ * a new entry opens the entry itself.
+ */
 @Composable
-internal fun HealthCard(tiles: List<HealthTile>, units: AppSettings, today: LocalDate, onOpen: () -> Unit) {
+internal fun HealthCard(
+    tiles: List<HealthTile>,
+    units: AppSettings,
+    today: LocalDate,
+    onOpen: () -> Unit,
+    onAdd: (HealthKind) -> Unit,
+) {
     AppCard {
         Column(
             Modifier
@@ -72,7 +83,7 @@ internal fun HealthCard(tiles: List<HealthTile>, units: AppSettings, today: Loca
             ) {
                 tiles.chunked(2).forEach { pair ->
                     Row(horizontalArrangement = Arrangement.spacedBy(Spacing.s)) {
-                        pair.forEach { Tile(it, units, today) }
+                        pair.forEach { Tile(it, units, today, onAdd) }
                         // A tile left alone in its row keeps the width of a half.
                         if (pair.size == 1) Spacer(Modifier.weight(1f))
                     }
@@ -83,36 +94,71 @@ internal fun HealthCard(tiles: List<HealthTile>, units: AppSettings, today: Loca
 }
 
 @Composable
-private fun RowScope.Tile(tile: HealthTile, units: AppSettings, today: LocalDate) {
+private fun RowScope.Tile(
+    tile: HealthTile,
+    units: AppSettings,
+    today: LocalDate,
+    onAdd: (HealthKind) -> Unit,
+) {
     val type = MaterialTheme.typography
     val colors = AppTheme.colors
     val current = tile.current
+    val asks = tile.asks(today)
+    val newMood = asks && tile.kind == HealthKind.MOOD
     Row(
         modifier = Modifier
             .weight(1f)
             .height(Sizes.control)
-            .background(colors.surfaceTint, MaterialTheme.shapes.medium)
+            .clip(MaterialTheme.shapes.medium)
+            .background(colors.surfaceTint)
+            .then(if (asks) Modifier.clickable { onAdd(tile.kind) } else Modifier)
             .padding(horizontal = Spacing.s),
         horizontalArrangement = Arrangement.spacedBy(Spacing.sm),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        if (current != null && tile.kind == HealthKind.MOOD) {
+        if (current != null && tile.kind == HealthKind.MOOD && !asks) {
             MoodFace(Mood.of(current.latest.value.roundToInt()), size = BadgeSize)
         } else {
+            val icon = if (newMood) R.drawable.ic_plus else tile.kind.iconRes()
             Box(Modifier.size(BadgeSize).background(colors.surface, CircleShape), Alignment.Center) {
-                Icon(painterResource(tile.kind.iconRes()), contentDescription = null, tint = colors.accent)
+                Icon(painterResource(icon), contentDescription = null, tint = colors.accent)
             }
         }
-        val (value, note, good) = tileText(tile.kind, current, units, today)
+        val (value, note, good) = tileText(tile.kind, current.takeUnless { newMood }, units, today)
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.xs)) {
-            Text(value, style = type.labelLarge, color = colors.textPrimary, maxLines = 1)
+            val title = when {
+                newMood -> stringResource(R.string.today_add_mood)
+                // The line below is taken by the call, so the unit moves up to the number.
+                asks && current != null -> readingText(current.latest, units).toList().joinToString(" ")
+                else -> value
+            }
+            val ink = if (newMood) colors.accent else colors.textPrimary
+            Text(title, style = type.labelLarge, color = ink, maxLines = 1)
             Text(
-                text = note,
+                text = when {
+                    newMood -> stringResource(R.string.today_for_today)
+                    asks -> stringResource(R.string.today_update)
+                    else -> note
+                },
                 style = type.bodySmall,
-                color = if (good) colors.positive else colors.textSecondary,
+                color = when {
+                    asks && !newMood -> colors.accent
+                    good -> colors.positive
+                    else -> colors.textSecondary
+                },
                 maxLines = 1,
             )
         }
+    }
+}
+
+/** Mood is asked for every day, weight once a week; the other readings are nobody's duty. */
+private fun HealthTile.asks(today: LocalDate): Boolean {
+    val day = current?.latest?.measuredAt?.localDay()
+    return when (kind) {
+        HealthKind.MOOD -> day != today
+        HealthKind.WEIGHT -> day != null && day < today.minusDays(WEIGHT_DAYS)
+        else -> false
     }
 }
 

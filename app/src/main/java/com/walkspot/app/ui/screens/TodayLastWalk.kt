@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
@@ -20,6 +21,7 @@ import com.walkspot.app.data.settings.DistanceUnit
 import com.walkspot.app.data.walk.title
 import com.walkspot.app.ui.components.AppCard
 import com.walkspot.app.ui.components.RouteSketch
+import com.walkspot.app.ui.components.RowChevron
 import com.walkspot.app.ui.distanceText
 import com.walkspot.app.ui.grouped
 import com.walkspot.app.ui.map.DiaryWalk
@@ -49,13 +51,23 @@ internal fun LastWalkCard(item: DiaryWalk, today: LocalDate, unit: DistanceUnit,
         Column(
             Modifier
                 .clickable(onClick = onOpen)
-                .padding(horizontal = Spacing.ml, vertical = Spacing.m),
+                .padding(start = Spacing.ml, top = Spacing.m, end = Spacing.m, bottom = Spacing.m),
         ) {
-            Row {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(
+                    text = stringResource(R.string.today_last_walk),
+                    modifier = Modifier.weight(1f),
+                    style = type.titleSmall,
+                    color = colors.textPrimary,
+                )
+                RowChevron()
+            }
+            Spacer(Modifier.height(Spacing.s))
+            Row(Modifier.padding(end = Spacing.xs)) {
                 Text(
                     text = walk.title(),
                     modifier = Modifier.weight(1f),
-                    style = type.titleSmall,
+                    style = type.labelMedium,
                     color = colors.textPrimary,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
@@ -63,13 +75,13 @@ internal fun LastWalkCard(item: DiaryWalk, today: LocalDate, unit: DistanceUnit,
                 Spacer(Modifier.width(Spacing.s))
                 Text(
                     text = "${dayTitle(started.toLocalDate(), today)}, ${Clock.format(started)}",
-                    modifier = Modifier.padding(top = Spacing.xs / 2),
                     style = type.bodyMedium,
                     color = colors.textSecondary,
                 )
             }
             Spacer(Modifier.height(Spacing.s))
-            RouteSketch(item.sketch, Modifier.fillMaxWidth().height(RouteHeight), RouteLine, RouteStart)
+            val route = Modifier.fillMaxWidth().padding(end = Spacing.xs).height(RouteHeight)
+            RouteSketch(item.sketch, route, RouteLine, RouteStart)
             Spacer(Modifier.height(Spacing.sm))
             Row {
                 val minutes = (walk.durationS / SECONDS_IN_MINUTE).roundToInt()

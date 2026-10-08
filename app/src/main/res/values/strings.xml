@@ -40,7 +40,7 @@
     <string name="today_evening">Good evening</string>
     <string name="today_greeting_name">%1$s, %2$s</string>
     <string name="today_reminders">Reminders</string>
-    <string name="today_steps">steps on walks</string>
+    <string name="today_steps">of %1$s steps</string>
     <string name="today_photos">photos</string>
     <string name="today_min">%1$d min</string>
     <string name="today_distance">Distance</string>
@@ -116,7 +116,12 @@
     <string name="health_pressure">Pressure</string>
     <string name="health_glucose">Glucose</string>
     <string name="health_new_entry">New entry</string>
-    <string name="today_back_to_walk">Back to walk</string>
+    <string name="today_back_to_walk">Back to walk · %s</string>
+    <string name="today_stop_walk">Stop walk</string>
+    <string name="today_last_walk">Last walk</string>
+    <string name="today_add_mood">Add mood</string>
+    <string name="today_for_today">for today</string>
+    <string name="today_update">Update</string>
     <string name="walk_walking">Walking</string>
     <string name="walk_paused">Paused</string>
     <string name="walk_finding">Finding GPS</string>
@@ -273,6 +278,9 @@
     <string name="settings_units">Units</string>
     <string name="settings_data">Data</string>
     <string name="settings_step_counting">Step counting</string>
+    <string name="settings_daily_steps">Daily steps</string>
+    <string name="settings_daily_steps_hint">The ring on Today is full at this many steps a day.</string>
+    <string name="settings_daily_steps_wrong">From 100 to 100,000</string>
     <string name="settings_on">On</string>
     <string name="settings_off">Off</string>
     <string name="settings_steps_off">Steps aren\'t counted until you allow access</string>

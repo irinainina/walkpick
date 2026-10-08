@@ -27,7 +27,7 @@ class TodayStateTest {
             day("2026-09-30", 6420, goal = 8000),
         )
         val walked = setOf(LocalDate.parse("2026-09-28"), LocalDate.parse("2026-09-29"))
-        val state = todayState(days, walked, now, StepsAccess.COUNTING, "Ira")
+        val state = todayState(days, walked, now, StepsAccess.COUNTING, "Ira", dailySteps = 10_000)
 
         assertEquals(6420, state.steps)
         assertEquals(4815 to 160, state.distanceM to state.activeMinutes)
@@ -42,7 +42,7 @@ class TodayStateTest {
 
     @Test
     fun aDayWithoutStepsShowsZeros() {
-        val state = todayState(emptyList(), emptySet(), now, StepsAccess.NOT_ALLOWED, null)
+        val state = todayState(emptyList(), emptySet(), now, StepsAccess.NOT_ALLOWED, null, 5_000)
 
         assertEquals(0, state.steps)
         assertEquals(0, state.distanceM + state.activeMinutes + state.streak)

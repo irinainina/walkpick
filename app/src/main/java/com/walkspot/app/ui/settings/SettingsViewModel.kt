@@ -7,10 +7,11 @@ import com.walkspot.app.BuildConfig
 import com.walkspot.app.data.account.AccountExit
 import com.walkspot.app.data.account.AuthRefused
 import com.walkspot.app.data.local.HealthKind
-import com.walkspot.app.data.profile.ProfileStore
+import com.walkspot.app.data.profile.ProfileRepository
 import com.walkspot.app.data.settings.AppSettings
 import com.walkspot.app.data.settings.Reminders
 import com.walkspot.app.data.settings.SettingsStore
+import com.walkspot.app.data.steps.DEFAULT_DAILY_GOAL
 import com.walkspot.app.data.steps.StepsAccess
 import com.walkspot.app.data.steps.StepsRepository
 import com.walkspot.app.data.sync.SyncScheduler
@@ -20,7 +21,6 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -31,6 +31,8 @@ private const val KEEP_AFTER_LEAVING_MS = 5_000L
 data class SettingsState(
     val settings: AppSettings = AppSettings(),
     val steps: StepsAccess = StepsAccess.COUNTING,
+    /** The steps of a full day: the ring of Today and the bars of Steps are measured by it. */
+    val dailySteps: Int = DEFAULT_DAILY_GOAL,
     /** The glucose unit is offered only while the Glucose tab is on. */
     val glucoseShown: Boolean = false,
     val version: String = BuildConfig.VERSION_NAME,
@@ -42,7 +44,7 @@ data class SettingsState(
 @HiltViewModel
 class SettingsViewModel @Inject constructor(
     private val store: SettingsStore,
-    profiles: ProfileStore,
+    private val profiles: ProfileRepository,
     private val steps: StepsRepository,
     private val reminders: Reminders,
     private val sync: SyncScheduler,
@@ -52,16 +54,20 @@ class SettingsViewModel @Inject constructor(
     private val access = MutableStateFlow(steps.access())
     private val busy = MutableStateFlow(false)
     private val deleteFailed = MutableStateFlow(false)
-    private val glucoseShown = profiles.value.map { HealthKind.GLUCOSE in it.healthTabs }
 
     val state: StateFlow<SettingsState> =
-        combine(store.value, glucoseShown, access, busy, deleteFailed) { chosen, glucose, access, busy, bad ->
-            SettingsState(chosen, access, glucose, busy = busy, deleteFailed = bad)
+        combine(store.value, profiles.profile, access, busy, deleteFailed) { chosen, me, access, busy, bad ->
+            val glucose = HealthKind.GLUCOSE in me.healthTabs
+            SettingsState(chosen, access, me.dailyGoal, glucose, busy = busy, deleteFailed = bad)
         }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(KEEP_AFTER_LEAVING_MS), SettingsState())
 
     /** The permission may have been given or taken away while the screen was out of sight. */
     fun lookAgain() {
         access.value = steps.access()
+    }
+
+    fun setDailySteps(steps: Int) {
+        viewModelScope.launch { profiles.change { it.copy(dailyGoal = steps) } }
     }
 
     fun change(transform: (AppSettings) -> AppSettings) {

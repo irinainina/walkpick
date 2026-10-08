@@ -14,7 +14,11 @@ import kotlinx.serialization.SerializationException
 import java.io.IOException
 import java.time.LocalDateTime
 import java.time.ZoneId
+import java.time.ZoneOffset
+import java.time.format.TextStyle
+import java.util.Locale
 import javax.inject.Inject
+import kotlin.random.Random
 
 private const val WEATHER_URL = "https://api.open-meteo.com/v1/forecast"
 
@@ -29,9 +33,9 @@ private const val MONTHS = 12
 private const val HALF_YEAR = 6
 private const val SEASON_MONTHS = 3
 
+private const val COLD_C = 8.0
+private const val WARM_C = 18.0
 private const val HOT_C = 25.0
-private const val SCORCHING_C = 30.0
-private const val BITTER_C = -10.0
 private const val WINDY_MS = 10.0
 
 // The weather codes of the World Meteorological Organization, as Open-Meteo gives them.
@@ -73,33 +77,57 @@ internal fun season(month: Int, south: Boolean): String {
     return listOf("Winter", "Spring", "Summer", "Autumn")[northern % MONTHS / SEASON_MONTHS]
 }
 
-/** The one word a walk takes from its weather; null when the weather is nothing to speak of. */
-internal fun weatherWord(weather: WalkWeather): String? = when {
-    weather.code in Fog -> "Misty"
-    weather.code in Rain -> "Rainy"
-    weather.code in Snow -> "Snowy"
+/** What the weather of a walk is remembered by; null when nothing happens in it. */
+internal fun weatherEvent(weather: WalkWeather): String? = when {
     weather.code in Storm -> "Stormy"
-    weather.code in Clear && weather.celsius <= 0 -> "Frosty"
-    weather.code in Clear && weather.celsius >= HOT_C -> "Sunny"
-    weather.code in Clouds -> "Cloudy"
+    weather.code in Snow -> "Snowy"
+    weather.code in Rain -> "Rainy"
+    weather.code in Fog -> "Misty"
     weather.windMs >= WINDY_MS -> "Windy"
-    weather.celsius <= BITTER_C -> "Frosty"
-    weather.celsius <= 0 -> "Icy"
-    weather.celsius >= SCORCHING_C -> "Scorching"
-    weather.celsius >= HOT_C -> "Sunny"
+    else -> null
+}
+
+internal fun temperatureWord(celsius: Double): String = when {
+    celsius <= 0 -> "Frosty"
+    celsius < COLD_C -> "Cold"
+    celsius < WARM_C -> "Cool"
+    celsius < HOT_C -> "Warm"
+    else -> "Hot"
+}
+
+/** The sky in a word; a clear one is sunny only while the sun is up. */
+internal fun skyWord(weather: WalkWeather, hour: Int): String? = when (weather.code) {
+    in Clear -> if (hour in MORNING_FROM until EVENING_FROM) "Sunny" else "Clear"
+    in Clouds -> "Cloudy"
     else -> null
 }
 
 /**
- * The name a walk gets by itself: its weather, or its season when the weather says nothing, and its
- * time of day - "Misty Evening Walk", "Autumn Morning Walk".
+ * The name a walk gets by itself: two words out of its weather, season, day of the week, time of
+ * day and "Walk", picked by chance - "Sunny Sunday", "Autumn Walk". Rain, snow, mist, a storm or a
+ * strong wind always come first: "Rainy Evening". The same walk always gets the same name.
  */
 fun walkName(started: LocalDateTime, weather: WalkWeather?, south: Boolean = false): String {
-    val first = weather?.let(::weatherWord) ?: season(started.monthValue, south)
-    return "$first ${timeOfDay(started.hour)} Walk"
+    // In this order any two of the words read as English.
+    val nouns = listOf(
+        season(started.monthValue, south),
+        started.dayOfWeek.getDisplayName(TextStyle.FULL, Locale.ENGLISH),
+        timeOfDay(started.hour),
+        "Walk",
+    )
+    val event = weather?.let(::weatherEvent)
+    val firsts = when {
+        event != null -> listOf(event)
+        weather != null -> listOfNotNull(temperatureWord(weather.celsius), skyWord(weather, started.hour))
+        else -> emptyList()
+    }
+    val plain = if (event == null) nouns.dropLast(1).withIndex().toList() else emptyList()
+    val names = firsts.flatMap { first -> nouns.map { "$first $it" } } +
+        plain.flatMap { (at, first) -> nouns.drop(at + 1).map { "$first $it" } }
+    return names.random(Random(started.toEpochSecond(ZoneOffset.UTC)))
 }
 
-/** The name of the walk; one that was never named is called by its season and time of day. */
+/** The name of the walk; one that was never named is called by its date alone. */
 fun WalkEntity.title(zone: ZoneId = ZoneId.systemDefault()): String =
     name ?: walkName(startedAt.atZone(zone).toLocalDateTime(), weather = null)
 

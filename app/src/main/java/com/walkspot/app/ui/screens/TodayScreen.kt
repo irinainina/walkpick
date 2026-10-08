@@ -1,6 +1,9 @@
 package com.walkspot.app.ui.screens
 
+import androidx.annotation.DrawableRes
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -22,14 +25,20 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.walkspot.app.R
+import com.walkspot.app.data.local.HealthKind
 import com.walkspot.app.data.settings.DistanceUnit
 import com.walkspot.app.data.steps.StepsAccess
 import com.walkspot.app.data.walk.WalkWeather
@@ -40,9 +49,10 @@ import com.walkspot.app.ui.components.GradientHeader
 import com.walkspot.app.ui.map.DiaryWalk
 import com.walkspot.app.ui.theme.AppTheme
 import com.walkspot.app.ui.theme.ParagraphStyle
+import com.walkspot.app.ui.theme.PillShape
+import com.walkspot.app.ui.theme.Sizes
 import com.walkspot.app.ui.theme.Spacing
 import com.walkspot.app.ui.today.TodayState
-import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.util.Locale
 import kotlin.math.roundToInt
@@ -55,10 +65,12 @@ private val CardsTop = 168.dp
 private val LogoSize = 32.dp
 private val GreetingTop = 20.dp
 private val GreetingMinSize = 16.sp
+private val PillHeight = 32.dp
 
 private const val NOON = 12
 private const val EVENING = 18
 private const val NIGHT_END = 5
+private const val DARK_FROM = 21
 private const val FAHRENHEIT_PER_C = 1.8
 private const val FREEZING_F = 32
 private val Date = DateTimeFormatter.ofPattern("EEEE, MMMM d", Locale.ENGLISH)
@@ -66,16 +78,18 @@ private val Date = DateTimeFormatter.ofPattern("EEEE, MMMM d", Locale.ENGLISH)
 @Composable
 fun TodayScreen(
     state: TodayState,
-    /** A walk is being recorded: the button leads back to it. */
-    walking: Boolean,
+    /** The time of the walk being recorded, and then the button leads back to it; null without one. */
+    walkSeconds: Long?,
     /** The weather outside; null until it is known. */
     weather: WalkWeather?,
     /** The latest walk; null before the first one. */
     lastWalk: DiaryWalk?,
     onAllowSteps: () -> Unit,
     onStartWalk: () -> Unit,
+    onStopWalk: () -> Unit,
     onStats: () -> Unit,
     onHealth: () -> Unit,
+    onAddHealth: (HealthKind) -> Unit,
     onWalk: (String) -> Unit,
     onReminders: () -> Unit,
     modifier: Modifier = Modifier,
@@ -87,8 +101,7 @@ fun TodayScreen(
             .background(AppTheme.colors.canvas)
             .verticalScroll(rememberScrollState()),
     ) {
-        val sky = weather?.let { weatherText(it, state.distanceUnit) }
-        Header(statusBar, state.now, state.name, sky, onReminders)
+        Header(statusBar, state, weather, onReminders)
         Column(
             Modifier.padding(
                 start = Spacing.ml,
@@ -105,13 +118,7 @@ fun TodayScreen(
             Spacer(Modifier.height(Spacing.ml))
             StreakCard(state.streak)
             Spacer(Modifier.height(Spacing.ml))
-            AppButton(
-                text = stringResource(
-                    if (walking) R.string.today_back_to_walk else R.string.today_start_walk,
-                ),
-                onClick = onStartWalk,
-                iconRes = R.drawable.ic_play,
-            )
+            WalkButton(walkSeconds, onStartWalk, onStopWalk)
             Spacer(Modifier.height(Spacing.l))
             WeekCard(state.week, onStats)
             Spacer(Modifier.height(Spacing.l))
@@ -120,14 +127,48 @@ fun TodayScreen(
                 LastWalkCard(lastWalk, today, state.distanceUnit) { onWalk(lastWalk.walk.id) }
                 Spacer(Modifier.height(Spacing.l))
             }
-            HealthCard(state.health, state.units, state.now.toLocalDate(), onHealth)
+            HealthCard(state.health, state.units, state.now.toLocalDate(), onHealth, onAddHealth)
         }
     }
 }
 
+/** Start walk; during a walk - the way back to it with its time, and a quiet Stop walk below. */
 @Composable
-private fun Header(statusBar: Dp, now: LocalDateTime, name: String?, sky: String?, onReminders: () -> Unit) {
+private fun WalkButton(walkSeconds: Long?, onStartWalk: () -> Unit, onStopWalk: () -> Unit) {
+    var stopping by remember { mutableStateOf(false) }
+    val text = when (walkSeconds) {
+        null -> stringResource(R.string.today_start_walk)
+        else -> stringResource(R.string.today_back_to_walk, clockText(walkSeconds))
+    }
+    AppButton(text, onClick = onStartWalk, iconRes = R.drawable.ic_play)
+    if (walkSeconds != null) {
+        Text(
+            text = stringResource(R.string.today_stop_walk),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = Spacing.xs)
+                .clickable { stopping = true }
+                .padding(vertical = Spacing.s),
+            style = MaterialTheme.typography.labelLarge,
+            color = AppTheme.colors.streak,
+            textAlign = TextAlign.Center,
+        )
+    }
+    if (stopping) {
+        FinishWalkSheet(
+            onFinish = {
+                stopping = false
+                onStopWalk()
+            },
+            onDismiss = { stopping = false },
+        )
+    }
+}
+
+@Composable
+private fun Header(statusBar: Dp, state: TodayState, weather: WalkWeather?, onReminders: () -> Unit) {
     val colors = AppTheme.colors
+    val now = state.now
     GradientHeader(statusBar + HeaderHeight) {
         Column(Modifier.padding(top = statusBar + Spacing.sm)) {
             Row(
@@ -149,6 +190,10 @@ private fun Header(statusBar: Dp, now: LocalDateTime, name: String?, sky: String
                     style = MaterialTheme.typography.titleLarge,
                     color = colors.onAccent,
                 )
+                if (weather != null) {
+                    WeatherPill(weather, state.distanceUnit, now.hour)
+                    Spacer(Modifier.width(Spacing.s))
+                }
                 CircleButton(
                     iconRes = R.drawable.ic_bell,
                     contentDescription = stringResource(R.string.today_reminders),
@@ -160,7 +205,7 @@ private fun Header(statusBar: Dp, now: LocalDateTime, name: String?, sky: String
             Spacer(Modifier.height(GreetingTop))
             val heading = MaterialTheme.typography.headlineLarge
             Text(
-                text = greeting(now.hour, name),
+                text = greeting(now.hour, state.name),
                 modifier = Modifier.padding(horizontal = Spacing.ml),
                 style = heading,
                 color = colors.onAccent,
@@ -170,7 +215,7 @@ private fun Header(statusBar: Dp, now: LocalDateTime, name: String?, sky: String
             )
             Spacer(Modifier.height(Spacing.xs))
             Text(
-                text = listOfNotNull(now.format(Date), sky).joinToString(" · "),
+                text = now.format(Date),
                 modifier = Modifier.padding(horizontal = Spacing.ml),
                 style = ParagraphStyle,
                 color = colors.onAccent,
@@ -179,11 +224,42 @@ private fun Header(statusBar: Dp, now: LocalDateTime, name: String?, sky: String
     }
 }
 
+@Composable
+private fun WeatherPill(weather: WalkWeather, unit: DistanceUnit, hour: Int) {
+    val colors = AppTheme.colors
+    Row(
+        modifier = Modifier
+            .height(PillHeight)
+            .background(colors.onAccentOverlay, PillShape)
+            .padding(horizontal = Spacing.sm),
+        horizontalArrangement = Arrangement.spacedBy(Spacing.s),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Icon(
+            painter = painterResource(weather.iconRes(dark = hour !in NIGHT_END until DARK_FROM)),
+            contentDescription = weather.sky(),
+            modifier = Modifier.size(Sizes.iconSmall),
+            tint = colors.onAccent,
+        )
+        Text(degreesText(weather, unit), style = MaterialTheme.typography.titleSmall, color = colors.onAccent)
+    }
+}
+
+@DrawableRes
+private fun WalkWeather.iconRes(dark: Boolean) = when (sky()) {
+    "Clear" -> if (dark) R.drawable.ic_weather_night else R.drawable.ic_weather_clear
+    "Fog" -> R.drawable.ic_weather_fog
+    "Rain" -> R.drawable.ic_weather_rain
+    "Snow" -> R.drawable.ic_weather_snow
+    "Storm" -> R.drawable.ic_weather_storm
+    else -> R.drawable.ic_weather_cloud
+}
+
 // Miles go with Fahrenheit: the app has no setting of its own for the temperature.
-private fun weatherText(weather: WalkWeather, unit: DistanceUnit): String {
+private fun degreesText(weather: WalkWeather, unit: DistanceUnit): String {
     val fahrenheit = unit == DistanceUnit.MI
     val degrees = if (fahrenheit) weather.celsius * FAHRENHEIT_PER_C + FREEZING_F else weather.celsius
-    return "${degrees.roundToInt()}° ${weather.sky()}".trim()
+    return "${degrees.roundToInt()}°"
 }
 
 @Composable

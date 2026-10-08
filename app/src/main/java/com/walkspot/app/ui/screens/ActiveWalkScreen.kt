@@ -139,20 +139,22 @@ fun ActiveWalkScreen(
             ActiveWalkPanel(state, onPause, onCamera, onStop = { stopping = true })
         }
     }
-    if (stopping) {
-        AppSheet(stringResource(R.string.walk_finish_title), onDismiss = { stopping = false }) {
-            Spacer(Modifier.height(Spacing.s))
-            Text(
-                text = stringResource(R.string.walk_finish_text),
-                style = MaterialTheme.typography.bodyLarge,
-                color = AppTheme.colors.textSecondary,
-            )
-            Spacer(Modifier.height(Spacing.l))
-            AppButton(stringResource(R.string.walk_finish), onClick = onStop)
-            Spacer(Modifier.height(Spacing.sm))
-            val keep = stringResource(R.string.walk_keep_walking)
-            AppButton(keep, { stopping = false }, style = AppButtonStyle.Secondary)
-        }
+    if (stopping) FinishWalkSheet(onFinish = onStop, onDismiss = { stopping = false })
+}
+
+@Composable
+internal fun FinishWalkSheet(onFinish: () -> Unit, onDismiss: () -> Unit) {
+    AppSheet(stringResource(R.string.walk_finish_title), onDismiss) {
+        Spacer(Modifier.height(Spacing.s))
+        Text(
+            text = stringResource(R.string.walk_finish_text),
+            style = MaterialTheme.typography.bodyLarge,
+            color = AppTheme.colors.textSecondary,
+        )
+        Spacer(Modifier.height(Spacing.l))
+        AppButton(stringResource(R.string.walk_finish), onClick = onFinish)
+        Spacer(Modifier.height(Spacing.sm))
+        AppButton(stringResource(R.string.walk_keep_walking), onDismiss, style = AppButtonStyle.Secondary)
     }
 }
 

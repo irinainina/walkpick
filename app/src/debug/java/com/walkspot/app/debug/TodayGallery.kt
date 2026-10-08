@@ -15,6 +15,7 @@ import com.walkspot.app.ui.screens.TodayScreen
 import com.walkspot.app.ui.today.TodayState
 import java.time.LocalDateTime
 import java.time.ZoneId
+import java.time.temporal.ChronoUnit
 
 private val week = listOf(
     Bar(39 / 48f, "M"),
@@ -28,8 +29,14 @@ private val week = listOf(
 
 private val morning = LocalDateTime.of(2026, 9, 30, 8, 10).atZone(ZoneId.systemDefault()).toInstant()
 
-private fun tile(kind: HealthKind, value: Double, change: Double? = null, lower: Int? = null): HealthTile {
-    val entry = HealthEntryEntity(kind.name, kind, morning, value, lower)
+private fun tile(
+    kind: HealthKind,
+    value: Double,
+    change: Double? = null,
+    lower: Int? = null,
+    daysAgo: Long = 0,
+): HealthTile {
+    val entry = HealthEntryEntity(kind.name, kind, morning.minus(daysAgo, ChronoUnit.DAYS), value, lower)
     return HealthTile(kind, HealthCurrent(entry, change, towardTarget = true))
 }
 
@@ -39,6 +46,12 @@ private val health = listOf(
     tile(HealthKind.PRESSURE, 122.0, -4.0, 78),
     tile(HealthKind.GLUCOSE, 5.4, -0.1),
 )
+
+// The mood is yesterday's and the weight nine days old: both tiles ask for an entry.
+private val staleHealth = listOf(
+    tile(HealthKind.MOOD, 4.0, daysAgo = 1),
+    tile(HealthKind.WEIGHT, 64.2, -1.3, daysAgo = 9),
+) + health.drop(2)
 
 // The walk of the frame: yesterday at 18:40, its route shaped like the one drawn there.
 private val evening = LocalDateTime.of(2026, 9, 29, 18, 40).atZone(ZoneId.systemDefault()).toInstant()
@@ -55,7 +68,7 @@ private val lastWalk = DiaryWalk(
         durationS = 2880,
         steps = 5230,
         distanceM = 3900,
-        name = "Misty Evening Walk",
+        name = "Misty Evening",
         updatedAt = evening,
     ),
     photos = 7,
@@ -64,7 +77,7 @@ private val lastWalk = DiaryWalk(
 
 /** Today with the data of the Figma frames, for the comparison with the design. */
 @Composable
-fun TodayGallery(access: StepsAccess) {
+fun TodayGallery(access: StepsAccess, walkSeconds: Long? = null) {
     val counting = access == StepsAccess.COUNTING
     TodayScreen(
         state = TodayState(
@@ -72,19 +85,22 @@ fun TodayGallery(access: StepsAccess) {
             name = "Ira",
             access = access,
             steps = if (counting) 6420 else 0,
+            dailySteps = 10_000,
             distanceM = if (counting) 4800 else 0,
             activeMinutes = if (counting) 52 else 0,
             streak = 5,
             week = week,
-            health = health,
+            health = if (walkSeconds == null) health else staleHealth,
         ),
-        walking = false,
+        walkSeconds = walkSeconds,
         weather = WalkWeather(code = 3, celsius = 13.0, windMs = 2.0),
         lastWalk = lastWalk,
         onAllowSteps = {},
         onStartWalk = {},
+        onStopWalk = {},
         onStats = {},
         onHealth = {},
+        onAddHealth = {},
         onWalk = {},
         onReminders = {},
     )

@@ -25,14 +25,13 @@
                     android:strokeWidth="4"
                     android:strokeLineCap="round"
                     android:strokeLineJoin="round" />
-                <group android:name="dot">
+                <group
+                    android:name="pupil"
+                    android:pivotX="32"
+                    android:pivotY="28">
                     <path
-                        android:name="glint"
-                        android:pathData="M28 24.6667C28.4822 24.0636 29.0896 23.5725 29.7802 23.2272C30.4709 22.8819 31.2282 22.6906 32 22.6667"
-                        android:strokeColor="#FFFFFF"
-                        android:strokeWidth="4"
-                        android:strokeLineCap="round"
-                        android:strokeLineJoin="round" />
+                        android:fillColor="#FFFFFF"
+                        android:pathData="M33.56 23.46A4.8 4.8 0 1 0 36.54 26.44A2.2 2.2 0 1 1 33.56 23.46Z" />
                 </group>
                 <group
                     android:name="star"
@@ -57,116 +56,31 @@
             </group>
         </vector>
     </aapt:attr>
-    <target android:name="glint">
+    <target android:name="pupil">
         <aapt:attr name="android:animation">
             <set>
                 <objectAnimator
-                    android:duration="1350"
+                    android:duration="1500"
                     android:interpolator="@android:interpolator/linear">
-                    <propertyValuesHolder android:propertyName="trimPathStart">
+                    <propertyValuesHolder android:propertyName="rotation">
                         <keyframe
                             android:fraction="0"
-                            android:value="0"
-                            android:valueType="floatType" />
-                        <keyframe
-                            android:fraction="0.148"
-                            android:value="0.49"
-                            android:valueType="floatType" />
-                        <keyframe
-                            android:fraction="0.852"
-                            android:value="0.49"
-                            android:valueType="floatType" />
-                        <keyframe
-                            android:fraction="1"
-                            android:value="0"
-                            android:valueType="floatType" />
-                    </propertyValuesHolder>
-                </objectAnimator>
-                <objectAnimator
-                    android:duration="1350"
-                    android:interpolator="@android:interpolator/linear">
-                    <propertyValuesHolder android:propertyName="trimPathEnd">
-                        <keyframe
-                            android:fraction="0"
-                            android:value="1"
-                            android:valueType="floatType" />
-                        <keyframe
-                            android:fraction="0.148"
-                            android:value="0.51"
-                            android:valueType="floatType" />
-                        <keyframe
-                            android:fraction="0.852"
-                            android:value="0.51"
-                            android:valueType="floatType" />
-                        <keyframe
-                            android:fraction="1"
-                            android:value="1"
-                            android:valueType="floatType" />
-                    </propertyValuesHolder>
-                </objectAnimator>
-            </set>
-        </aapt:attr>
-    </target>
-    <target android:name="dot">
-        <aapt:attr name="android:animation">
-            <set>
-                <objectAnimator
-                    android:duration="1350"
-                    android:interpolator="@android:interpolator/linear">
-                    <propertyValuesHolder android:propertyName="translateX">
-                        <keyframe
-                            android:fraction="0"
-                            android:value="0"
-                            android:valueType="floatType" />
-                        <keyframe
-                            android:fraction="0.148"
                             android:value="0"
                             android:valueType="floatType" />
                         <keyframe
                             android:fraction="0.333"
-                            android:value="2.2"
+                            android:value="360"
+                            android:interpolator="@android:interpolator/fast_out_slow_in"
                             android:valueType="floatType" />
                         <keyframe
                             android:fraction="0.667"
-                            android:value="2.2"
-                            android:valueType="floatType" />
-                        <keyframe
-                            android:fraction="0.852"
-                            android:value="0"
+                            android:value="360"
+                            android:interpolator="@android:interpolator/fast_out_slow_in"
                             android:valueType="floatType" />
                         <keyframe
                             android:fraction="1"
-                            android:value="0"
-                            android:valueType="floatType" />
-                    </propertyValuesHolder>
-                </objectAnimator>
-                <objectAnimator
-                    android:duration="1350"
-                    android:interpolator="@android:interpolator/linear">
-                    <propertyValuesHolder android:propertyName="translateY">
-                        <keyframe
-                            android:fraction="0"
-                            android:value="0"
-                            android:valueType="floatType" />
-                        <keyframe
-                            android:fraction="0.148"
-                            android:value="0"
-                            android:valueType="floatType" />
-                        <keyframe
-                            android:fraction="0.333"
-                            android:value="4.8"
-                            android:valueType="floatType" />
-                        <keyframe
-                            android:fraction="0.667"
-                            android:value="4.8"
-                            android:valueType="floatType" />
-                        <keyframe
-                            android:fraction="0.852"
-                            android:value="0"
-                            android:valueType="floatType" />
-                        <keyframe
-                            android:fraction="1"
-                            android:value="0"
+                            android:value="720"
+                            android:interpolator="@android:interpolator/fast_out_slow_in"
                             android:valueType="floatType" />
                     </propertyValuesHolder>
                 </objectAnimator>
@@ -177,7 +91,7 @@
         <aapt:attr name="android:animation">
             <set>
                 <objectAnimator
-                    android:duration="1350"
+                    android:duration="1500"
                     android:interpolator="@android:interpolator/linear">
                     <propertyValuesHolder android:propertyName="scaleX">
                         <keyframe
@@ -190,7 +104,7 @@
                             android:valueType="floatType" />
                         <keyframe
                             android:fraction="0.467"
-                            android:value="1"
+                            android:value="1.75"
                             android:valueType="floatType" />
                         <keyframe
                             android:fraction="0.667"
@@ -203,7 +117,7 @@
                     </propertyValuesHolder>
                 </objectAnimator>
                 <objectAnimator
-                    android:duration="1350"
+                    android:duration="1500"
                     android:interpolator="@android:interpolator/linear">
                     <propertyValuesHolder android:propertyName="scaleY">
                         <keyframe
@@ -216,7 +130,7 @@
                             android:valueType="floatType" />
                         <keyframe
                             android:fraction="0.467"
-                            android:value="1"
+                            android:value="1.75"
                             android:valueType="floatType" />
                         <keyframe
                             android:fraction="0.667"
@@ -229,7 +143,7 @@
                     </propertyValuesHolder>
                 </objectAnimator>
                 <objectAnimator
-                    android:duration="1350"
+                    android:duration="1500"
                     android:interpolator="@android:interpolator/linear">
                     <propertyValuesHolder android:propertyName="rotation">
                         <keyframe
