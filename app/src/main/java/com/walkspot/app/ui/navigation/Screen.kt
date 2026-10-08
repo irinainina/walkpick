@@ -22,11 +22,10 @@ enum class Screen(@StringRes val titleRes: Int) {
 
     val route: String get() = name
 
-    /** The tab lit in the bottom bar, or null where the design draws no bar. */
+    /** The tab lit in the bottom bar; null on a screen inside a tab, which has Back and no bar. */
     val tab: Screen?
         get() = when (this) {
-            Today, Stats, Health -> Today
-            Map, Gallery, Profile -> this
+            Today, Map, Gallery, Profile -> this
             else -> null
         }
 
