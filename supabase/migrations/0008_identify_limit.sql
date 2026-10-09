@@ -1,6 +1,7 @@
 -- The number of a walk is counted from the walks kept on the phone; the column
--- that was to remember it on the server was never read or written.
-alter table public.profiles drop column last_walk_number;
+-- that was to remember it on the server was never read or written. The live
+-- database turned out to have no such column already.
+alter table public.profiles drop column if exists last_walk_number;
 
 -- Pl@ntNet gives the whole project 500 answers a day. Each caller of the
 -- identify function is counted per day, so one account cannot spend them all.
