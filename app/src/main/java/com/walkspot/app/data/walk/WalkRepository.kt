@@ -63,6 +63,9 @@ class WalkRepository @Inject constructor(
     /** Every walk, the latest first. */
     fun watchAll(): Flow<List<WalkEntity>> = walks.watchAll()
 
+    /** Where the latest walk with a route began, as (latitude, longitude); null before the first one. */
+    suspend fun lastStart(): Pair<Double, Double>? = routePlaces(walks.latestRoute()).firstOrNull()
+
     /** A note of blanks only is no note. */
     suspend fun setNote(id: String, note: String) {
         walks.setNote(id, note.trim().ifEmpty { null }, Instant.now())

@@ -23,6 +23,9 @@ private const val PLACES = 4
 // Old finds without a description are caught up with a few at a sync, not all at once.
 private const val DESCRIBED_AT_ONCE = 20
 
+// A plant the service is less sure of than this is shown as unknown, not under a wrong name.
+private const val LEAST_PLANT_MATCH = 0.2f
+
 /** What a service makes of a photo; the likeliest guess comes first. */
 @Serializable
 data class Guess(
@@ -48,6 +51,10 @@ internal fun FindEntity.named(guesses: List<Guess>, at: Instant): FindEntity {
         synced = false,
     )
 }
+
+/** No guesses when even the best one is weak. */
+internal fun List<Guess>.trusted(): List<Guess> =
+    if (firstOrNull()?.let { it.match >= LEAST_PLANT_MATCH } == true) this else emptyList()
 
 /**
  * The find as the nearest article of Wikipedia about a place; the articles further off wait under
@@ -96,7 +103,7 @@ class FindIdentifier @Inject constructor(
     private suspend fun named(find: FindEntity): FindEntity? = when (find.kind) {
         FindKind.PLANT -> {
             photos.send(find.photoPath, remote)
-            remote.identify(find.photoPath)?.let { find.named(it, Instant.now()) }
+            remote.identify(find.photoPath)?.let { find.named(it.trusted(), Instant.now()) }
         }
         FindKind.BIRD -> birds.guesses(photos.file(find.photoPath))?.let { find.named(it, Instant.now()) }
         FindKind.PLACE -> {

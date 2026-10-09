@@ -21,6 +21,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.google.android.gms.maps.CameraUpdate
 import com.google.android.gms.maps.CameraUpdateFactory
+import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.JointType
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.LatLngBounds
@@ -110,6 +111,9 @@ fun routeView(route: List<LatLng>, edge: Int): CameraUpdate? = when {
     }
     else -> route.firstOrNull()?.let { CameraUpdateFactory.newLatLngZoom(it, ONE_POINT_ZOOM) }
 }
+
+/** The camera over one place, as close as [routeView] shows a single point; needs no loaded map. */
+fun placeView(at: LatLng): CameraPosition = CameraPosition.fromLatLngZoom(at, ONE_POINT_ZOOM)
 
 /** The line of a walk in the gradient of the app; goes into the content of [WalkMap]. */
 @Composable

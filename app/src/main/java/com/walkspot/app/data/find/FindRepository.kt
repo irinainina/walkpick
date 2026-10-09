@@ -8,9 +8,11 @@ import com.walkspot.app.data.local.FindKind
 import com.walkspot.app.data.walk.LocationFinder
 import com.walkspot.app.data.walk.TrackPoint
 import com.walkspot.app.data.walk.WalkRecorder
+import com.walkspot.app.data.walk.WalkTrack
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeoutOrNull
+import java.time.Duration
 import java.time.Instant
 import java.util.UUID
 import javax.inject.Inject
@@ -21,6 +23,11 @@ private const val JPEG_QUALITY = 85
 
 // How long the camera shows "Identifying" before it gives up waiting for a name.
 private const val NAMING_WAIT_MS = 12_000L
+
+// GPS loses the walker for minutes under trees: an older point of the route is not where the photo is
+// taken, so the phone is asked, but not for long.
+private const val FRESH_POINT_S = 30L
+private const val PLACE_WAIT_MS = 4_000L
 
 /** How much a photo is shrunk so that its longest side is [longest]; a small photo is never enlarged. */
 internal fun keptScale(width: Int, height: Int, longest: Int = LONGEST_SIDE): Float =
@@ -61,7 +68,7 @@ class FindRepository @Inject constructor(
      */
     suspend fun add(photo: Bitmap, turned: Int, kind: FindKind): FindEntity? {
         val track = recorder.track.value ?: return null
-        val place = track.points.lastOrNull() ?: locations.find() ?: return null
+        val place = place(track) ?: return null
         val owner = account.lastUserId() ?: return null
         val find = newFind(UUID.randomUUID().toString(), owner, track.id, place, Instant.now(), kind)
         withContext(Dispatchers.IO) {
@@ -78,5 +85,12 @@ class FindRepository @Inject constructor(
         val named = withTimeoutOrNull(NAMING_WAIT_MS) { identifier.identified(find) }
         if (named != null && named != find) recorder.changeFind(find.id) { named }
         return find
+    }
+
+    /** The last point of the route while it is fresh, else where the phone says it is now. */
+    private suspend fun place(track: WalkTrack): TrackPoint? {
+        val last = track.points.lastOrNull() ?: return locations.find()
+        if (Duration.between(last.at, Instant.now()).seconds <= FRESH_POINT_S) return last
+        return withTimeoutOrNull(PLACE_WAIT_MS) { locations.find() } ?: last
     }
 }

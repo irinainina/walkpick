@@ -46,6 +46,7 @@ import com.walkspot.app.ui.components.MeDot
 import com.walkspot.app.ui.components.RouteLine
 import com.walkspot.app.ui.components.StartFlag
 import com.walkspot.app.ui.components.WalkMap
+import com.walkspot.app.ui.components.placeView
 import com.walkspot.app.ui.components.routeView
 import com.walkspot.app.ui.distanceText
 import com.walkspot.app.ui.theme.AppShadows
@@ -80,11 +81,14 @@ fun ActiveWalkScreen(
     onCamera: () -> Unit,
     onStop: () -> Unit,
     modifier: Modifier = Modifier,
+    /** Where the map waits for the first signal; null leaves it where Google Maps opens. */
+    waitAt: LatLng? = null,
 ) {
     val camera = rememberCameraPositionState()
     val scope = rememberCoroutineScope()
     val route = state.route.map { LatLng(it.latitude, it.longitude) }
     val me = route.lastOrNull()
+    LaunchedEffect(waitAt) { if (me == null && waitAt != null) camera.position = placeView(waitAt) }
     // The map follows the walker until it is dragged aside; the locate button brings it back.
     var following by remember { mutableStateOf(true) }
     val moved = camera.cameraMoveStartedReason

@@ -21,6 +21,7 @@ import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.location.LocationSettingsRequest
 import com.google.android.gms.location.Priority
+import com.google.android.gms.maps.model.LatLng
 import com.walkspot.app.ui.screens.ActiveWalkScreen
 import com.walkspot.app.ui.screens.BatterySheet
 import com.walkspot.app.ui.walk.ActiveWalkViewModel
@@ -65,8 +66,10 @@ internal fun NavGraphBuilder.activeWalkRoute(navController: NavHostController) {
                 onDismiss = model::batteryAnswered,
             )
         }
+        val lastStart by model.lastStart.collectAsStateWithLifecycle()
         ActiveWalkScreen(
             state = state,
+            waitAt = lastStart?.let { (latitude, longitude) -> LatLng(latitude, longitude) },
             onMinimize = { navController.popBackStack() },
             onPause = model::togglePause,
             onCamera = { navController.navigate(Screen.Camera.route) },

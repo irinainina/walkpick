@@ -76,6 +76,10 @@ class ActiveWalkViewModel @Inject constructor(
             activeWalkState(track, now, kg, stride).copy(distanceUnit = units.distance)
         }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(KEEP_AFTER_LEAVING_MS), ActiveWalkState())
 
+    /** Where the map waits for the first signal: the start of the latest walk. */
+    val lastStart: StateFlow<Pair<Double, Double>?> = flow { emit(walks.lastStart()) }
+        .stateIn(viewModelScope, SharingStarted.Eagerly, null)
+
     private val battery = MutableStateFlow<Intent?>(null)
 
     /** The phone's battery page to offer; null when there is nothing to ask. */

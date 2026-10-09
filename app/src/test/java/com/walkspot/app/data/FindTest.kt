@@ -6,6 +6,7 @@ import com.walkspot.app.data.find.keptScale
 import com.walkspot.app.data.find.named
 import com.walkspot.app.data.find.newFind
 import com.walkspot.app.data.find.placed
+import com.walkspot.app.data.find.trusted
 import com.walkspot.app.data.local.FindAlternative
 import com.walkspot.app.data.local.FindKind
 import com.walkspot.app.data.places.Place
@@ -128,5 +129,13 @@ class FindTest {
             .with(TrackPoint(50.4510, 30.5200, noon.plusSeconds(90), 8f))
 
         assertEquals(track.id, walkEntity(track, 1, noon.plusSeconds(120), null, 0.7)?.id)
+    }
+
+    @Test
+    fun aWeakBestGuessLeavesNoGuesses() {
+        val sure = listOf(Guess("Silver birch", match = 0.34f), Guess("Downy birch", match = 0.05f))
+        assertEquals(sure, sure.trusted())
+        assertEquals(emptyList<Guess>(), listOf(Guess("Black tupelo", match = 0.17f)).trusted())
+        assertEquals(emptyList<Guess>(), emptyList<Guess>().trusted())
     }
 }

@@ -62,6 +62,9 @@ interface WalkDao : SyncedDao<WalkEntity> {
     @Query("SELECT * FROM walks ORDER BY startedAt DESC LIMIT 1")
     fun watchLatest(): Flow<WalkEntity?>
 
+    @Query("SELECT route FROM walks WHERE route IS NOT NULL ORDER BY startedAt DESC LIMIT 1")
+    suspend fun latestRoute(): String?
+
     @Query("UPDATE walks SET note = :note, updatedAt = :now, synced = 0 WHERE id = :id")
     suspend fun setNote(id: String, note: String?, now: Instant)
 
