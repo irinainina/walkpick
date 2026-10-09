@@ -3,10 +3,9 @@ package com.walkspot.app.ui.gallery
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.walkspot.app.data.find.FindStore
-import com.walkspot.app.data.local.FindDao
 import com.walkspot.app.data.local.FindEntity
-import com.walkspot.app.data.local.WalkDao
 import com.walkspot.app.data.local.WalkEntity
+import com.walkspot.app.data.walk.WalkRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -41,8 +40,7 @@ private data class Choice(val tab: GalleryTab = GalleryTab.All, val selected: Se
 
 @HiltViewModel
 class GalleryViewModel @Inject constructor(
-    finds: FindDao,
-    walks: WalkDao,
+    walks: WalkRepository,
     private val store: FindStore,
 ) : ViewModel() {
 
@@ -53,7 +51,7 @@ class GalleryViewModel @Inject constructor(
     private val photos = mutableMapOf<String, File?>()
 
     val state: StateFlow<GalleryState?> =
-        combine(finds.watchAll(), walks.watchAll(), choice) { finds, walks, choice ->
+        combine(store.watchAll(), walks.watchAll(), choice) { finds, walks, choice ->
             GalleryState(
                 tab = choice.tab,
                 groups = galleryGroups(walks, finds),

@@ -12,6 +12,7 @@ import android.content.pm.ServiceInfo
 import android.os.Build
 import android.os.IBinder
 import android.os.Looper
+import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.app.ServiceCompat
@@ -22,6 +23,7 @@ import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.location.LocationResult
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.location.Priority
+import com.walkspot.app.BuildConfig
 import com.walkspot.app.MainActivity
 import com.walkspot.app.R
 import com.walkspot.app.data.steps.StepCounter
@@ -37,6 +39,7 @@ import kotlinx.coroutines.launch
 import java.time.Instant
 import javax.inject.Inject
 
+private const val TAG = "WalkService"
 private const val CHANNEL_ID = "walk_recording"
 private const val NOTIFICATION_ID = 2
 
@@ -64,8 +67,13 @@ class WalkService : Service() {
     private val listener = object : LocationCallback() {
         override fun onLocationResult(result: LocationResult) {
             result.locations.forEach {
-                val at = Instant.ofEpochMilli(it.time)
-                recorder.report(TrackPoint(it.latitude, it.longitude, at, it.accuracy))
+                val point = TrackPoint(it.latitude, it.longitude, Instant.ofEpochMilli(it.time), it.accuracy)
+                // A gap in a route is either a silent receiver or points left out: the log tells which.
+                if (BuildConfig.DEBUG) {
+                    val last = recorder.track.value?.legs?.lastOrNull()?.lastOrNull()
+                    dropReason(last, point)?.let { why -> Log.d(TAG, "point left out: $why") }
+                }
+                recorder.report(point)
             }
         }
     }
@@ -145,9 +153,18 @@ class WalkControl @Inject constructor(
     /** The location permission must be granted already; without it the service ends at once. */
     fun start() = ContextCompat.startForegroundService(context, Intent(context, WalkService::class.java))
 
-    /** Stops listening to GPS and returns the walk as it was recorded. */
+    /**
+     * Stops listening to GPS and returns the walk as it was recorded. The walk stays in its draft,
+     * paused, until [done] is called: the app may be ended before the walk is kept.
+     */
     fun stop(): WalkTrack? {
         context.stopService(Intent(context, WalkService::class.java))
-        return recorder.finish()
+        recorder.pause(Instant.now())
+        return recorder.track.value
+    }
+
+    /** The stopped walk is kept or not worth keeping: its draft goes away. */
+    fun done() {
+        recorder.finish()
     }
 }

@@ -81,7 +81,8 @@ function initWaitlist() {
       const reply = await fetch(WAITLIST_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email }),
+        // People never see the website field; a script that fills it is not added to the list.
+        body: JSON.stringify({ email, website: form.website.value }),
       });
       if (reply.ok) form.reset();
       message.textContent = reply.ok

@@ -2,7 +2,6 @@ package com.walkspot.app.ui.today
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.walkspot.app.data.local.WalkDao
 import com.walkspot.app.data.walk.WalkRepository
 import com.walkspot.app.data.walk.routePlaces
 import com.walkspot.app.ui.map.DiaryWalk
@@ -24,11 +23,11 @@ const val LAST_WALK_ASPECT = 3.75f
 
 /** The latest walk with its photos counted and its route drawn, for the card on Today. */
 @HiltViewModel
-class LastWalkViewModel @Inject constructor(walks: WalkDao, repository: WalkRepository) : ViewModel() {
+class LastWalkViewModel @Inject constructor(repository: WalkRepository) : ViewModel() {
 
     /** Null until there is a walk. */
     @OptIn(ExperimentalCoroutinesApi::class)
-    val walk: StateFlow<DiaryWalk?> = walks.watchLatest()
+    val walk: StateFlow<DiaryWalk?> = repository.watchLatest()
         .flatMapLatest { latest ->
             if (latest == null) {
                 flowOf(null)

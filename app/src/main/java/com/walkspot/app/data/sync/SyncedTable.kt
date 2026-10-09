@@ -35,10 +35,17 @@ class SyncedTable<T : Any>(
     private val restore: suspend (List<T>) -> Unit,
 ) : SyncedPart {
     override suspend fun push(remote: RemoteTables) {
-        unsynced().chunked(CHUNK).forEach { rows ->
+        unsynced().chunked(CHUNK).forEach { send(it, remote) }
+    }
+
+    // A row the server will never take stays unsent and must not hold back the rows beside it.
+    private suspend fun send(rows: List<T>, remote: RemoteTables) {
+        try {
             val json = rows.map { SyncJson.encodeToJsonElement(serializer, it).jsonObject }
             remote.upsert(name, json, key, insertOnly)
             rows.forEach { markSynced(it) }
+        } catch (_: RowsRefused) {
+            if (rows.size > 1) rows.forEach { send(listOf(it), remote) }
         }
     }
 

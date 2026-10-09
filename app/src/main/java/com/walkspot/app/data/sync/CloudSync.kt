@@ -13,7 +13,10 @@ class CloudSync @Inject constructor(
         if (!remote.isSignedIn()) return
         // Removals go first: a walk removed on the server takes its finds with it.
         deletes.all().forEach {
-            remote.delete(it.remoteTable, it.id)
+            when (it.remoteTable) {
+                PHOTO_BUCKET -> remote.remove(PHOTO_BUCKET, it.id)
+                else -> remote.delete(it.remoteTable, it.id)
+            }
             deletes.remove(it)
         }
         tables.forEach { it.push(remote) }

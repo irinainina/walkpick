@@ -1,6 +1,7 @@
 package com.walkspot.app.data.find
 
 import android.content.Context
+import com.walkspot.app.data.sync.PHOTO_BUCKET
 import com.walkspot.app.data.sync.RemoteTables
 import com.walkspot.app.data.sync.SyncedPart
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -10,7 +11,6 @@ import java.io.File
 import java.io.OutputStream
 import javax.inject.Inject
 
-private const val BUCKET = "photos"
 private const val UNSENT = ".unsent"
 
 /**
@@ -38,6 +38,11 @@ class PhotoStore(private val folder: File) : SyncedPart {
         mark(path).delete()
     }
 
+    /** Every photo goes: the phone has changed hands or the account is gone. */
+    fun clear() {
+        folder.deleteRecursively()
+    }
+
     fun unsent(): List<String> = folder.walkTopDown()
         .filter { it.name.endsWith(UNSENT) }
         .map { it.relativeTo(folder).invariantSeparatorsPath.removeSuffix(UNSENT) }
@@ -46,7 +51,7 @@ class PhotoStore(private val folder: File) : SyncedPart {
     /** Sends the photo unless it was sent already. */
     suspend fun send(path: String, remote: RemoteTables) {
         if (!mark(path).exists()) return
-        remote.upload(BUCKET, path, withContext(Dispatchers.IO) { file(path).readBytes() })
+        remote.upload(PHOTO_BUCKET, path, withContext(Dispatchers.IO) { file(path).readBytes() })
         mark(path).delete()
     }
 
@@ -57,7 +62,7 @@ class PhotoStore(private val folder: File) : SyncedPart {
     suspend fun local(path: String, remote: RemoteTables): File? {
         val photo = file(path)
         if (photo.exists()) return photo
-        val bytes = remote.download(BUCKET, path) ?: return null
+        val bytes = remote.download(PHOTO_BUCKET, path) ?: return null
         return withContext(Dispatchers.IO) {
             photo.parentFile?.mkdirs()
             photo.writeBytes(bytes)

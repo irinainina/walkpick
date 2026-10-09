@@ -35,6 +35,8 @@ class PhotoStoreTest {
             uploads += "$bucket $path ${jpeg.size}"
         }
 
+        override suspend fun remove(bucket: String, path: String) = Unit
+
         override suspend fun download(bucket: String, path: String): ByteArray? = fetched
 
         override suspend fun identify(photoPath: String): List<Guess>? = null

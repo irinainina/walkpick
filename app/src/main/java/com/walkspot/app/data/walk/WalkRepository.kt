@@ -1,14 +1,13 @@
 package com.walkspot.app.data.walk
 
-import com.walkspot.app.data.local.FindDao
+import androidx.room.withTransaction
+import com.walkspot.app.data.find.PhotoStore
 import com.walkspot.app.data.local.FindEntity
-import com.walkspot.app.data.local.PendingDeleteDao
 import com.walkspot.app.data.local.PendingDeleteEntity
-import com.walkspot.app.data.local.WalkDao
 import com.walkspot.app.data.local.WalkEntity
-import com.walkspot.app.data.profile.ProfileStore
-import com.walkspot.app.data.profile.strideM
+import com.walkspot.app.data.local.WalkSpotDatabase
 import com.walkspot.app.data.steps.StepsRepository
+import com.walkspot.app.data.sync.PHOTO_BUCKET
 import com.walkspot.app.data.sync.SyncScheduler
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
@@ -47,18 +46,26 @@ fun walkEntity(
 }
 
 class WalkRepository @Inject constructor(
-    private val walks: WalkDao,
-    private val finds: FindDao,
-    private val deletes: PendingDeleteDao,
+    private val database: WalkSpotDatabase,
+    private val photos: PhotoStore,
     private val sync: SyncScheduler,
     private val namer: WalkNamer,
     private val steps: StepsRepository,
-    private val profiles: ProfileStore,
 ) {
+    private val walks = database.walks()
+    private val finds = database.finds()
+    private val deletes = database.pendingDeletes()
+
     fun watch(id: String): Flow<WalkEntity?> = walks.watch(id)
 
     /** The photos of a walk in the order they were taken. */
     fun watchFinds(id: String): Flow<List<FindEntity>> = finds.watchOf(id)
+
+    /** When every walk began. */
+    fun watchStarts(): Flow<List<Instant>> = walks.watchStarts()
+
+    /** The latest walk; null before the first one. */
+    fun watchLatest(): Flow<WalkEntity?> = walks.watchLatest()
 
     /** Every walk, the latest first. */
     fun watchAll(): Flow<List<WalkEntity>> = walks.watchAll()
@@ -81,20 +88,29 @@ class WalkRepository @Inject constructor(
 
     /** Removes the walk from the phone at once and from the server with the next sync. */
     suspend fun delete(id: String) {
-        walks.watch(id).first()?.let { steps.remove(it) }
-        walks.delete(id)
-        deletes.add(PendingDeleteEntity(WALKS_TABLE, id))
+        val walk = walks.watch(id).first() ?: return
+        // The finds leave with the walk by themselves; their photos are files and have to be named.
+        val taken = finds.watchOf(id).first().map { it.photoPath }
+        database.withTransaction {
+            walks.delete(id)
+            steps.recount(walk)
+            deletes.add(PendingDeleteEntity(WALKS_TABLE, id))
+            taken.forEach { deletes.add(PendingDeleteEntity(PHOTO_BUCKET, it)) }
+        }
+        taken.forEach(photos::delete)
         sync.pushSoon()
     }
 
     /** Keeps the walk under the next number and sends it to the server; null when [walkEntity] refused it. */
-    suspend fun save(track: WalkTrack, weightKg: Double?): WalkEntity? {
-        val stride = profiles.value.first().let { strideM(it.sex, it.heightCm) }
-        val kept = walkEntity(track, walks.lastNumber() + 1, Instant.now(), weightKg, stride) ?: return null
+    suspend fun save(track: WalkTrack, weightKg: Double?, strideM: Double): WalkEntity? {
+        val kept = walkEntity(track, walks.lastNumber() + 1, Instant.now(), weightKg, strideM) ?: return null
         val walk = kept.copy(name = namer.name(track))
-        walks.save(listOf(walk))
-        steps.add(walk)
-        finds.save(track.finds)
+        // All of it or none: a walk without its finds or outside its day cannot be told from a whole one.
+        database.withTransaction {
+            walks.save(listOf(walk))
+            finds.save(track.finds)
+            steps.recount(walk)
+        }
         sync.pushSoon()
         return walk
     }

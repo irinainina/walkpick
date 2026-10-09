@@ -9,6 +9,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.walkspot.app.data.account.AccountExit
 import com.walkspot.app.data.account.AccountStore
 import com.walkspot.app.data.account.AuthProblem
 import com.walkspot.app.data.account.AuthRefused
@@ -17,7 +18,6 @@ import com.walkspot.app.data.account.GoogleResult
 import com.walkspot.app.data.account.GoogleSignIn
 import com.walkspot.app.data.account.isEmailAddress
 import com.walkspot.app.data.account.isOffline
-import com.walkspot.app.data.local.WalkSpotDatabase
 import com.walkspot.app.data.sync.SyncScheduler
 import dagger.hilt.EntryPoint
 import dagger.hilt.InstallIn
@@ -25,10 +25,8 @@ import dagger.hilt.android.EntryPointAccessors
 import dagger.hilt.android.components.ActivityComponent
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CancellationException
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 // The server sends an address one code a minute, and a new code kills the one still on its way.
@@ -40,7 +38,7 @@ private const val SECOND_MS = 1_000L
 class AuthViewModel @Inject constructor(
     private val auth: AuthRepository,
     private val account: AccountStore,
-    private val database: WalkSpotDatabase,
+    private val exit: AccountExit,
     private val sync: SyncScheduler,
 ) : ViewModel() {
 
@@ -140,7 +138,7 @@ class AuthViewModel @Inject constructor(
         val user = auth.currentUser() ?: return
         val previous = account.lastUserId()
         if (previous != null && previous != user.id) {
-            withContext(Dispatchers.IO) { database.clearAllTables() }
+            exit.wipe()
             account.forgetOwner()
         }
         account.signedIn(user.id)

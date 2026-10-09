@@ -8,6 +8,7 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collectLatest
@@ -19,15 +20,23 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerializationException
 import java.io.File
 import java.io.IOException
+import java.nio.file.Files
+import java.nio.file.StandardCopyOption.ATOMIC_MOVE
+import java.nio.file.StandardCopyOption.REPLACE_EXISTING
 import java.time.Duration
 import java.time.Instant
 import java.util.UUID
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlin.time.Duration.Companion.seconds
+import kotlin.time.TimeSource
 
 // Some phones switch the step sensor off behind a dark screen. A count below this share of the steps
 // the distance takes is such a cut, not a long stride.
 private const val TRUSTED_SHARE = 0.7
+
+// An app ended in the middle of a walk loses the way walked since the last writing, no more than this.
+private val DRAFT_EVERY = 10.seconds
 
 /**
  * A walk being recorded. A new leg starts after every pause: the way from where the walk was paused to
@@ -79,6 +88,10 @@ data class WalkTrack(
         return if (steps < needed * TRUSTED_SHARE) needed else steps
     }
 
+    /** Whether nothing but the way and the steps changed since [earlier]: a draft may wait for that. */
+    fun onlyMovedSince(earlier: WalkTrack?): Boolean = earlier != null &&
+        copy(legs = earlier.legs, steps = earlier.steps, lastCounter = earlier.lastCounter) == earlier
+
     fun pausedAt(at: Instant): WalkTrack = if (paused) this else copy(pausedAt = at)
 
     fun resumedAt(at: Instant): WalkTrack {
@@ -110,7 +123,10 @@ class WalkDraft(private val file: File) {
         if (track == null) {
             file.delete()
         } else {
-            file.writeText(SyncJson.encodeToString(WalkTrack.serializer(), track))
+            // Written aside and renamed: an app ended in the middle of writing leaves the old draft whole.
+            val fresh = File(file.path + ".new")
+            fresh.writeText(SyncJson.encodeToString(WalkTrack.serializer(), track))
+            Files.move(fresh.toPath(), file.toPath(), ATOMIC_MOVE, REPLACE_EXISTING)
         }
     }
 }
@@ -126,7 +142,15 @@ class WalkRecorder @Inject constructor(draft: WalkDraft) {
     init {
         // Written off the main thread; of several changes in a row only the last one matters.
         CoroutineScope(SupervisorJob() + Dispatchers.IO).launch {
-            current.drop(1).collectLatest(draft::write)
+            var written = current.value
+            var writtenAt = TimeSource.Monotonic.markNow()
+            current.drop(1).collectLatest { track ->
+                // Points and steps come every second or two and the whole walk is written each time.
+                if (track?.onlyMovedSince(written) == true) delay(DRAFT_EVERY - writtenAt.elapsedNow())
+                draft.write(track)
+                written = track
+                writtenAt = TimeSource.Monotonic.markNow()
+            }
         }
     }
 

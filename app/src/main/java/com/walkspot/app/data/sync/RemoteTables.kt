@@ -20,6 +20,15 @@ import javax.inject.Inject
 
 private const val IDENTIFY = "identify"
 
+/** The bucket of the photos; a photo to remove waits among the pending deletes under this name. */
+const val PHOTO_BUCKET = "photos"
+
+// What PostgREST answers to rows that break a rule of the table: a check, a unique pair, a missing parent.
+private val DataRefusals = setOf(400, 409, 422)
+
+/** The server read the rows and will not take them, now or later; a lost network is not this. */
+class RowsRefused(cause: Throwable) : Exception(cause)
+
 @Serializable
 private data class Identified(val guesses: List<Guess> = emptyList())
 
@@ -36,6 +45,9 @@ interface RemoteTables {
     /** Puts a JPEG into a bucket; a file already there is left as it is. */
     suspend fun upload(bucket: String, path: String, jpeg: ByteArray)
 
+    /** Takes a file out of a bucket; one that is not there is no error. */
+    suspend fun remove(bucket: String, path: String)
+
     /** A file of a bucket; null when it is not there or the server cannot be asked. */
     suspend fun download(bucket: String, path: String): ByteArray?
 
@@ -51,9 +63,13 @@ class SupabaseRemoteTables @Inject constructor(
         supabase.isConfigured && supabase.client.signedInSession() != null
 
     override suspend fun upsert(table: String, rows: List<JsonObject>, key: String, insertOnly: Boolean) {
-        supabase.client.from(table).upsert(rows) {
-            onConflict = key
-            ignoreDuplicates = insertOnly
+        try {
+            supabase.client.from(table).upsert(rows) {
+                onConflict = key
+                ignoreDuplicates = insertOnly
+            }
+        } catch (refused: RestException) {
+            throw if (refused.statusCode in DataRefusals) RowsRefused(refused) else refused
         }
     }
 
@@ -75,6 +91,10 @@ class SupabaseRemoteTables @Inject constructor(
         } catch (lost: HttpRequestException) {
             throw IOException(lost)
         }
+    }
+
+    override suspend fun remove(bucket: String, path: String) {
+        supabase.client.storage.from(bucket).delete(listOf(path))
     }
 
     override suspend fun download(bucket: String, path: String): ByteArray? = try {

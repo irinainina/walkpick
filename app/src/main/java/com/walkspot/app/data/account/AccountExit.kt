@@ -4,9 +4,11 @@ import android.util.Log
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
+import com.walkspot.app.data.find.PhotoStore
 import com.walkspot.app.data.local.WalkSpotDatabase
 import com.walkspot.app.data.settings.AppSettings
 import com.walkspot.app.data.settings.Reminders
+import com.walkspot.app.data.walk.WalkRecorder
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
@@ -20,6 +22,8 @@ class AccountExit @Inject constructor(
     private val database: WalkSpotDatabase,
     private val preferences: DataStore<Preferences>,
     private val reminders: Reminders,
+    private val photos: PhotoStore,
+    private val recorder: WalkRecorder,
 ) {
     // The data stays on the phone: the same person signing in again finds it at once.
     suspend fun signOut() {
@@ -32,10 +36,19 @@ class AccountExit @Inject constructor(
         account.signedOut()
     }
 
+    /** Takes everything the owner gathered off the phone: rows, photos and a walk going on. */
+    suspend fun wipe() {
+        recorder.finish()
+        withContext(Dispatchers.IO) {
+            database.clearAllTables()
+            photos.clear()
+        }
+    }
+
     /** Throws [AuthRefused] when the server did not delete the account; the phone is left as it was. */
     suspend fun deleteAccount() {
         auth.deleteAccount()
-        withContext(Dispatchers.IO) { database.clearAllTables() }
+        wipe()
         preferences.edit { it.clear() }
         reminders.schedule(AppSettings())
     }

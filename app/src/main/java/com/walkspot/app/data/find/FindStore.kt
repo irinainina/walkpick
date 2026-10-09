@@ -4,6 +4,7 @@ import com.walkspot.app.data.local.FindDao
 import com.walkspot.app.data.local.FindEntity
 import com.walkspot.app.data.local.PendingDeleteDao
 import com.walkspot.app.data.local.PendingDeleteEntity
+import com.walkspot.app.data.sync.PHOTO_BUCKET
 import com.walkspot.app.data.sync.RemoteTables
 import com.walkspot.app.data.sync.SyncScheduler
 import com.walkspot.app.data.walk.WalkRecorder
@@ -33,6 +34,11 @@ class FindStore @Inject constructor(
     fun watch(id: String): Flow<FindEntity?> = combine(recorder.track, finds.watch(id)) { track, saved ->
         track?.finds?.firstOrNull { it.id == id } ?: saved
     }
+
+    /** Every kept find, the latest first; those of the walk going on are not among them yet. */
+    fun watchAll(): Flow<List<FindEntity>> = finds.watchAll()
+
+    fun watchCount(): Flow<Int> = finds.watchCount()
 
     /** The find as it is now; null when there is none. */
     suspend fun watchNow(id: String): FindEntity? = drafted(id) ?: finds.get(id)
@@ -65,8 +71,10 @@ class FindStore @Inject constructor(
         } else {
             finds.delete(id)
             deletes.add(PendingDeleteEntity(FINDS_TABLE, id))
-            sync.pushSoon()
         }
         photos.delete(find.photoPath)
+        // The photo of a find still in the draft may be on the server already: it was sent to be named.
+        deletes.add(PendingDeleteEntity(PHOTO_BUCKET, find.photoPath))
+        sync.pushSoon()
     }
 }

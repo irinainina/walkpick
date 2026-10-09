@@ -7,7 +7,7 @@
 //
 // No CORS headers on purpose: the only caller is the app, and with the headers
 // a page in any browser could call this function too.
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.4";
 
 const BUCKET = "photos";
 const PAGE = 1000;

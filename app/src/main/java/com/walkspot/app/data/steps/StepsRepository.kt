@@ -2,12 +2,13 @@ package com.walkspot.app.data.steps
 
 import com.walkspot.app.data.local.DailyStepsDao
 import com.walkspot.app.data.local.DailyStepsEntity
+import com.walkspot.app.data.local.WalkDao
 import com.walkspot.app.data.local.WalkEntity
 import com.walkspot.app.data.profile.ProfileStore
-import com.walkspot.app.data.sync.SyncScheduler
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import java.time.Instant
+import java.time.LocalDate
 import java.time.ZoneId
 import javax.inject.Inject
 import kotlin.math.roundToInt
@@ -27,43 +28,30 @@ private const val SECONDS_IN_MINUTE = 60.0
 class StepsRepository @Inject constructor(
     private val counter: StepCounter,
     private val days: DailyStepsDao,
+    private val walks: WalkDao,
     private val profiles: ProfileStore,
-    private val sync: SyncScheduler,
 ) {
     fun access(): StepsAccess = counter.access()
 
     fun watchDays(): Flow<List<DailyStepsEntity>> = days.watchAll()
 
-    /** Adds a finished walk to the day it began on. */
-    suspend fun add(walk: WalkEntity) = change(walk, sign = 1)
-
-    /** Takes a deleted walk back out of its day. */
-    suspend fun remove(walk: WalkEntity) = change(walk, sign = -1)
-
-    private suspend fun change(walk: WalkEntity, sign: Int) {
-        val day = walk.startedAt.atZone(ZoneId.systemDefault()).toLocalDate()
-        val stored = days.since(day).firstOrNull { it.day == day }
-        days.save(listOf(dayWith(stored, walk, sign, profiles.value.first().dailyGoal, Instant.now())))
-        sync.pushSoon()
+    /** Counts the day [walk] began on anew from its walks; called once the walk is kept or deleted. */
+    suspend fun recount(walk: WalkEntity) {
+        val zone = ZoneId.systemDefault()
+        val day = walk.startedAt.atZone(zone).toLocalDate()
+        val next = day.plusDays(1)
+        val began = walks.between(day.atStartOfDay(zone).toInstant(), next.atStartOfDay(zone).toInstant())
+        val goal = days.since(day).firstOrNull { it.day == day }?.goal ?: profiles.value.first().dailyGoal
+        days.save(listOf(dayOf(day, began, goal, Instant.now())))
     }
 }
 
-/** The day [stored] (or an empty one) with [walk] added to it, or taken out of it when [sign] is -1. */
-internal fun dayWith(
-    stored: DailyStepsEntity?,
-    walk: WalkEntity,
-    sign: Int,
-    goal: Int,
-    now: Instant,
-    zone: ZoneId = ZoneId.systemDefault(),
-): DailyStepsEntity {
-    val minutes = (walk.durationS / SECONDS_IN_MINUTE).roundToInt()
-    return DailyStepsEntity(
-        day = stored?.day ?: walk.startedAt.atZone(zone).toLocalDate(),
-        steps = ((stored?.steps ?: 0) + sign * walk.steps).coerceAtLeast(0),
-        distanceM = ((stored?.distanceM ?: 0) + sign * walk.distanceM).coerceAtLeast(0),
-        activeMinutes = ((stored?.activeMinutes ?: 0) + sign * minutes).coerceAtLeast(0),
-        goal = stored?.goal ?: goal,
-        updatedAt = now,
-    )
-}
+/** The day as its [walks] make it: a day holds nothing but what was walked between Start and Stop. */
+internal fun dayOf(day: LocalDate, walks: List<WalkEntity>, goal: Int, now: Instant) = DailyStepsEntity(
+    day = day,
+    steps = walks.sumOf { it.steps },
+    distanceM = walks.sumOf { it.distanceM },
+    activeMinutes = walks.sumOf { (it.durationS / SECONDS_IN_MINUTE).roundToInt() },
+    goal = goal,
+    updatedAt = now,
+)

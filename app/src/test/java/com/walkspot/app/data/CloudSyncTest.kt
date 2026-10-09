@@ -7,11 +7,13 @@ import com.walkspot.app.data.local.PendingDeleteDao
 import com.walkspot.app.data.local.PendingDeleteEntity
 import com.walkspot.app.data.sync.CloudSync
 import com.walkspot.app.data.sync.RemoteTables
+import com.walkspot.app.data.sync.RowsRefused
 import com.walkspot.app.data.sync.SyncedTable
 import kotlinx.coroutines.test.runTest
 import kotlinx.serialization.json.JsonNull
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
+import kotlinx.serialization.json.jsonPrimitive
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
@@ -23,11 +25,14 @@ class CloudSyncTest {
         val calls = mutableListOf<String>()
         val rows = mutableMapOf<String, MutableList<JsonObject>>()
         var failing = false
+        var refused: String? = null
 
         override suspend fun isSignedIn() = signedIn
 
         override suspend fun upsert(table: String, rows: List<JsonObject>, key: String, insertOnly: Boolean) {
             check(!failing) { "no network" }
+            val broken = rows.any { it["id"]?.jsonPrimitive?.content == refused }
+            if (broken) throw RowsRefused(IllegalStateException())
             calls += "upsert $table ${rows.size}"
             this.rows.getOrPut(table) { mutableListOf() } += rows
         }
@@ -44,6 +49,10 @@ class CloudSyncTest {
         override suspend fun upload(bucket: String, path: String, jpeg: ByteArray) {
             check(!failing) { "no network" }
             calls += "upload $bucket $path ${jpeg.size}"
+        }
+
+        override suspend fun remove(bucket: String, path: String) {
+            calls += "remove $bucket $path"
         }
 
         override suspend fun download(bucket: String, path: String): ByteArray? = null
@@ -102,6 +111,29 @@ class CloudSyncTest {
         )
         assertTrue(deletes.rows.isEmpty())
         assertTrue((walks.rows + finds.rows).all { it.synced })
+    }
+
+    @Test
+    fun aPhotoWaitsAmongTheRemovalsUnderItsBucket() = runTest {
+        val remote = FakeRemote()
+        val photo = PendingDeleteEntity("photos", "u/f1.jpg")
+        val deletes = FakeDeletes(PendingDeleteEntity("finds", "f1"), photo)
+
+        CloudSync(remote, emptyList(), deletes).push()
+
+        assertEquals(listOf("delete finds f1", "remove photos u/f1.jpg"), remote.calls)
+        assertTrue(deletes.rows.isEmpty())
+    }
+
+    @Test
+    fun aRowTheServerRefusesStaysUnsentAndTheOthersGo() = runTest {
+        val remote = FakeRemote().apply { refused = "local-1" }
+        val phone = Phone("walks", count = 3)
+
+        CloudSync(remote, listOf(phone.table), FakeDeletes()).push()
+
+        assertEquals(listOf("upsert walks 1", "upsert walks 1"), remote.calls)
+        assertEquals(listOf(true, false, true), phone.rows.map { it.synced })
     }
 
     @Test

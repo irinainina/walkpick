@@ -53,6 +53,15 @@ class ArchitectureTest {
     }
 
     @Test
+    fun theUiReadsTheDatabaseThroughTheDataLayer() {
+        app.files
+            .filter { it.packagee?.name.orEmpty().startsWith("$ROOT.ui") }
+            .assertTrue(additionalMessage = "A view model asks a repository or a store, not a DAO") { file ->
+                file.imports.none { it.name.startsWith("$ROOT.data.local") && it.name.endsWith("Dao") }
+            }
+    }
+
+    @Test
     fun screensDoNotFetchTheirOwnViewModels() {
         app.files
             .filter { it.packagee?.name.orEmpty().startsWith("$ROOT.ui.screens") }

@@ -8,7 +8,6 @@ import com.walkspot.app.data.account.AuthRepository
 import com.walkspot.app.data.health.HealthRepository
 import com.walkspot.app.data.local.DailyStepsEntity
 import com.walkspot.app.data.local.HealthKind
-import com.walkspot.app.data.local.WalkDao
 import com.walkspot.app.data.profile.ProfileRepository
 import com.walkspot.app.data.settings.AppSettings
 import com.walkspot.app.data.settings.DistanceUnit
@@ -18,6 +17,7 @@ import com.walkspot.app.data.steps.StepsAccess
 import com.walkspot.app.data.steps.StepsRepository
 import com.walkspot.app.data.steps.currentStreak
 import com.walkspot.app.data.steps.weekOf
+import com.walkspot.app.data.walk.WalkRepository
 import com.walkspot.app.ui.components.Bar
 import com.walkspot.app.ui.components.BarKind
 import com.walkspot.app.ui.health.HealthTile
@@ -69,7 +69,7 @@ class TodayViewModel @Inject constructor(
     private val steps: StepsRepository,
     profiles: ProfileRepository,
     settings: SettingsStore,
-    walks: WalkDao,
+    walks: WalkRepository,
     health: HealthRepository,
     account: AccountStore,
     auth: AuthRepository,

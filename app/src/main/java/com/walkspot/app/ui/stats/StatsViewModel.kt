@@ -3,7 +3,6 @@ package com.walkspot.app.ui.stats
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.walkspot.app.data.local.DailyStepsEntity
-import com.walkspot.app.data.local.WalkDao
 import com.walkspot.app.data.local.WalkEntity
 import com.walkspot.app.data.profile.ProfileRepository
 import com.walkspot.app.data.settings.DistanceUnit
@@ -18,6 +17,7 @@ import com.walkspot.app.data.steps.monthlyAverages
 import com.walkspot.app.data.steps.stepsStats
 import com.walkspot.app.data.steps.weekOf
 import com.walkspot.app.data.steps.yearOf
+import com.walkspot.app.data.walk.WalkRepository
 import com.walkspot.app.ui.components.Bar
 import com.walkspot.app.ui.components.BarKind
 import com.walkspot.app.ui.grouped
@@ -79,7 +79,7 @@ class StatsViewModel @Inject constructor(
     steps: StepsRepository,
     settings: SettingsStore,
     profiles: ProfileRepository,
-    walks: WalkDao,
+    walks: WalkRepository,
 ) : ViewModel() {
 
     private val choice = MutableStateFlow(StatsChoice())

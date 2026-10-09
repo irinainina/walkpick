@@ -7,12 +7,14 @@
 // table: a photo is named right after the shot, before its walk is saved.
 //
 // No CORS headers on purpose: the only caller is the app.
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.4";
 
 const BUCKET = "photos";
 const PLANTNET = "https://my-api.plantnet.org/v2/identify/all";
 // The best guess and three more for the "Not this?" sheet.
 const GUESSES = 4;
+// Pl@ntNet gives the project 500 answers a day; one account gets a tenth of them.
+const CALLS_A_DAY = 50;
 
 type Guess = { name: string; latin_name: string; match: number };
 
@@ -68,6 +70,11 @@ Deno.serve(async (request) => {
   });
   const photo = await caller.storage.from(BUCKET).download(asked.photo_path);
   if (photo.error) return answer(404, { error: "the photo is not on the server yet" });
+
+  // A counter that cannot be asked is no reason to leave a find without a name.
+  const counted = await caller.rpc("count_identify_call", { day_limit: CALLS_A_DAY });
+  if (counted.error) console.error("the call was not counted", counted.error);
+  if (counted.data === false) return answer(429, { error: "too many photos today" });
 
   const guesses = await plants(photo.data);
   if (guesses === null) return answer(502, { error: "the service did not answer" });

@@ -6,6 +6,7 @@ import com.walkspot.app.data.walk.WalkRecorder
 import com.walkspot.app.data.walk.WalkTrack
 import com.walkspot.app.data.walk.walkEntity
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
@@ -74,8 +75,18 @@ class WalkTrackTest {
         val track = walked.withCounter(100).pausedAt(at(90))
         draft.write(track)
         assertEquals(track, WalkRecorder(draft).track.value)
+        draft.write(walked)
+        assertEquals(listOf("walk.json"), folder.list()?.toList())
         draft.write(null)
         assertNull(draft.read())
+    }
+
+    @Test
+    fun aDraftWaitsForTheWayAndTheStepsButNotForAPause() {
+        val walked = WalkTrack(start).with(point(0.0, 0))
+        assertTrue(walked.with(point(0.001, 60)).withCounter(100).onlyMovedSince(walked))
+        assertFalse(walked.pausedAt(at(90)).onlyMovedSince(walked))
+        assertFalse(walked.onlyMovedSince(null))
     }
 
     @Test

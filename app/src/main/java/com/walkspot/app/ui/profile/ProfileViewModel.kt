@@ -3,15 +3,15 @@ package com.walkspot.app.ui.profile
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.walkspot.app.data.account.AccountStore
+import com.walkspot.app.data.find.FindStore
 import com.walkspot.app.data.health.HealthRepository
-import com.walkspot.app.data.local.FindDao
 import com.walkspot.app.data.local.HealthKind
-import com.walkspot.app.data.local.WalkDao
 import com.walkspot.app.data.profile.Profile
 import com.walkspot.app.data.profile.ProfileRepository
 import com.walkspot.app.data.settings.AppSettings
 import com.walkspot.app.data.settings.SettingsStore
 import com.walkspot.app.data.steps.StepsRepository
+import com.walkspot.app.data.walk.WalkRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -42,8 +42,8 @@ data class ProfileState(
 class ProfileViewModel @Inject constructor(
     private val profiles: ProfileRepository,
     steps: StepsRepository,
-    walks: WalkDao,
-    finds: FindDao,
+    walks: WalkRepository,
+    finds: FindStore,
     private val health: HealthRepository,
     settings: SettingsStore,
     account: AccountStore,

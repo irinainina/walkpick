@@ -52,13 +52,21 @@ fun distanceM(from: TrackPoint, to: TrackPoint): Double {
 }
 
 /** Whether [next] continues the route after [last]; the first point only has to be accurate. */
-fun continuesRoute(last: TrackPoint?, next: TrackPoint): Boolean {
-    if (next.accuracyM > WORST_ACCURACY_M) return false
-    if (last == null) return true
+fun continuesRoute(last: TrackPoint?, next: TrackPoint): Boolean = dropReason(last, next) == null
+
+/** Why [next] does not continue the route after [last], for the log; null when it does. */
+fun dropReason(last: TrackPoint?, next: TrackPoint): String? {
+    if (next.accuracyM > WORST_ACCURACY_M) return "accuracy ${next.accuracyM} m"
+    if (last == null) return null
     val seconds = Duration.between(last.at, next.at).toMillis() / MILLIS_IN_SECOND
-    if (seconds <= 0) return false
+    if (seconds <= 0) return "not later than the last point"
     val metres = distanceM(last, next)
-    return metres >= max(SHORTEST_MOVE_M, next.accuracyM / 2.0) && metres / seconds <= FASTEST_MPS
+    return when {
+        metres < max(SHORTEST_MOVE_M, next.accuracyM / 2.0) ->
+            "moved ${metres.toInt()} m, accuracy ${next.accuracyM} m"
+        metres / seconds > FASTEST_MPS -> "${metres.toInt()} m in $seconds s"
+        else -> null
+    }
 }
 
 fun routeLengthM(points: List<TrackPoint>): Double = points.zipWithNext(::distanceM).sum()

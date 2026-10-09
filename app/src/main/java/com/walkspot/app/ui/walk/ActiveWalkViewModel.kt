@@ -19,6 +19,7 @@ import com.walkspot.app.data.walk.distanceM
 import com.walkspot.app.data.walk.paceSecondsPerKm
 import com.walkspot.app.data.walk.walkCalories
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -28,6 +29,7 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.time.Instant
 import javax.inject.Inject
 
@@ -58,7 +60,7 @@ class ActiveWalkViewModel @Inject constructor(
     private val limits: BatteryLimits,
     health: HealthRepository,
     settings: SettingsStore,
-    profiles: ProfileStore,
+    private val profiles: ProfileStore,
 ) : ViewModel() {
 
     private val clock = flow {
@@ -105,7 +107,13 @@ class ActiveWalkViewModel @Inject constructor(
     fun stop(onDone: (String?) -> Unit) {
         val track = control.stop()
         viewModelScope.launch {
-            onDone(track?.let { walks.save(it, weight.first()) }?.id)
+            val kg = weight.first()
+            val stride = profiles.value.first().let { strideM(it.sex, it.heightCm) }
+            // Leaving the screen meanwhile must not leave the walk half kept.
+            val saved = withContext(NonCancellable) {
+                track?.let { walks.save(it, kg, stride) }.also { control.done() }
+            }
+            onDone(saved?.id)
         }
     }
 }

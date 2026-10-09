@@ -35,21 +35,20 @@ jobs:
             echo "google.webClientId=${{ secrets.GOOGLE_WEB_CLIENT_ID }}"
           } > local.properties
 
-      - name: Unit tests
-        run: ./gradlew testDebugUnitTest --no-daemon
+      # One run configures the project once. The release build is the only one R8 touches:
+      # a missing keep rule shows up here, not in the store.
+      - name: Tests, static analysis, lint, debug and release builds
+        run: ./gradlew testDebugUnitTest detekt lintDebug assembleDebug assembleRelease --no-daemon --continue
 
-      - name: Static analysis
-        run: ./gradlew detekt --no-daemon
+      - name: Set up Deno
+        uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
 
-      - name: Android Lint
-        run: ./gradlew lintDebug --no-daemon
-
-      - name: Debug build
-        run: ./gradlew assembleDebug --no-daemon
-
-      # The only build R8 touches: a missing keep rule shows up here, not in the store.
-      - name: Release build
-        run: ./gradlew assembleRelease --no-daemon
+      - name: Edge functions
+        run: |
+          deno lint supabase/functions
+          deno check supabase/functions/*/index.ts
 
       - name: Reports
         if: always()

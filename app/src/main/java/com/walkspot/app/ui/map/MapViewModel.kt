@@ -3,7 +3,6 @@ package com.walkspot.app.ui.map
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.walkspot.app.data.find.FindStore
-import com.walkspot.app.data.local.FindDao
 import com.walkspot.app.data.local.FindEntity
 import com.walkspot.app.data.local.WalkEntity
 import com.walkspot.app.data.places.Place
@@ -78,7 +77,6 @@ data class MapState(
 @HiltViewModel
 class MapViewModel @Inject constructor(
     walks: WalkRepository,
-    finds: FindDao,
     settings: SettingsStore,
     private val locations: LocationFinder,
     private val places: PlacesRepository,
@@ -90,7 +88,7 @@ class MapViewModel @Inject constructor(
     private var looked: PlaceCell? = null
 
     // The diary of a year is hundreds of routes to redraw: off the main thread.
-    private val diary = combine(walks.watchAll(), finds.watchAll()) { walks, finds ->
+    private val diary = combine(walks.watchAll(), store.watchAll()) { walks, finds ->
         val routes = walks.take(ROUTES_ON_MAP).map { routePlaces(it.route) }.filter { it.size > 1 }
         routes to diaryDays(walks, finds, ZoneId.systemDefault())
     }.flowOn(Dispatchers.Default)
@@ -102,7 +100,7 @@ class MapViewModel @Inject constructor(
         if (find.id in photos) photos[find.id] else store.photo(find).also { photos[find.id] = it }
 
     val state: StateFlow<MapState> =
-        combine(diary, settings.value, chosen, finds.watchAll()) { (routes, days), units, chosen, finds ->
+        combine(diary, settings.value, chosen, store.watchAll()) { (routes, days), units, chosen, finds ->
             chosen.copy(
                 today = LocalDate.now(),
                 loaded = true,
