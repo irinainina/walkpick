@@ -1,6 +1,8 @@
 package com.walkspot.app.debug
 
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
 import com.walkspot.app.data.local.HealthEntryEntity
 import com.walkspot.app.data.local.HealthKind
 import com.walkspot.app.data.local.WalkEntity
@@ -11,6 +13,7 @@ import com.walkspot.app.ui.components.BarKind
 import com.walkspot.app.ui.health.HealthCurrent
 import com.walkspot.app.ui.health.HealthTile
 import com.walkspot.app.ui.map.DiaryWalk
+import com.walkspot.app.ui.screens.TodayActions
 import com.walkspot.app.ui.screens.TodayScreen
 import com.walkspot.app.ui.today.TodayState
 import java.time.LocalDateTime
@@ -93,15 +96,19 @@ fun TodayGallery(access: StepsAccess, walkSeconds: Long? = null) {
             health = if (walkSeconds == null) health else staleHealth,
         ),
         walkSeconds = walkSeconds,
+        walkKept = true,
         weather = WalkWeather(code = 3, celsius = 13.0, windMs = 2.0),
         lastWalk = lastWalk,
-        onAllowSteps = {},
+        actions = TodayActions(
+            onAllowSteps = {},
+            onStats = {},
+            onHealth = {},
+            onAddHealth = {},
+            onWalk = {},
+            onReminders = {},
+        ),
         onStartWalk = {},
         onStopWalk = {},
-        onStats = {},
-        onHealth = {},
-        onAddHealth = {},
-        onWalk = {},
-        onReminders = {},
+        modifier = Modifier.navigationBarsPadding(),
     )
 }

@@ -17,6 +17,7 @@ import androidx.navigation.compose.composable
 import com.walkspot.app.data.local.HealthKind
 import com.walkspot.app.ui.health.HealthViewModel
 import com.walkspot.app.ui.screens.NewEntrySheet
+import com.walkspot.app.ui.screens.TodayActions
 import com.walkspot.app.ui.screens.TodayScreen
 import com.walkspot.app.ui.today.LastWalkViewModel
 import com.walkspot.app.ui.today.TodayViewModel
@@ -52,18 +53,21 @@ internal fun NavGraphBuilder.todayRoute(navController: NavHostController, onShow
         TodayScreen(
             state = shown,
             walkSeconds = walking.seconds.takeIf { walking.recording },
+            walkKept = walking.kept,
             weather = weather,
             lastWalk = lastWalk,
-            onAllowSteps = allowSteps,
+            actions = TodayActions(
+                onAllowSteps = allowSteps,
+                onStats = { navController.navigate(Screen.Stats.route) },
+                onHealth = { navController.navigate(Screen.Health.route) },
+                onAddHealth = { adding = it },
+                onWalk = { navController.navigate(walkSummaryRoute(it)) },
+                onReminders = { navController.navigate(Screen.Settings.route) },
+            ),
             onStartWalk = { navController.navigate(Screen.ActiveWalk.route) },
             onStopWalk = {
                 walk.stop { saved -> saved?.let { navController.navigate(walkSummaryRoute(it)) } }
             },
-            onStats = { navController.navigate(Screen.Stats.route) },
-            onHealth = { navController.navigate(Screen.Health.route) },
-            onAddHealth = { adding = it },
-            onWalk = { navController.navigate(walkSummaryRoute(it)) },
-            onReminders = { navController.navigate(Screen.Settings.route) },
         )
         val entry = adding?.let { kind -> healthState?.copy(tab = kind) }
         if (entry != null) NewEntrySheet(entry, health::add, onDismiss = { adding = null })

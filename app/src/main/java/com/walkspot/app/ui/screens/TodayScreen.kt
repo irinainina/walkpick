@@ -2,7 +2,6 @@ package com.walkspot.app.ui.screens
 
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -25,15 +24,10 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -43,7 +37,6 @@ import com.walkspot.app.data.settings.DistanceUnit
 import com.walkspot.app.data.steps.StepsAccess
 import com.walkspot.app.data.walk.WalkWeather
 import com.walkspot.app.data.walk.sky
-import com.walkspot.app.ui.components.AppButton
 import com.walkspot.app.ui.components.CircleButton
 import com.walkspot.app.ui.components.GradientHeader
 import com.walkspot.app.ui.map.DiaryWalk
@@ -75,33 +68,56 @@ private const val FAHRENHEIT_PER_C = 1.8
 private const val FREEZING_F = 32
 private val Date = DateTimeFormatter.ofPattern("EEEE, MMMM d", Locale.ENGLISH)
 
+/** What the Today tab asks of its owner. */
+class TodayActions(
+    val onAllowSteps: () -> Unit,
+    val onStats: () -> Unit,
+    val onHealth: () -> Unit,
+    val onAddHealth: (HealthKind) -> Unit,
+    val onWalk: (String) -> Unit,
+    val onReminders: () -> Unit,
+)
+
 @Composable
 fun TodayScreen(
     state: TodayState,
     /** The time of the walk being recorded, and then the button leads back to it; null without one. */
     walkSeconds: Long?,
+    /** Whether stopping that walk now would keep it. */
+    walkKept: Boolean,
     /** The weather outside; null until it is known. */
     weather: WalkWeather?,
     /** The latest walk; null before the first one. */
     lastWalk: DiaryWalk?,
-    onAllowSteps: () -> Unit,
+    actions: TodayActions,
     onStartWalk: () -> Unit,
     onStopWalk: () -> Unit,
-    onStats: () -> Unit,
-    onHealth: () -> Unit,
-    onAddHealth: (HealthKind) -> Unit,
-    onWalk: (String) -> Unit,
-    onReminders: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val statusBar = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
-    Box(
+    Column(
         modifier
             .fillMaxSize()
-            .background(AppTheme.colors.canvas)
-            .verticalScroll(rememberScrollState()),
+            .background(AppTheme.colors.canvas),
     ) {
-        Header(statusBar, state, weather, onReminders)
+        Box(Modifier.weight(1f)) {
+            Cards(statusBar, state, weather, lastWalk, actions)
+            StartBarFade(Modifier.align(Alignment.BottomCenter))
+        }
+        StartBar(walkSeconds, walkKept, onStartWalk, onStopWalk)
+    }
+}
+
+@Composable
+private fun Cards(
+    statusBar: Dp,
+    state: TodayState,
+    weather: WalkWeather?,
+    lastWalk: DiaryWalk?,
+    actions: TodayActions,
+) {
+    Box(Modifier.verticalScroll(rememberScrollState())) {
+        Header(statusBar, state, weather, actions.onReminders)
         Column(
             Modifier.padding(
                 start = Spacing.ml,
@@ -111,57 +127,26 @@ fun TodayScreen(
             ),
         ) {
             if (state.access != StepsAccess.COUNTING) {
-                NoStepsCard(sensor = state.access != StepsAccess.NO_SENSOR, onAllow = onAllowSteps)
+                NoStepsCard(sensor = state.access != StepsAccess.NO_SENSOR, onAllow = actions.onAllowSteps)
+                Spacer(Modifier.height(Spacing.ml))
+            } else if (state.newcomer) {
+                FirstWalkCard()
                 Spacer(Modifier.height(Spacing.ml))
             }
             StepsCard(state)
             Spacer(Modifier.height(Spacing.ml))
             StreakCard(state.streak)
             Spacer(Modifier.height(Spacing.ml))
-            WalkButton(walkSeconds, onStartWalk, onStopWalk)
-            Spacer(Modifier.height(Spacing.l))
-            WeekCard(state.week, onStats)
+            WeekCard(state.week, actions.onStats)
             Spacer(Modifier.height(Spacing.l))
             if (lastWalk != null) {
                 val today = state.now.toLocalDate()
-                LastWalkCard(lastWalk, today, state.distanceUnit) { onWalk(lastWalk.walk.id) }
+                LastWalkCard(lastWalk, today, state.distanceUnit) { actions.onWalk(lastWalk.walk.id) }
                 Spacer(Modifier.height(Spacing.l))
             }
-            HealthCard(state.health, state.units, state.now.toLocalDate(), onHealth, onAddHealth)
+            val today = state.now.toLocalDate()
+            HealthCard(state.health, state.units, today, actions.onHealth, actions.onAddHealth)
         }
-    }
-}
-
-/** Start walk; during a walk - the way back to it with its time, and a quiet Stop walk below. */
-@Composable
-private fun WalkButton(walkSeconds: Long?, onStartWalk: () -> Unit, onStopWalk: () -> Unit) {
-    var stopping by remember { mutableStateOf(false) }
-    val text = when (walkSeconds) {
-        null -> stringResource(R.string.today_start_walk)
-        else -> stringResource(R.string.today_back_to_walk, clockText(walkSeconds))
-    }
-    AppButton(text, onClick = onStartWalk, iconRes = R.drawable.ic_play)
-    if (walkSeconds != null) {
-        Text(
-            text = stringResource(R.string.today_stop_walk),
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = Spacing.xs)
-                .clickable { stopping = true }
-                .padding(vertical = Spacing.s),
-            style = MaterialTheme.typography.labelLarge,
-            color = AppTheme.colors.streak,
-            textAlign = TextAlign.Center,
-        )
-    }
-    if (stopping) {
-        FinishWalkSheet(
-            onFinish = {
-                stopping = false
-                onStopWalk()
-            },
-            onDismiss = { stopping = false },
-        )
     }
 }
 

@@ -40,7 +40,7 @@
     <string name="today_evening">Good evening</string>
     <string name="today_greeting_name">%1$s, %2$s</string>
     <string name="today_reminders">Reminders</string>
-    <string name="today_steps">of %1$s steps</string>
+    <string name="today_steps">of %1$s steps\non walks</string>
     <string name="today_photos">photos</string>
     <string name="today_min">%1$d min</string>
     <string name="today_distance">Distance</string>
@@ -55,6 +55,8 @@
     <string name="today_no_permission">Allow access to physical activity</string>
     <string name="today_no_sensor">This phone has no step sensor</string>
     <string name="today_allow">Allow</string>
+    <string name="today_first_title">Steps are counted on walks</string>
+    <string name="today_first_text">Press Start walk and snap what you notice on the way</string>
     <string name="stats_title">Steps</string>
     <string name="stats_week">Week</string>
     <string name="stats_month">Month</string>
@@ -134,6 +136,7 @@
     <string name="walk_stop">Stop</string>
     <string name="walk_finish_title">Finish this walk?</string>
     <string name="walk_finish_text">It will be saved to your diary.</string>
+    <string name="walk_finish_unkept">You haven\'t gone anywhere yet, so this walk and its photos won\'t be saved.</string>
     <string name="walk_finish">Finish walk</string>
     <string name="walk_keep_walking">Keep walking</string>
     <string name="walk_battery_title">Count every step</string>
@@ -147,6 +150,9 @@
     <string name="find_plant">Plant</string>
     <string name="find_bird">Bird</string>
     <string name="find_place">Place</string>
+    <string name="find_possibly">Possibly %1$s</string>
+    <string name="find_photo">Photo</string>
+    <string name="find_identify">Identify it</string>
     <string name="find_unknown">Unknown</string>
     <string name="find_unknown_title">Unknown find</string>
     <string name="find_unknown_text">We couldn\'t identify this one</string>
@@ -200,6 +206,8 @@
     <string name="camera_flash">Flash</string>
     <string name="camera_flip">Switch camera</string>
     <string name="camera_shutter">Take a photo</string>
+    <string name="camera_zoom">Zoom, now %1$s</string>
+    <string name="camera_zoom_times">%1$dx</string>
     <string name="camera_hint">Point at a view or its details</string>
     <string name="camera_no_place">No location yet. Try again in a moment</string>
     <string name="camera_identifying">Identifying…</string>

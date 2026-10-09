@@ -1,5 +1,6 @@
 package com.walkspot.app.ui.screens
 
+import androidx.annotation.StringRes
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -140,7 +141,13 @@ private fun Option(option: FindAlternative, picked: Boolean, onPick: () -> Unit)
  * the way to ask them again.
  */
 @Composable
-internal fun UnnamedControls(unknown: Boolean, onName: (String) -> Unit, onRetry: () -> Unit) {
+internal fun UnnamedControls(
+    unknown: Boolean,
+    onName: (String) -> Unit,
+    onRetry: () -> Unit,
+    /** What the link to the services says: nothing was tried yet on a plain photo. */
+    @StringRes retry: Int = R.string.find_try_again,
+) {
     val colors = AppTheme.colors
     var typed by rememberSaveable { mutableStateOf("") }
     Spacer(Modifier.height(Spacing.m))
@@ -161,7 +168,7 @@ internal fun UnnamedControls(unknown: Boolean, onName: (String) -> Unit, onRetry
         Icon(painterResource(R.drawable.ic_retry), null, Modifier.size(Sizes.iconSmall), colors.accent)
         Spacer(Modifier.width(Spacing.s))
         Text(
-            text = stringResource(R.string.find_try_again),
+            text = stringResource(retry),
             style = MaterialTheme.typography.labelLarge,
             color = colors.accent,
         )

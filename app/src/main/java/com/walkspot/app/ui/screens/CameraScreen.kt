@@ -54,13 +54,15 @@ import com.walkspot.app.ui.theme.Spacing
 private val HintEdge = 40.dp
 private val HintHeight = 36.dp
 private val FocusSize = 196.dp
-private val PickerWidth = 224.dp
+private val PickerWidth = 296.dp
 
-// What a photo can be told to show; the rest is found out by the service of that kind.
+// What a photo can be told to show; the rest is found out by the service of that kind. A photo taken
+// for its own sake - a sunset, a mushroom, a door - is asked about nowhere.
 private val Kinds = listOf(
     FindKind.PLANT to R.string.find_plant,
     FindKind.BIRD to R.string.find_bird,
     FindKind.PLACE to R.string.find_place,
+    FindKind.PHOTO to R.string.find_photo,
 )
 private val FocusArm = 32.dp
 private val FocusLine = 3.dp
@@ -86,6 +88,7 @@ fun CameraScreen(
     onClose: () -> Unit,
     onKind: (FindKind) -> Unit,
     onFlash: () -> Unit,
+    onZoom: () -> Unit,
     onFlip: () -> Unit,
     onShutter: () -> Unit,
     modifier: Modifier = Modifier,
@@ -134,7 +137,7 @@ fun CameraScreen(
                     FocusFrame()
                     KindPicker(state.kind, onKind, Modifier.align(Alignment.BottomCenter))
                 }
-                BottomBar(onShutter, onFlip)
+                BottomBar(state.zoom, onZoom, onShutter, onFlip)
             }
         }
     }
@@ -196,7 +199,7 @@ private fun FocusFrame() {
 }
 
 @Composable
-private fun BottomBar(onShutter: () -> Unit, onFlip: () -> Unit) {
+private fun BottomBar(zoom: Int, onZoom: () -> Unit, onShutter: () -> Unit, onFlip: () -> Unit) {
     val colors = AppTheme.colors
     Box(
         modifier = Modifier
@@ -206,6 +209,19 @@ private fun BottomBar(onShutter: () -> Unit, onFlip: () -> Unit) {
             .padding(top = BarTop, bottom = BarBottom),
         contentAlignment = Alignment.Center,
     ) {
+        val times = stringResource(R.string.camera_zoom_times, zoom)
+        Box(
+            modifier = Modifier
+                .align(Alignment.CenterStart)
+                .padding(start = FlipEdge)
+                .size(FlipSize)
+                .background(colors.photoButton, CircleShape)
+                .clip(CircleShape)
+                .clickable(onClickLabel = stringResource(R.string.camera_zoom, times), onClick = onZoom),
+            contentAlignment = Alignment.Center,
+        ) {
+            Text(times, style = MaterialTheme.typography.labelMedium, color = colors.onAccent)
+        }
         Box(
             modifier = Modifier
                 .size(Shutter)

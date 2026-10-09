@@ -67,6 +67,9 @@ private const val PERCENT = 100
 private val Taken = DateTimeFormatter.ofPattern("EEE, MMM d · HH:mm", Locale.ENGLISH)
 
 /** Everything under the photo of a find. */
+// The kinds no service was asked about: such a find is named by hand or given a kind to ask.
+internal val Unasked = setOf(FindKind.PHOTO, FindKind.UNKNOWN)
+
 @Composable
 internal fun FindCardBody(
     state: FindCardState,
@@ -83,8 +86,9 @@ internal fun FindCardBody(
         KindChip(find.kind)
         Spacer(Modifier.height(Spacing.sm))
         val (name, under) = when {
-            find.name != null -> find.name to find.latinName
+            find.name != null -> findTitle(find) to find.latinName
             state.identifying -> stringResource(R.string.camera_identifying) to null
+            find.kind == FindKind.PHOTO -> stringResource(R.string.find_photo) to null
             find.kind == FindKind.UNKNOWN -> {
                 stringResource(R.string.find_unknown_title) to stringResource(R.string.find_unknown_text)
             }
@@ -95,7 +99,8 @@ internal fun FindCardBody(
         if (find.name != null) {
             Match(find.match, onNotThis)
         } else if (!state.identifying) {
-            UnnamedControls(unknown = find.kind == FindKind.UNKNOWN, onName, onRetry)
+            val retry = if (find.kind == FindKind.PHOTO) R.string.find_identify else R.string.find_try_again
+            UnnamedControls(unknown = find.kind in Unasked, onName, onRetry, retry)
         }
         if (!find.description.isNullOrBlank()) {
             Spacer(Modifier.height(Spacing.ml))

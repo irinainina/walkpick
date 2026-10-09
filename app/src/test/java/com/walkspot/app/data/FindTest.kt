@@ -61,15 +61,11 @@ class FindTest {
     }
 
     @Test
-    fun aWalkThatNeverLeftItsSpotIsKeptForItsPhotos() {
+    fun photosAloneDoNotMakeAWalk() {
         val standing = WalkTrack(noon).with(here)
         val find = newFind("find-1", "user-1", standing.id, here, noon, FindKind.PLANT)
 
-        val kept = walkEntity(standing.copy(finds = listOf(find)), 1, noon.plusSeconds(120), null, 0.7)
-
-        assertEquals(standing.id, kept?.id)
-        assertNull(kept?.route)
-        assertEquals(0, kept?.distanceM)
+        assertNull(walkEntity(standing.copy(finds = listOf(find)), 1, noon.plusSeconds(120), null, 0.7))
     }
 
     @Test

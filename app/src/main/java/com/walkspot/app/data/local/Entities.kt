@@ -56,6 +56,10 @@ enum class FindKind {
     @SerialName("place")
     PLACE,
 
+    /** Taken for its own sake: nobody is asked what is on it. */
+    @SerialName("photo")
+    PHOTO,
+
     @SerialName("unknown")
     UNKNOWN,
 }

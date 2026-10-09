@@ -90,7 +90,7 @@ class FindIdentifier @Inject constructor(
 
     /** [find] with whatever could be found out now; the same find when nothing could, as offline. */
     suspend fun identified(find: FindEntity): FindEntity = try {
-        val named = if (find.name == null && find.kind != FindKind.UNKNOWN) named(find) ?: find else find
+        val named = if (find.name == null) named(find) ?: find else find
         if (named.name == null || named.description != null) {
             named
         } else {
@@ -110,7 +110,7 @@ class FindIdentifier @Inject constructor(
             val near = wikipedia.near(find.latitude, find.longitude, PLACE_RADIUS_M, PLACES)
             find.placed(parsePlaces(near), Instant.now())
         }
-        FindKind.UNKNOWN -> null
+        FindKind.PHOTO, FindKind.UNKNOWN -> null
     }
 
     override suspend fun push(remote: RemoteTables) {

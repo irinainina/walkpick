@@ -143,15 +143,15 @@ fun ActiveWalkScreen(
             ActiveWalkPanel(state, onPause, onCamera, onStop = { stopping = true })
         }
     }
-    if (stopping) FinishWalkSheet(onFinish = onStop, onDismiss = { stopping = false })
+    if (stopping) FinishWalkSheet(state.kept, onFinish = onStop, onDismiss = { stopping = false })
 }
 
 @Composable
-internal fun FinishWalkSheet(onFinish: () -> Unit, onDismiss: () -> Unit) {
+internal fun FinishWalkSheet(kept: Boolean, onFinish: () -> Unit, onDismiss: () -> Unit) {
     AppSheet(stringResource(R.string.walk_finish_title), onDismiss) {
         Spacer(Modifier.height(Spacing.s))
         Text(
-            text = stringResource(R.string.walk_finish_text),
+            text = stringResource(if (kept) R.string.walk_finish_text else R.string.walk_finish_unkept),
             style = MaterialTheme.typography.bodyLarge,
             color = AppTheme.colors.textSecondary,
         )

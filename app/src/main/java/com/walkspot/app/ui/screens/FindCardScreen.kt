@@ -99,7 +99,7 @@ fun FindCardScreen(
             onNotThis = { renaming = true },
             onName = onRename,
             // An unknown find has lost its kind: the walker says again what it is.
-            onRetry = { if (state.find.kind == FindKind.UNKNOWN) asking = true else onRetry(null) },
+            onRetry = { if (state.find.kind in Unasked) asking = true else onRetry(null) },
             modifier = Modifier
                 .padding(top = PhotoHeight - SheetOverlap)
                 .fillMaxWidth()

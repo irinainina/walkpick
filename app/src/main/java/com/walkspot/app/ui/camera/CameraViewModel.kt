@@ -12,10 +12,14 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
+private const val MAX_ZOOM = 4
+
 data class CameraState(
     /** What the next photo will show: it decides which service is asked for the name. */
     val kind: FindKind = FindKind.PLANT,
     val flash: Boolean = false,
+    /** How many times closer than the lens sees: a bird across the road is a dot without it. */
+    val zoom: Int = 1,
     /** A photo was taken and is being kept and looked up. */
     val identifying: Boolean = false,
     /** The last photo was not kept: the phone could not tell where it is. */
@@ -34,6 +38,9 @@ class CameraViewModel @Inject constructor(private val finds: FindRepository) : V
     fun choose(kind: FindKind) = current.update { it.copy(kind = kind) }
 
     fun toggleFlash() = current.update { it.copy(flash = !it.flash) }
+
+    /** One, two and four times, round and round. */
+    fun nextZoom() = current.update { it.copy(zoom = if (it.zoom >= MAX_ZOOM) 1 else it.zoom * 2) }
 
     /** Keeps the photo the camera gave [turned] degrees off. */
     fun keep(photo: Bitmap, turned: Int) {

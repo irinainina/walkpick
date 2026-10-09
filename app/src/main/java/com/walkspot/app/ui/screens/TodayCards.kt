@@ -21,6 +21,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.walkspot.app.R
 import com.walkspot.app.ui.components.AppCard
@@ -56,11 +57,7 @@ internal fun StepsCard(state: TodayState) {
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             ProgressRing(state.steps.toFloat() / state.dailySteps, Modifier.size(RingSize)) {
-                // The design stands the two lines 2 above the centre of the ring.
-                Column(
-                    modifier = Modifier.padding(bottom = Spacing.xs),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                ) {
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Text(
                         text = grouped(state.steps),
                         style = MaterialTheme.typography.displayMedium,
@@ -71,6 +68,7 @@ internal fun StepsCard(state: TodayState) {
                         text = stringResource(R.string.today_steps, grouped(state.dailySteps)),
                         style = MaterialTheme.typography.bodyMedium,
                         color = colors.textSecondary,
+                        textAlign = TextAlign.Center,
                     )
                 }
             }
@@ -141,6 +139,23 @@ internal fun StreakCard(streak: Int) {
 /** Why the ring stands at zero; [sensor] is false on a phone that cannot count steps at all. */
 @Composable
 internal fun NoStepsCard(sensor: Boolean, onAllow: () -> Unit) {
+    val reason = if (sensor) R.string.today_no_permission else R.string.today_no_sensor
+    NoticeCard(
+        title = stringResource(R.string.today_no_steps),
+        text = stringResource(reason),
+        action = stringResource(R.string.today_allow).takeIf { sensor },
+        onAction = onAllow,
+    )
+}
+
+/** Shown until the first walk: what the ring counts and what the app is for. */
+@Composable
+internal fun FirstWalkCard() {
+    NoticeCard(stringResource(R.string.today_first_title), stringResource(R.string.today_first_text))
+}
+
+@Composable
+private fun NoticeCard(title: String, text: String, action: String? = null, onAction: () -> Unit = {}) {
     val colors = AppTheme.colors
     AppCard {
         Row(
@@ -149,23 +164,14 @@ internal fun NoStepsCard(sensor: Boolean, onAllow: () -> Unit) {
         ) {
             Box(Modifier.padding(top = NoticeTextGap)) { Badge(R.drawable.ic_alert) }
             Column {
-                Text(
-                    text = stringResource(R.string.today_no_steps),
-                    style = MaterialTheme.typography.labelLarge,
-                    color = colors.textPrimary,
-                )
+                Text(title, style = MaterialTheme.typography.labelLarge, color = colors.textPrimary)
                 Spacer(Modifier.height(NoticeTextGap))
-                val reason = if (sensor) R.string.today_no_permission else R.string.today_no_sensor
-                Text(
-                    text = stringResource(reason),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = colors.textSecondary,
-                )
-                if (sensor) {
+                Text(text, style = MaterialTheme.typography.bodySmall, color = colors.textSecondary)
+                if (action != null) {
                     Spacer(Modifier.height(Spacing.ml))
                     Text(
-                        text = stringResource(R.string.today_allow),
-                        modifier = Modifier.clickable(role = Role.Button, onClick = onAllow),
+                        text = action,
+                        modifier = Modifier.clickable(role = Role.Button, onClick = onAction),
                         style = MaterialTheme.typography.labelLarge,
                         color = colors.accent,
                     )

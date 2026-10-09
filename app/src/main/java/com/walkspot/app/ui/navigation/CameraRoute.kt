@@ -51,6 +51,11 @@ internal fun NavGraphBuilder.cameraRoute(navController: NavHostController) {
             camera.imageCaptureFlashMode =
                 if (state.flash) ImageCapture.FLASH_MODE_ON else ImageCapture.FLASH_MODE_OFF
         }
+        // A lens that cannot come as close as asked comes as close as it can.
+        LaunchedEffect(state.zoom) {
+            val closest = camera.zoomState.value?.maxZoomRatio ?: return@LaunchedEffect
+            camera.setZoomRatio(state.zoom.toFloat().coerceAtMost(closest))
+        }
         // The card of the new find opens over the camera: back leads to the next shot.
         LaunchedEffect(state.found) {
             state.found?.let {
@@ -69,6 +74,7 @@ internal fun NavGraphBuilder.cameraRoute(navController: NavHostController) {
             onClose = { navController.popBackStack() },
             onKind = model::choose,
             onFlash = model::toggleFlash,
+            onZoom = model::nextZoom,
             onFlip = {
                 val back = camera.cameraSelector == CameraSelector.DEFAULT_BACK_CAMERA
                 camera.cameraSelector =

@@ -26,6 +26,7 @@ fun FindKind.look(): KindLook {
         FindKind.PLANT -> KindLook(R.drawable.ic_leaf, R.string.find_plant, green, colors.positiveTint)
         FindKind.BIRD -> KindLook(R.drawable.ic_bird, R.string.find_bird, colors.streak, colors.streakTint)
         FindKind.PLACE -> KindLook(R.drawable.ic_globe, R.string.find_place, colors.accent, pale)
+        FindKind.PHOTO -> KindLook(R.drawable.ic_camera, R.string.find_photo, colors.textSecondary, pale)
         FindKind.UNKNOWN -> KindLook(R.drawable.ic_question, R.string.find_unknown, colors.textInactive, pale)
     }
 }

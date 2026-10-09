@@ -58,6 +58,8 @@ data class TodayState(
     val distanceUnit: DistanceUnit = DistanceUnit.KM,
     val activeMinutes: Int = 0,
     val streak: Int = 0,
+    /** Nobody has walked with the app yet: Today says what it is for. */
+    val newcomer: Boolean = false,
     val week: List<Bar> = emptyList(),
     /** The tabs of Health turned on in Profile. */
     val health: List<HealthTile> = emptyList(),
@@ -153,6 +155,7 @@ internal fun todayState(
         distanceM = row?.distanceM ?: 0,
         activeMinutes = row?.activeMinutes ?: 0,
         streak = currentStreak(walkDays, today),
+        newcomer = walkDays.isEmpty(),
         week = DayOfWeek.entries.map { weekday ->
             val day = monday.plusDays(weekday.ordinal.toLong())
             val steps = byDay[day]

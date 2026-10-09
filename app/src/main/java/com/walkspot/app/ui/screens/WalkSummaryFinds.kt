@@ -119,10 +119,16 @@ private fun Modifier.bleed(side: Dp) = layout { measurable, constraints ->
     layout(constraints.maxWidth, strip.height) { strip.place(-side.roundToPx(), 0) }
 }
 
+// A service less sure than this has only made a guess, and the name says so.
+private const val SURE_FROM = 0.5
+
 /** What a find is called where there is one line for it. */
 @Composable
 internal fun findTitle(find: FindEntity): String = when {
+    find.name != null && find.match != null && find.match < SURE_FROM ->
+        stringResource(R.string.find_possibly, find.name)
     find.name != null -> find.name
+    find.kind == FindKind.PHOTO -> stringResource(R.string.find_photo)
     find.kind == FindKind.UNKNOWN -> stringResource(R.string.find_unknown_title)
     else -> stringResource(R.string.find_waiting_title)
 }

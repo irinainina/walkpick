@@ -1,6 +1,8 @@
 package com.walkspot.app.debug
 
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
 import com.walkspot.app.data.local.HealthKind
 import com.walkspot.app.data.steps.PeriodStats
 import com.walkspot.app.data.steps.monthOf
@@ -19,6 +21,7 @@ import com.walkspot.app.ui.screens.MapActions
 import com.walkspot.app.ui.screens.MapScreen
 import com.walkspot.app.ui.screens.ProfileScreen
 import com.walkspot.app.ui.screens.StatsScreen
+import com.walkspot.app.ui.screens.TodayActions
 import com.walkspot.app.ui.screens.TodayScreen
 import com.walkspot.app.ui.stats.CalendarDay
 import com.walkspot.app.ui.stats.StatsState
@@ -52,20 +55,25 @@ fun NewUserGallery(page: String) {
             state = TodayState(
                 now = LocalDateTime.of(2026, 9, 30, 9, 41),
                 name = "Ira",
+                newcomer = true,
                 week = week,
                 health = listOf(HealthTile(HealthKind.MOOD, null), HealthTile(HealthKind.WEIGHT, null)),
             ),
             walkSeconds = null,
+            walkKept = false,
             weather = null,
             lastWalk = null,
-            onAllowSteps = {},
+            actions = TodayActions(
+                onAllowSteps = {},
+                onStats = {},
+                onHealth = {},
+                onAddHealth = {},
+                onWalk = {},
+                onReminders = {},
+            ),
             onStartWalk = {},
             onStopWalk = {},
-            onStats = {},
-            onHealth = {},
-            onAddHealth = {},
-            onWalk = {},
-            onReminders = {},
+            modifier = Modifier.navigationBarsPadding(),
         )
         "stats-new", "stats-month-new" -> {
             val september = YearMonth.of(2026, 9)

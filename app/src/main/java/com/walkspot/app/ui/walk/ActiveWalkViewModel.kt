@@ -47,6 +47,8 @@ data class ActiveWalkState(
     val paceSecondsPerKm: Int? = null,
     val calories: Int = 0,
     val route: List<TrackPoint> = emptyList(),
+    /** Whether Stop keeps the walk: one that has gone nowhere yet is dropped with its photos. */
+    val kept: Boolean = false,
     /** Straight back to the first point; null until the walk has left it. */
     val toStartM: Double? = null,
     val distanceUnit: DistanceUnit = DistanceUnit.KM,
@@ -136,6 +138,7 @@ internal fun activeWalkState(
         paceSecondsPerKm = paceSecondsPerKm(track.metres, seconds),
         calories = walkCalories(track.metres, seconds, weightKg),
         route = points,
+        kept = points.size > 1,
         toStartM = if (points.size > 1) distanceM(points.last(), points.first()) else null,
     )
 }

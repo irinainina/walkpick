@@ -18,8 +18,8 @@ import kotlin.math.roundToInt
 private const val WALKS_TABLE = "walks"
 
 /**
- * The finished walk as the diary keeps it, or null when it never left its spot and no photo was taken:
- * a walk with nothing to show is a slip of the finger, not an entry.
+ * The finished walk as the diary keeps it, or null when it never left its spot: a walk is a way
+ * walked, and photos alone do not make one.
  */
 fun walkEntity(
     track: WalkTrack,
@@ -28,8 +28,7 @@ fun walkEntity(
     weightKg: Double?,
     strideM: Double,
 ): WalkEntity? {
-    val route = routeText(track.points)
-    if (route == null && track.finds.isEmpty()) return null
+    val route = routeText(track.points) ?: return null
     val seconds = track.movingSeconds(endedAt).coerceAtLeast(0)
     return WalkEntity(
         id = track.id,
@@ -103,7 +102,16 @@ class WalkRepository @Inject constructor(
 
     /** Keeps the walk under the next number and sends it to the server; null when [walkEntity] refused it. */
     suspend fun save(track: WalkTrack, weightKg: Double?, strideM: Double): WalkEntity? {
-        val kept = walkEntity(track, walks.lastNumber() + 1, Instant.now(), weightKg, strideM) ?: return null
+        val kept = walkEntity(track, walks.lastNumber() + 1, Instant.now(), weightKg, strideM)
+        if (kept == null) {
+            // The photos of a walk that is not kept go with it; some are on the server already.
+            track.finds.forEach {
+                photos.delete(it.photoPath)
+                deletes.add(PendingDeleteEntity(PHOTO_BUCKET, it.photoPath))
+            }
+            if (track.finds.isNotEmpty()) sync.pushSoon()
+            return null
+        }
         val walk = kept.copy(name = namer.name(track))
         // All of it or none: a walk without its finds or outside its day cannot be told from a whole one.
         database.withTransaction {
