@@ -3,10 +3,14 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <application>
-        <!-- Exported so that adb can open it for the comparison with Figma; debug builds only. -->
+        <!-- Exported so that adb can open it for the comparison with Figma; debug builds only.
+             A task of its own, kept out of the recents: the icon of the app must never bring back a
+             sample page whose buttons do nothing. -->
         <activity
             android:name=".debug.GalleryActivity"
+            android:excludeFromRecents="true"
             android:exported="true"
+            android:taskAffinity="com.walkspot.app.debug"
             tools:ignore="ExportedActivity" />
 
         <!-- Exported so that adb can run the sync without a screen; debug builds only. -->
