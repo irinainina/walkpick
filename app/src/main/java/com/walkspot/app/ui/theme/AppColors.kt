@@ -83,7 +83,7 @@ internal val walkSpotColors = AppColors(
     accentLight = Cyan,
     onAccent = White,
     onAccentOverlay = White.copy(alpha = 0.2f),
-    accentGradient = Brush.horizontalGradient(listOf(Blue, Cyan)),
+    accentGradient = Brush.horizontalGradient(listOf(Blue, Azure)),
     accentDiagonal = DiagonalGradient(listOf(Blue, Cyan)),
     canvas = Canvas,
     mapGround = Fog,

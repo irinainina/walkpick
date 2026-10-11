@@ -5,12 +5,18 @@ import androidx.compose.ui.graphics.Color
 // Which colours exist; AppColors says what each one is for.
 internal val Blue = Color(0xFF0470DC)
 internal val Cyan = Color(0xFF13F1FC)
+
+// Where a gradient carries white text it ends here: on Cyan the text is 1.4:1 and cannot be read.
+internal val Azure = Color(0xFF1297DB)
 internal val LightBlue = Color(0xFF70DDFF)
 internal val Sky = Color(0xFFB7E6FF)
 internal val Ink = Color(0xFF3F3D56)
 internal val Black = Color(0xFF000000)
 internal val Night = Color(0xFF111418)
-internal val Grey = Color(0xFFA5ADB1)
+
+// 5.6:1 on white and 5.0:1 on the pale tiles: small grey text must still be text.
+internal val Grey = Color(0xFF5E6A71)
+
 internal val SteelBlue = Color(0xFF4F79A4)
 internal val White = Color(0xFFFFFFFF)
 internal val Canvas = Color(0xFFF7FAFD)
