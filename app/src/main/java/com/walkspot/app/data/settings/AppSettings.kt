@@ -28,6 +28,8 @@ data class AppSettings(
     val distance: DistanceUnit = DistanceUnit.KM,
     val weight: WeightUnit = WeightUnit.KG,
     val glucose: GlucoseUnit = GlucoseUnit.MMOL,
+    /** A walk asks how the walker feels when it begins and when it ends. Kept on this phone only. */
+    val walkMood: Boolean = true,
 ) {
     /** The last day left on stays on. */
     fun withDay(day: DayOfWeek, on: Boolean): AppSettings {

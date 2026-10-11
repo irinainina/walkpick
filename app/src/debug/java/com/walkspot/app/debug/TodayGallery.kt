@@ -16,6 +16,7 @@ import com.walkspot.app.ui.map.DiaryWalk
 import com.walkspot.app.ui.screens.TodayActions
 import com.walkspot.app.ui.screens.TodayScreen
 import com.walkspot.app.ui.today.TodayState
+import com.walkspot.app.ui.walk.WalkEnding
 import java.time.LocalDateTime
 import java.time.ZoneId
 import java.time.temporal.ChronoUnit
@@ -96,7 +97,7 @@ fun TodayGallery(access: StepsAccess, walkSeconds: Long? = null) {
             health = if (walkSeconds == null) health else staleHealth,
         ),
         walkSeconds = walkSeconds,
-        walkKept = true,
+        walkEnding = WalkEnding.KeptWithMood,
         weather = WalkWeather(code = 3, celsius = 13.0, windMs = 2.0),
         lastWalk = lastWalk,
         actions = TodayActions(

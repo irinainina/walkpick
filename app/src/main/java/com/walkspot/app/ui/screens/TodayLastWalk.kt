@@ -22,6 +22,7 @@ import com.walkspot.app.data.walk.title
 import com.walkspot.app.ui.components.AppCard
 import com.walkspot.app.ui.components.RouteSketch
 import com.walkspot.app.ui.components.RowChevron
+import com.walkspot.app.ui.components.look
 import com.walkspot.app.ui.distanceText
 import com.walkspot.app.ui.grouped
 import com.walkspot.app.ui.map.DiaryWalk
@@ -81,7 +82,7 @@ internal fun LastWalkCard(item: DiaryWalk, today: LocalDate, unit: DistanceUnit,
             }
             Spacer(Modifier.height(Spacing.s))
             val route = Modifier.fillMaxWidth().padding(end = Spacing.xs).height(RouteHeight)
-            RouteSketch(item.sketch, route, RouteLine, RouteStart)
+            RouteSketch(item.sketch, route, RouteLine, RouteStart, walk.look())
             Spacer(Modifier.height(Spacing.sm))
             Row {
                 val minutes = (walk.durationS / SECONDS_IN_MINUTE).roundToInt()

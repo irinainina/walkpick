@@ -3,6 +3,8 @@ package com.walkspot.app.data.walk
 import androidx.room.withTransaction
 import com.walkspot.app.data.find.PhotoStore
 import com.walkspot.app.data.local.FindEntity
+import com.walkspot.app.data.local.HealthEntryEntity
+import com.walkspot.app.data.local.HealthKind
 import com.walkspot.app.data.local.PendingDeleteEntity
 import com.walkspot.app.data.local.WalkEntity
 import com.walkspot.app.data.local.WalkSpotDatabase
@@ -12,6 +14,7 @@ import com.walkspot.app.data.sync.SyncScheduler
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import java.time.Instant
+import java.util.UUID
 import javax.inject.Inject
 import kotlin.math.roundToInt
 
@@ -40,9 +43,19 @@ fun walkEntity(
         distanceM = track.metres.roundToInt(),
         calories = walkCalories(track.metres, seconds, weightKg),
         route = route,
+        breaks = breaksText(track.legs),
+        moodBefore = track.moodBefore,
+        moodAfter = track.moodAfter,
         updatedAt = endedAt,
     )
 }
+
+/** The moods said at the two ends of [walk] as entries of Health, at the times they were said. */
+internal fun moodEntries(walk: WalkEntity): List<HealthEntryEntity> =
+    listOf(walk.moodBefore to walk.startedAt, walk.moodAfter to walk.endedAt).mapNotNull { (mood, at) ->
+        val id = UUID.randomUUID().toString()
+        mood?.let { HealthEntryEntity(id, HealthKind.MOOD, at, it.toDouble(), null) }
+    }
 
 class WalkRepository @Inject constructor(
     private val database: WalkSpotDatabase,
@@ -118,6 +131,8 @@ class WalkRepository @Inject constructor(
             walks.save(listOf(walk))
             finds.save(track.finds)
             steps.recount(walk)
+            // The moods of a walk are entries of Health like any other: its chart shows them too.
+            database.healthEntries().save(moodEntries(walk))
         }
         sync.pushSoon()
         return walk

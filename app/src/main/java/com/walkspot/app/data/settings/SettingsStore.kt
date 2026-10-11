@@ -36,6 +36,7 @@ class SettingsStore @Inject constructor(
             distance = saved[DISTANCE]?.let(DistanceUnit::valueOf) ?: defaults.distance,
             weight = saved[WEIGHT]?.let(WeightUnit::valueOf) ?: defaults.weight,
             glucose = saved[GLUCOSE]?.let(GlucoseUnit::valueOf) ?: defaults.glucose,
+            walkMood = saved[WALK_MOOD] ?: defaults.walkMood,
         )
     }
 
@@ -46,6 +47,7 @@ class SettingsStore @Inject constructor(
         saved[DISTANCE] = value.distance.name
         saved[WEIGHT] = value.weight.name
         saved[GLUCOSE] = value.glucose.name
+        saved[WALK_MOOD] = value.walkMood
     }
 
     private companion object {
@@ -55,6 +57,7 @@ class SettingsStore @Inject constructor(
         val DISTANCE = stringPreferencesKey("settings_distance_unit")
         val WEIGHT = stringPreferencesKey("settings_weight_unit")
         val GLUCOSE = stringPreferencesKey("settings_glucose_unit")
+        val WALK_MOOD = booleanPreferencesKey("settings_walk_mood")
     }
 }
 

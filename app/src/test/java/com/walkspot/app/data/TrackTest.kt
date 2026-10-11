@@ -1,13 +1,16 @@
 package com.walkspot.app.data
 
 import com.walkspot.app.data.walk.TrackPoint
+import com.walkspot.app.data.walk.breaksText
 import com.walkspot.app.data.walk.continuesRoute
 import com.walkspot.app.data.walk.distanceM
 import com.walkspot.app.data.walk.paceSecondsPerKm
+import com.walkspot.app.data.walk.routeBreaks
 import com.walkspot.app.data.walk.routeLengthM
 import com.walkspot.app.data.walk.routePlaces
 import com.walkspot.app.data.walk.routeText
 import com.walkspot.app.data.walk.walkCalories
+import com.walkspot.app.ui.components.RouteLook
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertNull
@@ -81,5 +84,28 @@ class TrackTest {
         assertEquals(listOf(50.45 to 30.52, 50.451 to 30.52), routePlaces(text))
         assertEquals(emptyList<Pair<Double, Double>>(), routePlaces(null))
         assertEquals(listOf(50.45 to 30.52), routePlaces("30.52 50.45,broken"))
+    }
+
+    @Test
+    fun aPauseIsKeptAsThePointTheNextLegBeginsAt() {
+        val first = listOf(origin, point(0.001, 60), point(0.002, 120))
+        val second = listOf(point(0.010, 600), point(0.011, 660))
+        assertNull(breaksText(listOf(first)))
+        assertEquals("3", breaksText(listOf(first, second)))
+        // A pause nothing was walked after leaves no leg and no break.
+        assertEquals("3", breaksText(listOf(first, second, emptyList())))
+        assertEquals("3,5", breaksText(listOf(first, second, listOf(point(0.020, 900)))))
+        assertEquals(setOf(3, 5), routeBreaks("3,5"))
+        assertEquals(emptySet<Int>(), routeBreaks(null))
+        assertEquals(setOf(3), routeBreaks("3,broken"))
+    }
+
+    @Test
+    fun theLineOfAWalkIsCutIntoItsLegs() {
+        val points = listOf("a", "b", "c", "d", "e")
+        assertEquals(listOf(points), RouteLook().legs(points))
+        assertEquals(listOf(listOf("a", "b", "c"), listOf("d", "e")), RouteLook(setOf(3)).legs(points))
+        // A break outside the route, as after a route cut short, is no break.
+        assertEquals(listOf(points), RouteLook(setOf(0, 5, 9)).legs(points))
     }
 }

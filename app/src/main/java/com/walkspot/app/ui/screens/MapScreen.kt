@@ -129,8 +129,9 @@ private val MapFilter.label: Int
 private fun FindsMap(state: MapState, actions: MapActions, covered: PaddingValues) {
     val camera = rememberCameraPositionState()
     val routes = remember(state.routes) {
-        state.routes.map { route -> route.map { (lat, lon) -> LatLng(lat, lon) } }
+        state.routes.map { route -> route.places.map { (lat, lon) -> LatLng(lat, lon) } }
     }
+    val looks = state.routes.map { it.look }
     val edge = with(LocalDensity.current) { RouteEdge.roundToPx() }
     var loaded by remember { mutableStateOf(false) }
     // The map opens on the latest walk; the locate button moves it to the phone, each time it is pressed.
@@ -164,9 +165,10 @@ private fun FindsMap(state: MapState, actions: MapActions, covered: PaddingValue
             onTap = { actions.onPick(null) },
         ) {
             routes.drop(1).forEachIndexed { index, route ->
-                PaleRouteLine(route, OlderWidth, OlderAlpha.getOrElse(index) { OlderAlpha.last() })
+                val alpha = OlderAlpha.getOrElse(index) { OlderAlpha.last() }
+                PaleRouteLine(route, OlderWidth, alpha, looks[index + 1])
             }
-            routes.firstOrNull()?.let { RouteLine(it, LatestWidth) }
+            routes.firstOrNull()?.let { RouteLine(it, LatestWidth, looks.first()) }
             MapPins(state, marks, camera, actions.onPick)
         }
         val bottom = Modifier

@@ -53,7 +53,7 @@ internal fun NavGraphBuilder.todayRoute(navController: NavHostController, onShow
         TodayScreen(
             state = shown,
             walkSeconds = walking.seconds.takeIf { walking.recording },
-            walkKept = walking.kept,
+            walkEnding = walking.ending,
             weather = weather,
             lastWalk = lastWalk,
             actions = TodayActions(
@@ -65,8 +65,8 @@ internal fun NavGraphBuilder.todayRoute(navController: NavHostController, onShow
                 onReminders = { navController.navigate(Screen.Settings.route) },
             ),
             onStartWalk = { navController.navigate(Screen.ActiveWalk.route) },
-            onStopWalk = {
-                walk.stop { saved -> saved?.let { navController.navigate(walkSummaryRoute(it)) } }
+            onStopWalk = { mood ->
+                walk.stop(mood) { saved -> saved?.let { navController.navigate(walkSummaryRoute(it)) } }
             },
         )
         val entry = adding?.let { kind -> healthState?.copy(tab = kind) }

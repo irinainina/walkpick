@@ -57,6 +57,7 @@ import com.walkspot.app.ui.components.IconBadge
 import com.walkspot.app.ui.components.RouteLine
 import com.walkspot.app.ui.components.StartFlag
 import com.walkspot.app.ui.components.WalkMap
+import com.walkspot.app.ui.components.look
 import com.walkspot.app.ui.components.routeView
 import com.walkspot.app.ui.distanceText
 import com.walkspot.app.ui.grouped
@@ -179,7 +180,7 @@ private fun RouteMap(state: WalkSummaryState) {
         still = true,
         onLoaded = { loaded = true },
     ) {
-        RouteLine(route, RouteWidth)
+        RouteLine(route, RouteWidth, state.walk.look())
         route.firstOrNull()?.let { start ->
             MarkerComposable(state = rememberUpdatedMarkerState(start), anchor = Offset(0.5f, 0.5f)) {
                 StartFlag(StartPin)

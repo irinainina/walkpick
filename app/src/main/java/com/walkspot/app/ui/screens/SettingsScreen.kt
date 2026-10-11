@@ -117,6 +117,9 @@ fun SettingsScreen(state: SettingsState, actions: SettingsActions, modifier: Mod
                 value = grouped(state.dailySteps),
                 onClick = { sheet = SettingsSheet.Steps },
             )
+            val mood = stringResource(R.string.settings_walk_mood)
+            val setMood = { on: Boolean -> actions.onChange { it.copy(walkMood = on) } }
+            ListRow(mood, trailing = { AppSwitch(settings.walkMood, setMood, mood) })
             StepCounting(state.steps, actions.onAllowSteps)
         }
         Section(R.string.settings_about) {

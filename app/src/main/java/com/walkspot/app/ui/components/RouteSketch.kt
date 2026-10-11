@@ -9,9 +9,11 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.StrokeJoin
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.walkspot.app.ui.theme.AppTheme
@@ -37,8 +39,10 @@ fun RouteSketch(
     modifier: Modifier = Modifier,
     line: Dp = 3.dp,
     start: Dp = 16.dp,
+    look: RouteLook = RouteLook(),
 ) {
     val colors = AppTheme.colors
+    val moods = look.ends().takeIf { look.moodBefore != null || look.moodAfter != null }
     Canvas(
         modifier
             .clip(MaterialTheme.shapes.medium)
@@ -48,13 +52,33 @@ fun RouteSketch(
         val edge = SketchEdge.toPx()
         val (width, height) = size.width - edge * 2 to size.height - edge * 2
         val points = sketch.map { (x, y) -> Offset(edge + x * width, edge + y * height) }
-        val path = Path().apply {
-            moveTo(points.first().x, points.first().y)
-            points.drop(1).forEach { lineTo(it.x, it.y) }
-        }
         val round = Stroke(line.toPx(), cap = StrokeCap.Round, join = StrokeJoin.Round)
         val gradient = Brush.horizontalGradient(listOf(colors.accent, colors.accentLight), edge, edge + width)
-        drawPath(path, gradient, style = round)
+        val dashes = PathEffect.dashPathEffect(floatArrayOf(line.toPx() * 2, line.toPx() * 2))
+        val legs = look.legs(points)
+        var done = 0
+        legs.forEachIndexed { index, leg ->
+            if (moods == null) {
+                val path = Path().apply {
+                    moveTo(leg.first().x, leg.first().y)
+                    leg.drop(1).forEach { lineTo(it.x, it.y) }
+                }
+                drawPath(path, gradient, style = round)
+            } else {
+                // The moods run along the way walked, not across the tile: each piece has its own shade.
+                leg.zipWithNext().forEachIndexed { at, (from, to) ->
+                    val shade = lerp(moods.first, moods.second, (done + at) / (points.size - 1f))
+                    drawLine(shade, from, to, line.toPx(), StrokeCap.Round)
+                }
+            }
+            // The way not walked during a pause.
+            legs.getOrNull(index + 1)?.let { next ->
+                val shade = moods?.let { lerp(it.first, it.second, (done + leg.size) / (points.size - 1f)) }
+                val thin = line.toPx() / 2
+                drawLine(shade ?: colors.accent, leg.last(), next.first(), thin, pathEffect = dashes)
+            }
+            done += leg.size
+        }
 
         val ring = start.toPx()
         val (x, y) = points.first()

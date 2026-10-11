@@ -138,6 +138,8 @@
     <string name="walk_finish_text">It will be saved to your diary.</string>
     <string name="walk_finish_unkept">You haven\'t gone anywhere yet, so this walk and its photos won\'t be saved.</string>
     <string name="walk_finish">Finish walk</string>
+    <string name="walk_mood_before">How do you feel?</string>
+    <string name="walk_mood_after">How do you feel now?</string>
     <string name="walk_keep_walking">Keep walking</string>
     <string name="walk_battery_title">Count every step</string>
     <string name="walk_battery_text">This phone switches the step sensor off a few minutes after the screen goes dark. Choose No restrictions for WalkSpot to keep counting.</string>
@@ -291,6 +293,7 @@
     <string name="settings_data">Data</string>
     <string name="settings_step_counting">Step counting</string>
     <string name="settings_daily_steps">Daily steps</string>
+    <string name="settings_walk_mood">Mood on walks</string>
     <string name="settings_daily_steps_hint">The ring on Today is full at this many steps a day.</string>
     <string name="settings_daily_steps_wrong">From 100 to 100,000</string>
     <string name="settings_on">On</string>

@@ -44,6 +44,7 @@ import com.walkspot.app.ui.components.AppSheet
 import com.walkspot.app.ui.components.CircleButton
 import com.walkspot.app.ui.components.MeDot
 import com.walkspot.app.ui.components.RouteLine
+import com.walkspot.app.ui.components.RouteLook
 import com.walkspot.app.ui.components.StartFlag
 import com.walkspot.app.ui.components.WalkMap
 import com.walkspot.app.ui.components.placeView
@@ -79,7 +80,9 @@ fun ActiveWalkScreen(
     onMinimize: () -> Unit,
     onPause: () -> Unit,
     onCamera: () -> Unit,
-    onStop: () -> Unit,
+    onMood: (Int) -> Unit,
+    /** Takes the mood the walk ended in, when one was said. */
+    onStop: (Int?) -> Unit,
     modifier: Modifier = Modifier,
     /** Where the map waits for the first signal; null leaves it where Google Maps opens. */
     waitAt: LatLng? = null,
@@ -105,7 +108,8 @@ fun ActiveWalkScreen(
 
     Box(modifier.fillMaxSize()) {
         val covered = PaddingValues(top = CoveredTop, bottom = CoveredBottom)
-        WalkMap(camera, Modifier.fillMaxSize(), covered, onLoaded = { loaded = true }) { Route(route) }
+        val look = RouteLook(state.breaks, state.moodBefore)
+        WalkMap(camera, Modifier.fillMaxSize(), covered, onLoaded = { loaded = true }) { Route(route, look) }
         Box(
             Modifier
                 .fillMaxSize()
@@ -140,26 +144,13 @@ fun ActiveWalkScreen(
                 tint = AppTheme.colors.accent,
                 raised = true,
             )
+            if (state.askMood) {
+                MoodAsk(onMood, Modifier.padding(start = Spacing.ml, end = Spacing.ml, bottom = Spacing.ml))
+            }
             ActiveWalkPanel(state, onPause, onCamera, onStop = { stopping = true })
         }
     }
-    if (stopping) FinishWalkSheet(state.kept, onFinish = onStop, onDismiss = { stopping = false })
-}
-
-@Composable
-internal fun FinishWalkSheet(kept: Boolean, onFinish: () -> Unit, onDismiss: () -> Unit) {
-    AppSheet(stringResource(R.string.walk_finish_title), onDismiss) {
-        Spacer(Modifier.height(Spacing.s))
-        Text(
-            text = stringResource(if (kept) R.string.walk_finish_text else R.string.walk_finish_unkept),
-            style = MaterialTheme.typography.bodyLarge,
-            color = AppTheme.colors.textSecondary,
-        )
-        Spacer(Modifier.height(Spacing.l))
-        AppButton(stringResource(R.string.walk_finish), onClick = onFinish)
-        Spacer(Modifier.height(Spacing.sm))
-        AppButton(stringResource(R.string.walk_keep_walking), onDismiss, style = AppButtonStyle.Secondary)
-    }
+    if (stopping) FinishWalkSheet(state.ending, onFinish = onStop, onDismiss = { stopping = false })
 }
 
 /** Offered once on phones that take the step sensor away from an app behind a dark screen. */
@@ -181,9 +172,9 @@ internal fun BatterySheet(onOpen: () -> Unit, onDismiss: () -> Unit) {
 
 // The route in the gradient of the app, the start under its flag and the walker at the end of the line.
 @Composable
-private fun Route(route: List<LatLng>) {
+private fun Route(route: List<LatLng>, look: RouteLook) {
     val colors = AppTheme.colors
-    RouteLine(route, RouteWidth)
+    RouteLine(route, RouteWidth, look)
     val centre = Offset(0.5f, 0.5f)
     route.firstOrNull()?.let { start ->
         // The marker is anchored at the middle of the pin, the label hangs under it.

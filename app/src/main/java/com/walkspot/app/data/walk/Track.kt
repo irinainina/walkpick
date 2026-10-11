@@ -91,6 +91,20 @@ fun routePlaces(route: String?): List<Pair<Double, Double>> = route.orEmpty().sp
     if (numbers.size == 2) numbers[1] to numbers[0] else null
 }
 
+/**
+ * Where in the flat route the legs after the first begin, as the walks table keeps it: "153,201";
+ * null for a walk without a pause. The way from the end of a leg to the start of the next was not walked.
+ */
+fun breaksText(legs: List<List<TrackPoint>>): String? {
+    val walked = legs.filter { it.isNotEmpty() }
+    val starts = walked.dropLast(1).runningFold(0) { at, leg -> at + leg.size }.drop(1)
+    return starts.joinToString(",").ifEmpty { null }
+}
+
+/** The indexes [breaksText] kept; whatever cannot be read is left out. */
+fun routeBreaks(breaks: String?): Set<Int> =
+    breaks.orEmpty().split(",").mapNotNull { it.trim().toIntOrNull() }.toSet()
+
 /** The route as the walks table keeps it: "lon lat,lon lat"; null when there is no line to draw. */
 fun routeText(points: List<TrackPoint>): String? {
     if (points.size < 2) return null

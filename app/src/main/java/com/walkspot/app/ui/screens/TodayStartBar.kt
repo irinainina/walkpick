@@ -24,6 +24,7 @@ import com.walkspot.app.R
 import com.walkspot.app.ui.components.AppButton
 import com.walkspot.app.ui.theme.AppTheme
 import com.walkspot.app.ui.theme.Spacing
+import com.walkspot.app.ui.walk.WalkEnding
 
 private val FadeHeight = 16.dp
 
@@ -46,9 +47,9 @@ internal fun StartBarFade(modifier: Modifier = Modifier) {
 @Composable
 internal fun StartBar(
     walkSeconds: Long?,
-    walkKept: Boolean,
+    walkEnding: WalkEnding,
     onStartWalk: () -> Unit,
-    onStopWalk: () -> Unit,
+    onStopWalk: (Int?) -> Unit,
 ) {
     var stopping by remember { mutableStateOf(false) }
     val text = when (walkSeconds) {
@@ -80,10 +81,10 @@ internal fun StartBar(
     }
     if (stopping) {
         FinishWalkSheet(
-            kept = walkKept,
-            onFinish = {
+            ending = walkEnding,
+            onFinish = { mood ->
                 stopping = false
-                onStopWalk()
+                onStopWalk(mood)
             },
             onDismiss = { stopping = false },
         )

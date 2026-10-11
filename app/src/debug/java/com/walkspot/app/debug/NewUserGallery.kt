@@ -27,6 +27,7 @@ import com.walkspot.app.ui.stats.CalendarDay
 import com.walkspot.app.ui.stats.StatsState
 import com.walkspot.app.ui.stats.StatsTab
 import com.walkspot.app.ui.today.TodayState
+import com.walkspot.app.ui.walk.WalkEnding
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.YearMonth
@@ -60,7 +61,7 @@ fun NewUserGallery(page: String) {
                 health = listOf(HealthTile(HealthKind.MOOD, null), HealthTile(HealthKind.WEIGHT, null)),
             ),
             walkSeconds = null,
-            walkKept = false,
+            walkEnding = WalkEnding.Dropped,
             weather = null,
             lastWalk = null,
             actions = TodayActions(

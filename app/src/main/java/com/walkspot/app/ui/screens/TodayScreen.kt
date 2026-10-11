@@ -46,6 +46,7 @@ import com.walkspot.app.ui.theme.PillShape
 import com.walkspot.app.ui.theme.Sizes
 import com.walkspot.app.ui.theme.Spacing
 import com.walkspot.app.ui.today.TodayState
+import com.walkspot.app.ui.walk.WalkEnding
 import java.time.format.DateTimeFormatter
 import java.util.Locale
 import kotlin.math.roundToInt
@@ -83,15 +84,15 @@ fun TodayScreen(
     state: TodayState,
     /** The time of the walk being recorded, and then the button leads back to it; null without one. */
     walkSeconds: Long?,
-    /** Whether stopping that walk now would keep it. */
-    walkKept: Boolean,
+    /** What stopping that walk now would do. */
+    walkEnding: WalkEnding,
     /** The weather outside; null until it is known. */
     weather: WalkWeather?,
     /** The latest walk; null before the first one. */
     lastWalk: DiaryWalk?,
     actions: TodayActions,
     onStartWalk: () -> Unit,
-    onStopWalk: () -> Unit,
+    onStopWalk: (Int?) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val statusBar = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
@@ -104,7 +105,7 @@ fun TodayScreen(
             Cards(statusBar, state, weather, lastWalk, actions)
             StartBarFade(Modifier.align(Alignment.BottomCenter))
         }
-        StartBar(walkSeconds, walkKept, onStartWalk, onStopWalk)
+        StartBar(walkSeconds, walkEnding, onStartWalk, onStopWalk)
     }
 }
 

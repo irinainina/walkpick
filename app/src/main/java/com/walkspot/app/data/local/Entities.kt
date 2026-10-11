@@ -41,6 +41,11 @@ data class WalkEntity(
     val note: String? = null,
     // Null for a walk recorded before walks had names.
     val name: String? = null,
+    // "153,201": where in the route a leg begins after a pause; the way between legs was not walked
+    val breaks: String? = null,
+    // 1 (awful) .. 5 (great), as the walker said at the start and at the end; null when not said
+    @SerialName("mood_before") val moodBefore: Int? = null,
+    @SerialName("mood_after") val moodAfter: Int? = null,
     @SerialName("updated_at") @Serializable(InstantIso::class) val updatedAt: Instant,
     @Transient val synced: Boolean = false,
 )

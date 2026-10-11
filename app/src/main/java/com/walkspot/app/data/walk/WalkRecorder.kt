@@ -55,6 +55,9 @@ data class WalkTrack(
     val id: String = UUID.randomUUID().toString(),
     /** The photos taken on the way; they are kept with the walk: a find cannot be without one. */
     val finds: List<FindEntity> = emptyList(),
+    /** How the walker felt setting out and coming back, 1 (awful) to 5 (great); null when not said. */
+    val moodBefore: Int? = null,
+    val moodAfter: Int? = null,
 ) {
     val paused: Boolean get() = pausedAt != null
 
@@ -170,6 +173,8 @@ class WalkRecorder @Inject constructor(draft: WalkDraft) {
     }
 
     fun reportSteps(counter: Long) = current.update { it?.withCounter(counter) }
+
+    fun feel(mood: Int) = current.update { it?.copy(moodBefore = mood) }
 
     fun pause(at: Instant) = current.update { it?.pausedAt(at) }
 

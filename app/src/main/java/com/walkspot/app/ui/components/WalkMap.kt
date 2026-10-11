@@ -13,6 +13,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
@@ -22,6 +24,8 @@ import androidx.compose.ui.unit.dp
 import com.google.android.gms.maps.CameraUpdate
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.model.CameraPosition
+import com.google.android.gms.maps.model.Dash
+import com.google.android.gms.maps.model.Gap
 import com.google.android.gms.maps.model.JointType
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.LatLngBounds
@@ -50,6 +54,8 @@ private val PlaceIcon = 20.dp
 private val MeHalo = 48.dp
 private val MeSize = 20.dp
 private const val HALO_ALPHA = 0.24f
+private const val DASH_LINES = 2f
+private const val PAUSED_WIDTH = 0.5f
 
 // The screens draw their own buttons over the map.
 private val BareMap = MapUiSettings(
@@ -115,31 +121,59 @@ fun routeView(route: List<LatLng>, edge: Int): CameraUpdate? = when {
 /** The camera over one place, as close as [routeView] shows a single point; needs no loaded map. */
 fun placeView(at: LatLng): CameraPosition = CameraPosition.fromLatLngZoom(at, ONE_POINT_ZOOM)
 
-/** The line of a walk in the gradient of the app; goes into the content of [WalkMap]. */
+/**
+ * The line of a walk, from the colour of its start to the colour of its end; the way not walked
+ * during a pause is dashed. Goes into the content of [WalkMap].
+ */
 @Composable
-fun RouteLine(route: List<LatLng>, width: Dp) {
+fun RouteLine(route: List<LatLng>, width: Dp, look: RouteLook = RouteLook()) {
     if (route.size < 2) return
-    val colors = AppTheme.colors
-    val (from, to) = colors.accent.toArgb() to colors.accentLight.toArgb()
-    Polyline(
-        points = route,
-        spans = listOf(StyleSpan(StrokeStyle.gradientBuilder(from, to).build(), (route.size - 1).toDouble())),
-        width = with(LocalDensity.current) { width.toPx() },
-        jointType = JointType.ROUND,
-        startCap = RoundCap(),
-        endCap = RoundCap(),
-    )
+    val (from, to) = look.ends()
+    val line = with(LocalDensity.current) { width.toPx() }
+    val legs = look.legs(route)
+    var done = 0
+    legs.forEachIndexed { index, leg ->
+        // The colour runs along the whole route, so every leg takes its own stretch of it.
+        val start = lerp(from, to, done / (route.size - 1f))
+        val end = lerp(from, to, (done + leg.size - 1) / (route.size - 1f))
+        if (leg.size > 1) {
+            val shade = StrokeStyle.gradientBuilder(start.toArgb(), end.toArgb()).build()
+            Polyline(
+                points = leg,
+                spans = listOf(StyleSpan(shade, (leg.size - 1).toDouble())),
+                width = line,
+                jointType = JointType.ROUND,
+                startCap = RoundCap(),
+                endCap = RoundCap(),
+            )
+        }
+        legs.getOrNull(index + 1)?.let { next -> PausedWay(leg.last(), next.first(), end, line) }
+        done += leg.size
+    }
 }
 
 /** An older route: one colour, paler the older it is. */
 @Composable
-fun PaleRouteLine(route: List<LatLng>, width: Dp, alpha: Float) {
+fun PaleRouteLine(route: List<LatLng>, width: Dp, alpha: Float, look: RouteLook = RouteLook()) {
     if (route.size < 2) return
+    val color = AppTheme.colors.accent.copy(alpha = alpha)
+    val line = with(LocalDensity.current) { width.toPx() }
+    val legs = look.legs(route)
+    legs.forEachIndexed { index, leg ->
+        if (leg.size > 1) Polyline(points = leg, color = color, width = line, jointType = JointType.ROUND)
+        legs.getOrNull(index + 1)?.let { next -> PausedWay(leg.last(), next.first(), color, line) }
+    }
+}
+
+// From where a walk was paused to where it went on: ridden or carried, not walked.
+@Composable
+@GoogleMapComposable
+private fun PausedWay(from: LatLng, to: LatLng, color: Color, line: Float) {
     Polyline(
-        points = route,
-        color = AppTheme.colors.accent.copy(alpha = alpha),
-        width = with(LocalDensity.current) { width.toPx() },
-        jointType = JointType.ROUND,
+        points = listOf(from, to),
+        color = color,
+        pattern = listOf(Dash(line * DASH_LINES), Gap(line * DASH_LINES)),
+        width = line * PAUSED_WIDTH,
     )
 }
 

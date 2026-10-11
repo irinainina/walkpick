@@ -16,6 +16,8 @@ import com.walkspot.app.data.walk.LocationFinder
 import com.walkspot.app.data.walk.TrackPoint
 import com.walkspot.app.data.walk.WalkRepository
 import com.walkspot.app.data.walk.routePlaces
+import com.walkspot.app.ui.components.RouteLook
+import com.walkspot.app.ui.components.look
 import com.walkspot.app.ui.localDay
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
@@ -51,6 +53,9 @@ data class DiaryWalk(
     val finds: List<FindEntity> = emptyList(),
 )
 
+/** A route on the map: its points as (latitude, longitude) and how its line is drawn. */
+data class MapRoute(val places: List<Pair<Double, Double>>, val look: RouteLook = RouteLook())
+
 data class DiaryDay(val day: LocalDate, val walks: List<DiaryWalk>)
 
 data class MapState(
@@ -58,8 +63,8 @@ data class MapState(
     val today: LocalDate = LocalDate.now(),
     /** The walks have been read: until then an empty diary is not yet an empty one. */
     val loaded: Boolean = false,
-    /** The routes of the latest walks as (latitude, longitude), the latest first. */
-    val routes: List<List<Pair<Double, Double>>> = emptyList(),
+    /** The routes of the latest walks, the latest first. */
+    val routes: List<MapRoute> = emptyList(),
     val days: List<DiaryDay> = emptyList(),
     /** Set by the "my location" button; [located] grows with every answer, so the map moves again. */
     val me: TrackPoint? = null,
@@ -89,7 +94,9 @@ class MapViewModel @Inject constructor(
 
     // The diary of a year is hundreds of routes to redraw: off the main thread.
     private val diary = combine(walks.watchAll(), store.watchAll()) { walks, finds ->
-        val routes = walks.take(ROUTES_ON_MAP).map { routePlaces(it.route) }.filter { it.size > 1 }
+        val routes = walks.take(ROUTES_ON_MAP)
+            .map { MapRoute(routePlaces(it.route), it.look()) }
+            .filter { it.places.size > 1 }
         routes to diaryDays(walks, finds, ZoneId.systemDefault())
     }.flowOn(Dispatchers.Default)
 

@@ -32,6 +32,7 @@ import com.walkspot.app.ui.components.EmptyState
 import com.walkspot.app.ui.components.FindPhoto
 import com.walkspot.app.ui.components.RouteSketch
 import com.walkspot.app.ui.components.RowChevron
+import com.walkspot.app.ui.components.look
 import com.walkspot.app.ui.distanceText
 import com.walkspot.app.ui.grouped
 import com.walkspot.app.ui.map.DiaryWalk
@@ -141,7 +142,7 @@ private fun WalkCard(
             horizontalArrangement = Arrangement.spacedBy(Spacing.sm),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            RouteSketch(item.sketch, Modifier.size(SketchSize))
+            RouteSketch(item.sketch, Modifier.size(SketchSize), look = walk.look())
             Column(
                 modifier = Modifier
                     .weight(1f)

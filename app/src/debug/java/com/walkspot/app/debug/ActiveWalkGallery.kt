@@ -19,7 +19,7 @@ private val route = listOf(
 
 /** Active walk with the numbers of the Figma frame, for the comparison with the design. */
 @Composable
-fun ActiveWalkGallery() {
+fun ActiveWalkGallery(asked: Boolean = false) {
     ActiveWalkScreen(
         state = ActiveWalkState(
             recording = true,
@@ -30,10 +30,16 @@ fun ActiveWalkGallery() {
             calories = 186,
             route = route,
             toStartM = 1200.0,
+            kept = true,
+            // The asked page shows a walk begun in a bad mood, with a ride in the middle of it.
+            breaks = if (asked) setOf(4) else emptySet(),
+            moodBefore = if (asked) 2 else null,
+            askMood = asked,
         ),
         onMinimize = {},
         onPause = {},
         onCamera = {},
+        onMood = {},
         onStop = {},
     )
 }

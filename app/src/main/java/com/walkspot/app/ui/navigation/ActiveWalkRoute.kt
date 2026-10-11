@@ -73,8 +73,9 @@ internal fun NavGraphBuilder.activeWalkRoute(navController: NavHostController) {
             onMinimize = { navController.popBackStack() },
             onPause = model::togglePause,
             onCamera = { navController.navigate(Screen.Camera.route) },
-            onStop = {
-                model.stop { saved ->
+            onMood = model::feel,
+            onStop = { mood ->
+                model.stop(mood) { saved ->
                     // The summary takes the place of the walk screen; a walk not worth keeping just ends.
                     navController.popBackStack()
                     if (saved != null) navController.navigate(walkSummaryRoute(saved))

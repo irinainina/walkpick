@@ -15,8 +15,10 @@ import com.walkspot.app.data.walk.WalkControl
 import com.walkspot.app.data.walk.WalkRecorder
 import com.walkspot.app.data.walk.WalkRepository
 import com.walkspot.app.data.walk.WalkTrack
+import com.walkspot.app.data.walk.breaksText
 import com.walkspot.app.data.walk.distanceM
 import com.walkspot.app.data.walk.paceSecondsPerKm
+import com.walkspot.app.data.walk.routeBreaks
 import com.walkspot.app.data.walk.walkCalories
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.NonCancellable
@@ -35,6 +37,7 @@ import javax.inject.Inject
 
 private const val TICK_MS = 1_000L
 private const val KEEP_AFTER_LEAVING_MS = 5_000L
+private const val ASK_MOOD_S = 60
 
 data class ActiveWalkState(
     /** False before the walk is started and after it is stopped. */
@@ -49,10 +52,34 @@ data class ActiveWalkState(
     val route: List<TrackPoint> = emptyList(),
     /** Whether Stop keeps the walk: one that has gone nowhere yet is dropped with its photos. */
     val kept: Boolean = false,
+    /** Where in [route] a leg begins after a pause. */
+    val breaks: Set<Int> = emptySet(),
+    val moodBefore: Int? = null,
+    /** The first minute of a walk asks how the walker feels, until an answer is given. */
+    val askMood: Boolean = false,
+    /** Settings: whether walks ask about the mood at all. */
+    val moods: Boolean = true,
     /** Straight back to the first point; null until the walk has left it. */
     val toStartM: Double? = null,
     val distanceUnit: DistanceUnit = DistanceUnit.KM,
-)
+) {
+    val ending: WalkEnding
+        get() = when {
+            !kept -> WalkEnding.Dropped
+            moods -> WalkEnding.KeptWithMood
+            else -> WalkEnding.Kept
+        }
+}
+
+/** What Stop does to the walk going on, for the sheet that asks before it. */
+enum class WalkEnding {
+    /** The walk has gone nowhere yet: it and its photos are not kept, so nothing is asked. */
+    Dropped,
+    Kept,
+
+    /** Kept, and the sheet asks how the walker feels now. */
+    KeptWithMood,
+}
 
 @HiltViewModel
 class ActiveWalkViewModel @Inject constructor(
@@ -77,7 +104,9 @@ class ActiveWalkViewModel @Inject constructor(
     val state: StateFlow<ActiveWalkState> =
         combine(recorder.track, clock, weight, settings.value, profiles.value) { track, now, kg, units, me ->
             val stride = strideM(me.sex, me.heightCm)
-            activeWalkState(track, now, kg, stride).copy(distanceUnit = units.distance)
+            val walk = activeWalkState(track, now, kg, stride)
+            val asks = units.walkMood
+            walk.copy(distanceUnit = units.distance, moods = asks, askMood = walk.askMood && asks)
         }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(KEEP_AFTER_LEAVING_MS), ActiveWalkState())
 
     /** Where the map waits for the first signal: the start of the latest walk. */
@@ -105,9 +134,14 @@ class ActiveWalkViewModel @Inject constructor(
         if (recorder.track.value?.paused == true) recorder.resume(now) else recorder.pause(now)
     }
 
-    /** Ends the recording and keeps the walk; [onDone] takes its id, or null when it was not kept. */
-    fun stop(onDone: (String?) -> Unit) {
-        val track = control.stop()
+    fun feel(mood: Int) = recorder.feel(mood)
+
+    /**
+     * Ends the recording and keeps the walk with the [mood] it ended in, if one was said; [onDone]
+     * takes its id, or null when it was not kept.
+     */
+    fun stop(mood: Int?, onDone: (String?) -> Unit) {
+        val track = control.stop()?.copy(moodAfter = mood)
         viewModelScope.launch {
             val kg = weight.first()
             val stride = profiles.value.first().let { strideM(it.sex, it.heightCm) }
@@ -139,6 +173,9 @@ internal fun activeWalkState(
         calories = walkCalories(track.metres, seconds, weightKg),
         route = points,
         kept = points.size > 1,
+        breaks = routeBreaks(breaksText(track.legs)),
+        moodBefore = track.moodBefore,
+        askMood = track.moodBefore == null && seconds < ASK_MOOD_S,
         toStartM = if (points.size > 1) distanceM(points.last(), points.first()) else null,
     )
 }

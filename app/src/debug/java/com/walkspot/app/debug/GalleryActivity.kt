@@ -49,6 +49,7 @@ private fun Page(page: String) {
         "map" -> MapGallery()
         "walk" -> WalkCheck()
         "active-walk" -> ActiveWalkGallery()
+        "active-walk-mood" -> ActiveWalkGallery(asked = true)
         "walk-summary" -> WalkSummaryGallery()
         "gallery", "gallery-best", "gallery-select" -> GalleryGallery(page)
         "find-card", "find-unknown" -> FindCardGallery(unknown = page == "find-unknown")

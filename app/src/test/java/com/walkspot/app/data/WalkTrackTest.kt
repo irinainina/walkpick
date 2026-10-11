@@ -1,9 +1,11 @@
 package com.walkspot.app.data
 
+import com.walkspot.app.data.local.HealthKind
 import com.walkspot.app.data.walk.TrackPoint
 import com.walkspot.app.data.walk.WalkDraft
 import com.walkspot.app.data.walk.WalkRecorder
 import com.walkspot.app.data.walk.WalkTrack
+import com.walkspot.app.data.walk.moodEntries
 import com.walkspot.app.data.walk.walkEntity
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
@@ -103,6 +105,19 @@ class WalkTrackTest {
         assertEquals(158, standing.with(point(0.001, 60)).withCounter(10).withCounter(40).stepsWith(0.7))
         assertEquals("30.520000 50.450000,30.520000 50.451000", entry.route)
         assertEquals(false, entry.synced)
+    }
+
+    @Test
+    fun theMoodsOfAWalkBecomeEntriesOfHealthAtItsTwoEnds() {
+        val moody = WalkTrack(start, moodBefore = 2, moodAfter = 4)
+        val walked = moody.with(point(0.0, 0)).with(point(0.001, 60))
+        val entry = walkEntity(walked, 313, at(600), 64.2, 0.7)!!
+        assertEquals(2 to 4, entry.moodBefore to entry.moodAfter)
+        assertNull(entry.breaks)
+        val moods = moodEntries(entry)
+        assertEquals(listOf(2.0 to start, 4.0 to at(600)), moods.map { it.value to it.measuredAt })
+        assertTrue(moods.all { it.kind == HealthKind.MOOD })
+        assertTrue(moodEntries(entry.copy(moodBefore = null, moodAfter = null)).isEmpty())
     }
 
     @Test
