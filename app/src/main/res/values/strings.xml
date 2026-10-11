@@ -239,6 +239,10 @@
     <string name="health_date_time">Date and time</string>
     <string name="health_lower_wrong">Lower than systolic</string>
     <string name="health_no_entries">No entries yet</string>
+    <string name="health_delete_last">Delete last entry</string>
+    <string name="health_delete_title">Delete this entry?</string>
+    <string name="health_delete_text">The entry of %1$s will be removed for good.</string>
+    <string name="health_delete">Delete entry</string>
     <string name="health_add_hint">Tap + to add the first one</string>
     <string name="health_this_week">this week</string>
     <string name="health_this_month">this month</string>

@@ -3,6 +3,8 @@ package com.walkspot.app.data.health
 import com.walkspot.app.data.local.HealthEntryDao
 import com.walkspot.app.data.local.HealthEntryEntity
 import com.walkspot.app.data.local.HealthKind
+import com.walkspot.app.data.local.PendingDeleteDao
+import com.walkspot.app.data.local.PendingDeleteEntity
 import com.walkspot.app.data.sync.SyncScheduler
 import kotlinx.coroutines.flow.Flow
 import java.time.Instant
@@ -43,8 +45,11 @@ fun healthEntry(
     return HealthEntryEntity(UUID.randomUUID().toString(), kind, measuredAt, value, diastolic)
 }
 
+private const val HEALTH_TABLE = "health_entries"
+
 class HealthRepository @Inject constructor(
     private val entries: HealthEntryDao,
+    private val deletes: PendingDeleteDao,
     private val sync: SyncScheduler,
 ) {
     fun watch(kind: HealthKind): Flow<List<HealthEntryEntity>> = entries.watch(kind)
@@ -57,5 +62,12 @@ class HealthRepository @Inject constructor(
         entries.save(listOf(entry))
         sync.pushSoon()
         return true
+    }
+
+    /** Takes back an entry made by mistake: from the phone at once, from the server with the next sync. */
+    suspend fun delete(id: String) {
+        entries.delete(id)
+        deletes.add(PendingDeleteEntity(HEALTH_TABLE, id))
+        sync.pushSoon()
     }
 }

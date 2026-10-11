@@ -19,6 +19,7 @@ internal fun NavGraphBuilder.healthRoute(navController: NavHostController) {
                 state = it,
                 onBack = { navController.popBackStack() },
                 onSave = model::add,
+                onDelete = model::delete,
                 onTab = model::open,
                 onPeriod = model::show,
             )

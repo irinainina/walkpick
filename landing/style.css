@@ -477,32 +477,17 @@ svg {
   margin-top: 4px;
 }
 
-.socials {
+.legal-links {
   display: flex;
+  align-items: center;
   gap: 24px;
+  height: 40px;
   margin-top: 62px;
 }
 
-.socials a {
-  display: grid;
-  place-items: center;
-  width: 40px;
-  height: 40px;
-  border: 2px solid #e7effd;
-  border-radius: 50%;
-  color: #bdd3df;
-  transition: border-color 0.2s, color 0.2s;
-}
-
-.socials li:first-child a,
-.socials a:hover {
-  border-color: #13f1fc;
-  color: #13f1fc;
-}
-
-.socials svg {
-  width: 16px;
-  height: 16px;
+.legal-links a:hover {
+  text-decoration: underline;
+  text-underline-offset: 6px;
 }
 
 .copyright {
@@ -970,7 +955,7 @@ svg {
     line-height: 28px;
   }
 
-  .socials {
+  .legal-links {
     grid-column: 1 / -1;
     grid-row: 4;
     margin-top: 24px;

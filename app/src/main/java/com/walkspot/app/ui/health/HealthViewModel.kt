@@ -81,6 +81,10 @@ class HealthViewModel @Inject constructor(
         viewModelScope.launch { health.add(kind, value, diastolic, measuredAt) }
     }
 
+    fun delete(id: String) {
+        viewModelScope.launch { health.delete(id) }
+    }
+
     fun open(tab: HealthKind) = choice.update { it.copy(tab = tab) }
 
     fun show(period: StatsTab) = choice.update { it.copy(period = period) }
