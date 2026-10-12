@@ -19,7 +19,10 @@ import com.walkspot.app.ui.theme.AppTheme
 
 private val WaveHeight = 72.dp
 
-/** The gradient top of a screen, cut by the wave at its bottom; [height] includes the status bar. */
+// How much of the photo the gradient hides: thinner, and the white text over the bright leaf is lost.
+private const val VEIL = 0.72f
+
+/** The top of a screen: a photo under the gradient, cut by the wave; [height] includes the status bar. */
 @Composable
 fun GradientHeader(
     height: Dp,
@@ -29,9 +32,15 @@ fun GradientHeader(
     Box(
         modifier
             .fillMaxWidth()
-            .height(height)
-            .background(AppTheme.colors.accentGradient),
+            .height(height),
     ) {
+        Image(
+            painter = painterResource(R.drawable.header_photo),
+            contentDescription = null,
+            modifier = Modifier.matchParentSize(),
+            contentScale = ContentScale.Crop,
+        )
+        Box(Modifier.matchParentSize().background(AppTheme.colors.accentGradient, alpha = VEIL))
         content()
         Image(
             painter = painterResource(R.drawable.bg_wave),
