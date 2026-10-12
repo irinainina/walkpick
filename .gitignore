@@ -33,3 +33,7 @@ AGENTS.md
 .aider*
 .figma
 docs
+
+# the web client draft holds an export of the owner's account
+site/data.js
+site/assets/photos/

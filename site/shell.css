@@ -1,0 +1,135 @@
+/* The header and the footer of every page. */
+.header {
+  position: fixed;
+  inset: 16px 0 auto;
+  z-index: 10;
+  padding-inline: var(--gutter);
+}
+
+.header-inner {
+  display: flex;
+  align-items: center;
+  gap: 32px;
+  max-width: 1280px;
+  margin-inline: auto;
+  padding: 12px 12px 12px 28px;
+}
+
+.header .glass {
+  border-color: rgb(255 255 255 / 0.64);
+  color: var(--ink);
+  background: rgb(255 255 255 / 0.64);
+}
+
+.header-called {
+  transition: transform 0.3s;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-right: auto;
+  font: 800 22px/28px var(--display);
+}
+
+.logo-mark {
+  width: 28px;
+  height: 28px;
+}
+
+.nav {
+  display: flex;
+  gap: 8px;
+  font-size: 16px;
+  font-weight: 500;
+}
+
+.nav a {
+  padding: 8px 12px;
+  border-radius: 20px;
+}
+
+.nav a:hover {
+  background: rgb(128 148 168 / 0.24);
+}
+
+.nav a[aria-current] {
+  color: var(--surface);
+  background: var(--ink);
+}
+
+.lang,
+.segmented {
+  display: flex;
+  padding: 4px;
+  border-radius: 24px;
+  background: rgb(128 148 168 / 0.32);
+}
+
+.lang button,
+.segmented button {
+  padding: 8px 12px;
+  border: 0;
+  border-radius: 20px;
+  font: 600 14px/20px var(--body);
+  color: inherit;
+  background: none;
+  cursor: pointer;
+}
+
+.lang button[aria-pressed="true"],
+.segmented button[aria-pressed="true"] {
+  color: var(--ink);
+  background: var(--surface);
+}
+
+.avatar {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  font: 800 16px/24px var(--display);
+  color: var(--surface);
+  background: var(--ink);
+}
+
+.footer {
+  border-top: 1px solid rgb(255 255 255 / 0.16);
+  font-size: 16px;
+  line-height: 24px;
+  color: var(--soft);
+  background: var(--ink);
+}
+
+.footer-inner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 16px 32px;
+  padding-block: 32px 48px;
+}
+
+.footer .logo,
+.footer-links a:hover {
+  color: var(--surface);
+}
+
+.footer-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 32px;
+}
+
+@media (max-width: 720px) {
+  .header {
+    top: 8px;
+    padding-inline: 8px;
+  }
+
+  .header-inner {
+    gap: 8px;
+    padding: 8px 8px 8px 16px;
+  }
+}

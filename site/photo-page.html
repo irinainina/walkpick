@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Photo — WalkSpot</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600&family=Literata:ital,opsz,wght@1,7..72,500&family=Manrope:wght@700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css">
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="shell.css">
+  <link rel="stylesheet" href="app.css">
+  <link rel="stylesheet" href="pages.css">
+</head>
+<body data-page="photo-page">
+  <header class="header"></header>
+
+  <main class="app container">
+    <div class="detail">
+      <div class="detail-photo" id="photo"></div>
+      <div class="detail-text">
+        <a class="link" href="photo.html"><svg class="icon"><use href="#back"/></svg><span data-ru="Все фото">All photos</span></a>
+        <span class="chip" id="kind"></span>
+        <div>
+          <h1 id="name" contenteditable="true" spellcheck="false"></h1>
+          <p class="latin" id="latin"></p>
+        </div>
+        <p id="text"></p>
+        <p id="match"></p>
+        <div class="toolbar">
+          <button class="button button-ghost" type="button" id="rename"><svg><use href="#pencil"/></svg><span data-ru="Это не оно?">Not this?</span></button>
+          <button class="button button-ghost" type="button" id="best" aria-pressed="false"><svg><use href="#star"/></svg><span data-ru="Лучшее">Best</span></button>
+          <button class="button button-danger" type="button"><svg><use href="#trash"/></svg><span data-ru="Удалить">Delete</span></button>
+        </div>
+        <a class="link" id="wiki" target="_blank" rel="noopener"><span data-ru="Читать в Википедии">Read on Wikipedia</span><svg class="icon"><use href="#arrow"/></svg></a>
+      </div>
+    </div>
+
+    <section class="columns">
+      <div class="map" id="map"></div>
+      <div class="card">
+        <h3 id="seen"></h3>
+        <p id="taken"></p>
+        <div class="months" id="months"></div>
+        <a class="link" id="walk-link"></a>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer"></footer>
+  <script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
+  <script src="data.js"></script>
+  <script src="app.js"></script>
+  <script src="map.js"></script>
+  <script src="photo-page.js"></script>
+</body>
+</html>

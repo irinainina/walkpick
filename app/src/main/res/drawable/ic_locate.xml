@@ -6,13 +6,13 @@
     android:viewportHeight="24">
     <path
         android:pathData="M12 16C14.2091 16 16 14.2091 16 12C16 9.79086 14.2091 8 12 8C9.79086 8 8 9.79086 8 12C8 14.2091 9.79086 16 12 16Z"
-        android:strokeColor="#0470DC"
+        android:strokeColor="#5F6B2D"
         android:strokeWidth="2"
         android:strokeLineCap="round"
         android:strokeLineJoin="round" />
     <path
         android:pathData="M12 2V5M12 19V22M2 12H5M19 12H22"
-        android:strokeColor="#0470DC"
+        android:strokeColor="#5F6B2D"
         android:strokeWidth="2"
         android:strokeLineCap="round"
         android:strokeLineJoin="round" />

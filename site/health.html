@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Health — WalkSpot</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600&family=Literata:ital,opsz,wght@1,7..72,500&family=Manrope:wght@700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="shell.css">
+  <link rel="stylesheet" href="app.css">
+  <link rel="stylesheet" href="pages.css">
+</head>
+<body data-page="health">
+  <header class="header"></header>
+
+  <main class="app container">
+    <div class="page-head">
+      <div>
+        <h1 data-ru="Здоровье">Health</h1>
+        <p data-ru="Ваши показатели рядом с вашими прогулками.">Your numbers next to your walks.</p>
+      </div>
+      <div class="segmented" id="period"></div>
+    </div>
+
+    <div class="chips" id="metrics"></div>
+
+    <section class="columns">
+      <div class="card">
+        <h3 id="chart-title"></h3>
+        <div id="chart"></div>
+        <p class="legend" id="legend"></p>
+      </div>
+      <div class="card">
+        <p class="eyebrow" id="latest-label"></p>
+        <p class="latest" id="latest"></p>
+        <p id="change"></p>
+        <form class="entry" id="entry">
+          <label class="label"><span data-ru="Дата">Date</span><span class="field"><input type="date" id="date"></span></label>
+          <label class="label"><span id="value-label"></span><span class="field"><input id="value" inputmode="decimal"></span></label>
+          <button class="button" type="button" data-ru="Добавить запись">Add entry</button>
+        </form>
+        <p id="mood-note" data-ru="Настроение приложение спрашивает само: в начале и в конце каждой прогулки.">The app asks about your mood itself: at the start and the end of every walk.</p>
+      </div>
+    </section>
+
+    <section>
+      <h2 data-ru="Записи">Entries</h2>
+      <div id="entries"></div>
+    </section>
+  </main>
+
+  <footer class="footer"></footer>
+  <script src="data.js"></script>
+  <script src="app.js"></script>
+  <script src="health.js"></script>
+</body>
+</html>

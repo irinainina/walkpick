@@ -1,0 +1,226 @@
+@media (max-width: 1024px) {
+  .split {
+    grid-template-columns: 1fr;
+  }
+
+  .hero-inner {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+  }
+
+  .stop-right .stop-top {
+    gap: 32px;
+  }
+
+  .split-media {
+    max-width: 560px;
+  }
+
+  .voice {
+    font-size: 20px;
+    line-height: 28px;
+  }
+}
+
+@media (max-width: 720px) {
+  :root {
+    --rail: 32px;
+  }
+
+  .nav {
+    display: none;
+  }
+
+  .hero {
+    padding-block: 96px 24px;
+  }
+
+  .hero-text,
+  .finish-panel {
+    padding: 24px;
+  }
+
+  .hud {
+    padding: 16px 24px;
+  }
+
+  .hud .counts {
+    gap: 16px;
+  }
+
+  .actions .button {
+    flex: 1 1 100%;
+  }
+
+  .stop {
+    --dot-top: 64px;
+    padding: var(--dot-top) var(--gutter) 64px calc(var(--gutter) + var(--rail));
+  }
+
+  .stop-dot,
+  .stop-right .stop-dot {
+    right: auto;
+    left: 6px;
+    width: 20px;
+    height: 20px;
+  }
+
+  .start {
+    --dot-top: 48px;
+    padding-bottom: 0;
+  }
+
+  .start-text {
+    font-size: 24px;
+    line-height: 32px;
+  }
+
+  .moods {
+    gap: 12px;
+  }
+
+  .moods svg {
+    width: 32px;
+    height: 32px;
+  }
+
+  .stop-top,
+  .stop-right .stop-top {
+    flex-direction: column;
+    gap: 24px;
+    margin-bottom: 32px;
+  }
+
+  .stop-right .stop-mark {
+    align-items: flex-start;
+  }
+
+  .split {
+    gap: 32px;
+  }
+
+  .counts {
+    gap: 16px 32px;
+  }
+
+  .counts dd {
+    font-size: 32px;
+    line-height: 40px;
+  }
+
+  .phone {
+    border-width: 4px;
+    border-radius: 24px;
+  }
+
+  .finds {
+    display: flex;
+    gap: 16px;
+    margin-right: calc(0px - var(--gutter));
+    padding-right: var(--gutter);
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+  }
+
+  .find:nth-child(n) {
+    flex: none;
+    width: 72%;
+    margin-top: 0;
+    scroll-snap-align: start;
+  }
+
+  .effects {
+    grid-template-columns: 1fr;
+    gap: 32px;
+  }
+
+  .split-chart {
+    margin-top: 64px;
+  }
+
+  .phones .phone {
+    width: 56%;
+  }
+
+  .phones .phone + .phone {
+    margin: 48px 0 0 -12%;
+  }
+
+  .web {
+    gap: 24px;
+    margin-left: calc(0px - var(--rail) + 16px);
+    padding: 16px;
+    border-radius: 24px;
+  }
+
+  .browser {
+    border-radius: 12px;
+  }
+
+  .map-find {
+    width: 40px;
+    height: 40px;
+    border-width: 2px;
+  }
+
+  .map-card {
+    position: static;
+    padding: 16px;
+    border: 0;
+    border-radius: 0;
+    color: var(--ink);
+    background: none;
+    box-shadow: none;
+  }
+
+  .year-scroll {
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  .year-months,
+  .year-grid {
+    min-width: 720px;
+  }
+
+  .photo,
+  .find img,
+  .effect img {
+    border-radius: 24px;
+  }
+
+  .finish {
+    gap: 24px;
+    padding-block: 64px;
+  }
+
+  .finish .counts {
+    flex-wrap: nowrap;
+    gap: 16px;
+  }
+
+  .finish .counts div {
+    min-width: 0;
+  }
+
+  .finish .counts dd {
+    font-size: 28px;
+    line-height: 36px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .stop-dot {
+    transition: none;
+  }
+
+  .hero-photo {
+    animation: none;
+  }
+
+  .route-you {
+    display: none;
+  }
+}

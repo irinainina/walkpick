@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Walk — WalkSpot</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600&family=Literata:ital,opsz,wght@1,7..72,500&family=Manrope:wght@700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css">
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="shell.css">
+  <link rel="stylesheet" href="app.css">
+  <link rel="stylesheet" href="pages.css">
+</head>
+<body data-page="walk-page">
+  <header class="header"></header>
+
+  <main class="app container">
+    <div class="page-head">
+      <div>
+        <a class="link" href="walk.html"><svg class="icon"><use href="#back"/></svg><span data-ru="Все прогулки">All walks</span></a>
+        <h1 id="name" contenteditable="true" spellcheck="false"></h1>
+        <p id="when"></p>
+      </div>
+      <div class="toolbar">
+        <button class="button button-ghost" type="button" id="rename"><svg><use href="#pencil"/></svg><span data-ru="Переименовать">Rename</span></button>
+        <button class="button button-danger" type="button"><svg><use href="#trash"/></svg><span data-ru="Удалить">Delete</span></button>
+      </div>
+    </div>
+
+    <div class="map map-tall" id="map"></div>
+    <dl class="stats stats-row" id="stats"></dl>
+
+    <section class="section">
+      <h2 data-ru="Фото по дороге">Photos along the way</h2>
+      <p data-ru="Наведите на фото, чтобы увидеть, где оно снято." id="ribbon-hint">Hover a photo to see where it was taken.</p>
+      <div class="tiles" id="ribbon"></div>
+    </section>
+
+    <section class="columns columns-even">
+      <div class="card">
+        <h3 data-ru="Настроение">Mood</h3>
+        <div class="mood-scale" id="mood"></div>
+      </div>
+      <form class="card">
+        <h3 data-ru="Заметка">Note</h3>
+        <label class="field"><textarea id="note" rows="3" data-ru-placeholder="Что запомнилось на этой прогулке?" placeholder="What do you want to remember about this walk?"></textarea></label>
+        <button class="button" type="button" data-ru="Сохранить">Save</button>
+      </form>
+    </section>
+  </main>
+
+  <footer class="footer"></footer>
+  <script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
+  <script src="data.js"></script>
+  <script src="app.js"></script>
+  <script src="map.js"></script>
+  <script src="walk-page.js"></script>
+</body>
+</html>

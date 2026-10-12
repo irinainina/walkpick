@@ -1,0 +1,286 @@
+:root {
+  --paper: #f7fafd;
+  --surface: #ffffff;
+  --ink: #0e2233;
+  --muted: #566879;
+  --soft: #b9c8d6;
+  --line: #dde7f0;
+  --blue: #0470dc;
+  --blue-deep: #0358ae;
+  --mood-low: #f5b82e;
+  --mood-high: #2ecc8f;
+  --display: "Manrope", "Segoe UI", sans-serif;
+  --body: "Golos Text", "Segoe UI", sans-serif;
+  --voice: "Literata", Georgia, serif;
+  --gutter: 24px;
+  --rail: 88px;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  font: 18px/28px var(--body);
+  color: var(--muted);
+  background: var(--paper);
+}
+
+h1,
+h2,
+h3,
+p,
+ul,
+dl,
+dd,
+figure {
+  margin: 0;
+}
+
+ul {
+  padding: 0;
+  list-style: none;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+img,
+svg {
+  display: block;
+}
+
+img {
+  max-width: 100%;
+  height: auto;
+}
+
+h1,
+h2,
+.subtitle {
+  font-family: var(--display);
+  font-weight: 800;
+  color: var(--ink);
+}
+
+h1 span,
+h2 span {
+  display: block;
+}
+
+h2 {
+  font-size: clamp(32px, 4vw, 56px);
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+}
+
+.subtitle {
+  font-size: clamp(28px, 3vw, 40px);
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+}
+
+:focus-visible {
+  outline: 2px solid var(--blue);
+  outline-offset: 4px;
+}
+
+[hidden] {
+  display: none !important;
+}
+
+.sprite {
+  position: absolute;
+  width: 0;
+  height: 0;
+}
+
+.container {
+  max-width: 1328px;
+  margin-inline: auto;
+  padding-inline: var(--gutter);
+}
+
+.glass {
+  border: 1px solid rgb(255 255 255 / 0.32);
+  border-radius: 32px;
+  background: rgb(14 34 51 / 0.24);
+  box-shadow: 0 16px 48px rgb(14 34 51 / 0.16);
+  backdrop-filter: blur(24px) saturate(1.4);
+}
+
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 16px 28px;
+  border: 1px solid rgb(255 255 255 / 0.64);
+  border-radius: 32px;
+  font: 600 18px/24px var(--body);
+  white-space: nowrap;
+  color: var(--surface);
+  background: rgb(255 255 255 / 0.32);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.64), 0 8px 24px rgb(14 34 51 / 0.16);
+  text-shadow: 0 1px 2px rgb(14 34 51 / 0.32);
+  backdrop-filter: blur(16px) saturate(1.6);
+  transition: all 0.3s;
+}
+
+.button:hover {
+  background: rgb(255 255 255 / 0.48);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.8), 0 12px 32px rgb(14 34 51 / 0.24);
+}
+
+.button svg {
+  width: 20px;
+  height: 20px;
+}
+
+.button-small {
+  padding: 8px 20px;
+  font-size: 16px;
+}
+
+.button-ghost {
+  border-color: rgb(255 255 255 / 0.4);
+  background: rgb(255 255 255 / 0.08);
+  box-shadow: none;
+}
+
+.button-ghost:hover {
+  background: rgb(255 255 255 / 0.24);
+  box-shadow: none;
+}
+
+.eyebrow {
+  font: 700 16px/24px var(--display);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink);
+}
+
+.note {
+  font-size: 16px;
+  line-height: 24px;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+/* On the light pages the main button is dark glass and the second one is light glass */
+:is(.header, .app) .button {
+  border-color: transparent;
+  background: rgb(14 34 51 / 0.88);
+  box-shadow: 0 8px 24px rgb(14 34 51 / 0.16);
+  text-shadow: none;
+}
+
+:is(.header, .app) .button:hover {
+  background: var(--ink);
+}
+
+:is(.header, .app) .button-ghost {
+  border-color: rgb(14 34 51 / 0.16);
+  color: var(--ink);
+  background: rgb(255 255 255 / 0.56);
+  box-shadow: none;
+}
+
+:is(.header, .app) .button-ghost:hover {
+  background: var(--surface);
+}
+
+.icon {
+  width: 20px;
+  height: 20px;
+}
+
+.chip {
+  padding: 2px 12px;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 20px;
+  color: #17693c;
+  background: #dcf2e4;
+}
+
+.chip-bird {
+  color: var(--blue-deep);
+  background: #dfecfb;
+}
+
+.chip-place {
+  color: #8a4b00;
+  background: #fcebd6;
+}
+
+.voice {
+  font: italic 500 24px/32px var(--voice);
+  color: var(--ink);
+  white-space: pre-line;
+}
+
+.year-grid {
+  display: grid;
+  grid-template-rows: repeat(7, 1fr);
+  grid-auto-columns: 1fr;
+  grid-auto-flow: column;
+  gap: 4px;
+}
+
+.year-grid i,
+.year-scale i {
+  aspect-ratio: 1;
+  border-radius: 4px;
+  background: rgb(255 255 255 / 0.08);
+}
+
+:is(.year-grid, .year-scale) [data-level="1"] {
+  background: rgb(46 204 143 / 0.4);
+}
+
+:is(.year-grid, .year-scale) [data-level="2"] {
+  background: rgb(46 204 143 / 0.6);
+}
+
+:is(.year-grid, .year-scale) [data-level="3"] {
+  background: rgb(46 204 143 / 0.8);
+}
+
+:is(.year-grid, .year-scale) [data-level="4"] {
+  background: var(--mood-high);
+}
+
+@media (max-width: 720px) {
+  :root {
+    --gutter: 16px;
+  }
+
+  .glass {
+    border-radius: 24px;
+  }
+
+  .button-small {
+    padding: 10px 16px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+}

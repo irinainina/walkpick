@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Account — WalkSpot</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600&family=Literata:ital,opsz,wght@1,7..72,500&family=Manrope:wght@700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="shell.css">
+  <link rel="stylesheet" href="app.css">
+  <link rel="stylesheet" href="pages.css">
+</head>
+<body data-page="account">
+  <header class="header"></header>
+
+  <main class="app container">
+    <div class="page-head">
+      <div class="profile">
+        <span class="avatar avatar-large">I</span>
+        <div>
+          <h1 data-ru="Ира">Ira</h1>
+          <p id="since"></p>
+        </div>
+      </div>
+      <a class="button button-ghost" href="index.html" data-ru="Выйти">Sign out</a>
+    </div>
+
+    <dl class="stats stats-row" id="totals"></dl>
+
+    <section class="columns columns-even">
+      <div class="card">
+        <h3 data-ru="Единицы">Units</h3>
+        <div class="setting">
+          <span data-ru="Расстояние">Distance</span>
+          <div class="segmented"><button type="button" aria-pressed="true" data-ru="км">km</button><button type="button" aria-pressed="false" data-ru="мили">miles</button></div>
+        </div>
+        <div class="setting">
+          <span data-ru="Вес">Weight</span>
+          <div class="segmented"><button type="button" aria-pressed="true" data-ru="кг">kg</button><button type="button" aria-pressed="false" data-ru="фунты">lb</button></div>
+        </div>
+        <div class="setting">
+          <span data-ru="Глюкоза">Glucose</span>
+          <div class="segmented"><button type="button" aria-pressed="true" data-ru="ммоль/л">mmol/L</button><button type="button" aria-pressed="false" data-ru="мг/дл">mg/dL</button></div>
+        </div>
+        <div class="setting">
+          <span data-ru="Цель на день, шагов">Daily goal, steps</span>
+          <span class="field field-short"><input inputmode="numeric" value="6000" aria-label="Daily goal"></span>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3 data-ru="Ваши данные">Your data</h3>
+        <p data-ru="Прогулки, фото и записи о здоровье видите только вы. Их можно забрать одним файлом в любой момент.">Only you see your walks, photos and health entries. You can take them away in one file at any time.</p>
+        <button class="button button-ghost" type="button" data-ru="Выгрузить мои данные">Export my data</button>
+        <h3 data-ru="Удаление аккаунта">Delete account</h3>
+        <p data-ru="Удаляются все прогулки, фото и записи. Вернуть их будет нельзя.">All walks, photos and entries are deleted. They cannot be brought back.</p>
+        <button class="button button-danger" type="button" data-ru="Удалить аккаунт">Delete account</button>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer"></footer>
+  <script src="data.js"></script>
+  <script src="app.js"></script>
+  <script src="account.js"></script>
+</body>
+</html>

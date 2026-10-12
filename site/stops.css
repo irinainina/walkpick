@@ -1,0 +1,154 @@
+.split {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 64px;
+  align-items: center;
+}
+
+.counts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px 48px;
+}
+
+.counts div {
+  display: flex;
+  flex-direction: column-reverse;
+}
+
+.counts dd {
+  font: 800 40px/48px var(--display);
+  letter-spacing: -0.02em;
+  color: var(--ink);
+}
+
+.counts dt {
+  font-size: 16px;
+  line-height: 24px;
+}
+
+.split-media {
+  position: relative;
+  padding: 0 0 12% 22%;
+}
+
+.photo {
+  width: 100%;
+  aspect-ratio: 4 / 5;
+  border-radius: 32px;
+  object-fit: cover;
+}
+
+.split-phone {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 46%;
+}
+
+.finds {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+}
+
+.find {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.find:nth-child(2) {
+  margin-top: 48px;
+}
+
+.find:nth-child(3) {
+  margin-top: 96px;
+}
+
+.find img {
+  width: 100%;
+  aspect-ratio: 4 / 5;
+  margin-bottom: 16px;
+  border-radius: 32px;
+  object-fit: cover;
+}
+
+.find-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 4px;
+  font-size: 16px;
+  line-height: 24px;
+}
+
+.find h3 {
+  font: 800 24px/32px var(--display);
+  color: var(--ink);
+}
+
+.find h3 + p {
+  font-size: 16px;
+  line-height: 24px;
+}
+
+.latin {
+  font-family: var(--voice);
+  font-style: italic;
+}
+
+.effects {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 48px 24px;
+}
+
+.effect {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.effect img {
+  width: 100%;
+  aspect-ratio: 2 / 1;
+  margin-bottom: 16px;
+  border-radius: 32px;
+  object-fit: cover;
+}
+
+.effect .eyebrow {
+  color: var(--blue);
+}
+
+.split-chart {
+  margin-top: 96px;
+}
+
+.phones {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+}
+
+.phones .phone {
+  flex: none;
+  width: 248px;
+}
+
+.phones .phone + .phone {
+  margin: 64px 0 0 -32px;
+}
+
+.phone {
+  overflow: hidden;
+  border: 8px solid var(--ink);
+  border-radius: 40px;
+  background: var(--surface);
+  box-shadow: 0 24px 48px rgb(14 34 51 / 0.24);
+}
+
+.phone img {
+  width: 100%;
+}

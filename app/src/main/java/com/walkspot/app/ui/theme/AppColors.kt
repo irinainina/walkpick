@@ -66,6 +66,7 @@ data class AppColors(
 
 // Figma turns the gradient inside the box of the node: the colour is 0.7 * (x / width + y / height).
 private const val DIAGONAL_SCALE = 0.7f
+private const val BRONZE_STOP = 0.55f
 
 private class DiagonalGradient(private val colors: List<Color>) : ShaderBrush() {
     override fun createShader(size: Size): Shader {
@@ -78,22 +79,28 @@ private class DiagonalGradient(private val colors: List<Color>) : ShaderBrush() 
 internal val walkSpotColors = AppColors(
     textPrimary = Ink,
     textSecondary = Grey,
-    textInactive = SteelBlue,
-    accent = Blue,
-    accentLight = Cyan,
+    textInactive = Tan,
+    accent = Olive,
+    accentLight = Sage,
     onAccent = White,
     onAccentOverlay = White.copy(alpha = 0.2f),
-    accentGradient = Brush.horizontalGradient(listOf(Blue, Azure)),
-    accentDiagonal = DiagonalGradient(listOf(Blue, Cyan)),
+    accentGradient = Brush.linearGradient(
+        0f to Fern,
+        BRONZE_STOP to Bronze,
+        1f to Gold,
+        start = Offset(0f, Float.POSITIVE_INFINITY),
+        end = Offset(Float.POSITIVE_INFINITY, 0f),
+    ),
+    accentDiagonal = DiagonalGradient(listOf(Olive, Sage)),
     canvas = Canvas,
     mapGround = Fog,
     surface = White,
-    surfaceTint = PaleBlue,
+    surfaceTint = Cream,
     switchOff = Mist,
-    barPast = LightBlue,
+    barPast = Sand,
     divider = Line,
-    unvisited = LightBlue,
-    unvisitedRing = Sky,
+    unvisited = Sand,
+    unvisitedRing = Linen,
     scrim = Ink.copy(alpha = 0.48f),
     photoGround = Night,
     photoButton = Black.copy(alpha = 0.32f),

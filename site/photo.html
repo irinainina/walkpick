@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Photo — WalkSpot</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600&family=Literata:ital,opsz,wght@1,7..72,500&family=Manrope:wght@700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css">
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="shell.css">
+  <link rel="stylesheet" href="app.css">
+  <link rel="stylesheet" href="pages.css">
+</head>
+<body data-page="photo">
+  <header class="header"></header>
+
+  <main class="app container">
+    <div class="page-head">
+      <div>
+        <h1 data-ru="Фото">Photo</h1>
+        <p id="summary"></p>
+      </div>
+      <div class="segmented" id="period"></div>
+    </div>
+
+    <div class="toolbar">
+      <div class="segmented" id="mode">
+        <button type="button" data-mode="all" aria-pressed="true" data-ru="Все">All</button>
+        <button type="button" data-mode="best" aria-pressed="false" data-ru="Лучшие">Best</button>
+        <button type="button" data-mode="map" aria-pressed="false" data-ru="Карта">Map</button>
+      </div>
+      <label class="field search">
+        <svg class="icon"><use href="#search"/></svg>
+        <input id="search" type="search" placeholder="Search by name" data-ru-placeholder="Поиск по названию">
+      </label>
+      <div class="chips" id="kinds"></div>
+      <button class="button button-small button-ghost" type="button" id="select" data-ru="Выбрать">Select</button>
+    </div>
+
+    <div id="content"></div>
+    <div class="map map-tall" id="map" hidden></div>
+
+    <div class="select-bar" id="select-bar" hidden>
+      <strong id="selected"></strong>
+      <button class="button button-small" type="button" data-ru="В лучшие">Add to Best</button>
+      <button class="button button-small button-danger" type="button" data-ru="Удалить">Delete</button>
+    </div>
+  </main>
+
+  <footer class="footer"></footer>
+  <script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
+  <script src="data.js"></script>
+  <script src="app.js"></script>
+  <script src="map.js"></script>
+  <script src="photo.js"></script>
+</body>
+</html>

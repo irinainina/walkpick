@@ -1,0 +1,180 @@
+.route {
+  position: relative;
+}
+
+.route-line {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.route-line path {
+  fill: none;
+  stroke-linecap: round;
+}
+
+.route-line stop {
+  transition: stop-color 0.8s;
+}
+
+.route-plan {
+  stroke: #a9bccd;
+  stroke-width: 2;
+  stroke-dasharray: 2 10;
+}
+
+.route-walked {
+  stroke-width: 6;
+}
+
+.route-you {
+  fill: var(--ink);
+  stroke: var(--surface);
+  stroke-width: 4;
+}
+
+.stop {
+  --dot-top: 200px;
+  position: relative;
+  max-width: 1328px;
+  margin-inline: auto;
+  padding: var(--dot-top) calc(var(--gutter) + var(--rail)) 200px;
+  scroll-margin-top: 16px;
+}
+
+.stop-dot {
+  position: absolute;
+  top: var(--dot-top);
+  left: calc(var(--gutter) + 20px);
+  z-index: 2;
+  width: 24px;
+  height: 24px;
+  border: 4px solid var(--ink);
+  border-radius: 50%;
+  background: var(--surface);
+  transition: background 0.3s;
+}
+
+.stop-right .stop-dot {
+  right: calc(var(--gutter) + 20px);
+  left: auto;
+}
+
+.stop-end {
+  position: static;
+  border-radius: 8px;
+}
+
+.start {
+  --dot-top: 72px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding-bottom: 0;
+}
+
+.start-text {
+  max-width: 560px;
+  font: 800 28px/36px var(--display);
+  letter-spacing: -0.01em;
+  color: var(--ink);
+}
+
+.start .note {
+  max-width: 400px;
+}
+
+.feel {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 16px 24px;
+  padding-block: 8px;
+}
+
+.feel-question {
+  font: 500 20px/28px var(--body);
+  color: var(--ink);
+}
+
+.moods {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.moods button {
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: none;
+  opacity: 0.72;
+  cursor: pointer;
+  transition: opacity 0.2s, transform 0.2s;
+}
+
+.moods button:hover {
+  opacity: 1;
+}
+
+.moods button[aria-pressed="true"] {
+  opacity: 1;
+  transform: scale(1.4);
+  filter: drop-shadow(0 2px 6px rgb(79 121 164 / 0.32));
+}
+
+.moods svg {
+  width: 40px;
+  height: 40px;
+}
+
+.mood-answer {
+  font: 800 20px/28px var(--display);
+  color: var(--ink);
+}
+
+.stop-top {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+  margin-bottom: 48px;
+}
+
+.stop-right .stop-top {
+  flex-direction: row-reverse;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 48px;
+}
+
+.stop-mark {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.stop-right .stop-mark {
+  align-items: flex-end;
+}
+
+.km {
+  font: 700 24px/1 var(--display);
+  white-space: nowrap;
+}
+
+.km b {
+  font-size: clamp(72px, 9vw, 128px);
+  font-weight: 800;
+  letter-spacing: -0.05em;
+  color: var(--ink);
+}
+
+.stop-head {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  max-width: 640px;
+}

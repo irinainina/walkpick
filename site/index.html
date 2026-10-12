@@ -1,0 +1,260 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>WalkSpot — Step. Snap. See.</title>
+  <meta name="description" content="WalkSpot keeps your walks: the route you took, what you photographed on the way and how you felt when you got home.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600&family=Literata:ital,opsz,wght@1,7..72,500&family=Manrope:wght@700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="shell.css">
+  <link rel="stylesheet" href="hero.css">
+  <link rel="stylesheet" href="route.css">
+  <link rel="stylesheet" href="stops.css">
+  <link rel="stylesheet" href="web.css">
+  <link rel="stylesheet" href="home-responsive.css">
+</head>
+<body data-page="home">
+  <header class="header"></header>
+
+  <main>
+    <section class="hero">
+      <img class="hero-photo" src="assets/images/hero.webp" width="2400" height="1350" alt="Two people walking down a forest path into golden sunlight" data-ru-alt="Двое идут по лесной дороге навстречу золотому свету">
+      <div class="container hero-inner">
+        <div class="hero-text glass">
+          <p class="motto">Step. Snap. See.</p>
+          <h1 class="hero-title"><span data-ru="Вы гуляете.">You walk.</span> <span data-ru="WalkSpot запоминает.">WalkSpot remembers.</span></h1>
+          <p class="lead" data-ru="Маршрут, снимки по дороге и настроение, с которым вы вернулись домой.">The route you took, what you photographed on the way and how you felt when you got home.</p>
+          <div class="actions">
+            <a class="button" href="#get" data-ru="Скачать для Android">Get the Android app</a>
+            <a class="button button-ghost" href="walk.html" data-ru="Открыть демо">View demo</a>
+          </div>
+        </div>
+        <div class="hud glass" aria-hidden="true">
+          <p class="hud-state" data-ru="Идёт запись">Recording</p>
+          <dl class="counts">
+            <div><dt data-ru="время">time</dt><dd id="hud-time">34:48</dd></div>
+            <div><dt data-ru="км">km</dt><dd id="hud-km">2.9</dd></div>
+            <div><dt data-ru="шагов">steps</dt><dd id="hud-steps">3,790</dd></div>
+          </dl>
+        </div>
+      </div>
+    </section>
+
+    <div class="route">
+      <svg class="route-line" aria-hidden="true">
+        <defs>
+          <linearGradient id="mood" gradientUnits="userSpaceOnUse" x1="0" x2="0" y1="0"><stop stop-color="#f5b82e"/><stop offset="1" stop-color="#2ecc8f"/></linearGradient>
+          <linearGradient id="mood-across"><stop stop-color="#f5b82e"/><stop offset="1" stop-color="#2ecc8f"/></linearGradient>
+        </defs>
+        <path class="route-plan"/>
+        <path class="route-walked" stroke="url(#mood)"/>
+        <circle class="route-you" r="8"/>
+      </svg>
+
+      <section class="stop start">
+        <span class="stop-dot"></span>
+        <p class="eyebrow" data-ru="Старт · 0 км">Start · 0 km</p>
+        <p class="start-text" data-ru="Эта страница — одна небольшая прогулка: 4 километра и 4 остановки. Перед выходом WalkSpot спросит только одно:">This page is one short walk: 4 kilometres and 4 stops. Before you set out, WalkSpot asks just one thing:</p>
+        <div class="feel">
+          <p class="feel-question" data-ru="Как вы себя чувствуете?">How do you feel?</p>
+          <div class="moods" data-when="before"></div>
+        </div>
+        <p class="note" data-ru="Выберите ответ — маршрут окрасится в его цвет. По дороге следите, как меняется настроение: в конце WalkSpot спросит о нём ещё раз.">Pick an answer and the route takes its colour. Notice how your mood shifts on the way: at the end WalkSpot asks about it again.</p>
+      </section>
+
+      <section class="stop" id="walk">
+        <span class="stop-dot"></span>
+        <div class="split">
+          <div class="split-text">
+            <div class="stop-top">
+              <div class="stop-mark">
+                <p class="eyebrow" data-ru="Прогулка">Walk</p>
+                <p class="km"><b>1</b> <span data-ru="км">km</span></p>
+              </div>
+              <div class="stop-head">
+                <h2><span data-ru="Просто идите.">Just go.</span> <span data-ru="Считать будет телефон.">Your phone does the counting.</span></h2>
+                <p data-ru="Нажмите «Старт», выключите телефон и уберите его в карман. Пока вы идёте, WalkSpot запишет маршрут, расстояние, время и шаги. Решили посидеть на лавочке или проехать часть пути на машине? Поставьте прогулку на телефоне на паузу.">Tap Start, lock the phone and put it in your pocket. While you walk, WalkSpot records the route, distance, time and steps. Decided to sit on a bench or go part of the way by car? Pause the walk on your phone.</p>
+              </div>
+            </div>
+            <dl class="counts">
+              <div><dt data-ru="шагов">steps</dt><dd data-ru="5 230">5,230</dd></div>
+              <div><dt data-ru="км">km</dt><dd>4</dd></div>
+              <div><dt data-ru="минут">minutes</dt><dd>48</dd></div>
+            </dl>
+          </div>
+          <div class="split-media">
+            <img class="photo" src="assets/images/walk.webp" width="1000" height="1499" alt="A walker on a forest path with the sun breaking through tall trees" data-ru-alt="Человек на лесной тропе, солнце пробивается сквозь высокие деревья" loading="lazy">
+            <div class="phone split-phone"><img src="assets/images/screen-walk.webp" width="720" height="1560" alt="WalkSpot Walk screen with the last walk" data-ru-alt="Экран Walk с последней прогулкой" loading="lazy"></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="stop stop-right" id="photo">
+        <span class="stop-dot"></span>
+        <div class="stop-top">
+          <div class="stop-mark">
+            <p class="eyebrow" data-ru="Фото">Photo</p>
+            <p class="km"><b>2</b> <span data-ru="км">km</span></p>
+          </div>
+          <div class="stop-head">
+            <h2 data-ru="«А что это за цветок?»">“What is that flower?”</h2>
+            <p data-ru="Наведите камеру на растение, птицу или здание. Затем сделайте фото. WalkSpot подскажет название и отметит место находки.">Point the camera at a plant, a bird or a building. Then take the photo. WalkSpot tells you its name and marks the spot where you found it.</p>
+          </div>
+        </div>
+        <ul class="finds">
+          <li class="find">
+            <img src="assets/images/clover.webp" width="1000" height="1500" alt="" loading="lazy">
+            <p class="find-meta"><span class="chip" data-ru="Растение">Plant</span><span data-ru="на 1,4 км">at 1.4 km</span></p>
+            <h3 data-ru="Клевер луговой">Red clover</h3>
+            <p class="latin">Trifolium pratense</p>
+          </li>
+          <li class="find">
+            <img src="assets/images/robin.webp" width="1000" height="1333" alt="" loading="lazy">
+            <p class="find-meta"><span class="chip chip-bird" data-ru="Птица">Bird</span><span data-ru="на 2,2 км">at 2.2 km</span></p>
+            <h3 data-ru="Зарянка">European robin</h3>
+            <p class="latin">Erithacus rubecula</p>
+          </li>
+          <li class="find">
+            <img src="assets/images/chapel.webp" width="1000" height="1499" alt="" loading="lazy">
+            <p class="find-meta"><span class="chip chip-place" data-ru="Место">Place</span><span data-ru="на 2,6 км">at 2.6 km</span></p>
+            <h3 data-ru="Часовня в саду">Chapel in the garden</h3>
+            <p data-ru="Название дали вы сами">Named by you</p>
+          </li>
+        </ul>
+      </section>
+
+      <section class="stop" id="health">
+        <span class="stop-dot"></span>
+        <div class="stop-top">
+          <div class="stop-mark">
+            <p class="eyebrow" data-ru="Здоровье">Health</p>
+            <p class="km"><b>3</b> <span data-ru="км">km</span></p>
+          </div>
+          <h2 data-ru="Что даёт прогулка">What a walk does for you</h2>
+        </div>
+        <ul class="effects">
+          <li class="effect">
+            <img src="assets/images/mood.webp" width="1080" height="540" alt="" loading="lazy">
+            <h3 class="eyebrow" data-ru="Настроение">Mood</h3>
+            <p class="voice" data-ru="Выходите в одном настроении.&#10;Возвращаетесь в другом, получше.">You set out in one mood.&#10;You come back in a better one.</p>
+          </li>
+          <li class="effect">
+            <img src="assets/images/weight.webp" width="912" height="456" alt="" loading="lazy">
+            <h3 class="eyebrow" data-ru="Вес">Weight</h3>
+            <p class="voice" data-ru="Килограммы уходят тихо, шаг за шагом.&#10;В счёт идёт каждая прогулка, даже короткая.">Kilos leave quietly, step by step.&#10;Every walk counts, even a short one.</p>
+          </li>
+          <li class="effect">
+            <img src="assets/images/heart.webp" width="836" height="418" alt="" loading="lazy">
+            <h3 class="eyebrow" data-ru="Сердце и давление">Heart and blood pressure</h3>
+            <p class="voice" data-ru="Сердце любит, когда вы в движении.&#10;Давление — тоже.">Your heart likes it when you move.&#10;Your blood pressure does too.</p>
+          </li>
+          <li class="effect">
+            <img src="assets/images/glucose.webp" width="1080" height="540" alt="" loading="lazy">
+            <h3 class="eyebrow" data-ru="Глюкоза">Glucose</h3>
+            <p class="voice" data-ru="На прогулке глюкоза идёт в дело,&#10;а не копится в крови.">On a walk, glucose gets used&#10;instead of building up in your blood.</p>
+          </li>
+        </ul>
+        <div class="split split-chart">
+          <div class="stop-head">
+            <h3 class="subtitle" data-ru="Проверьте на своём графике.">Check it on your own chart.</h3>
+            <p data-ru="Если считаете нужным, отмечайте настроение, вес, давление или глюкозу — и увидите, как регулярные прогулки связаны с этими показателями.">If you find it useful, log your mood, weight, blood pressure or glucose, and see how regular walks relate to these numbers.</p>
+            <p class="note" data-ru="WalkSpot — дневник, а не медицинское изделие. Он не ставит диагнозы и не лечит.">WalkSpot is a diary, not a medical device. It does not diagnose or treat.</p>
+          </div>
+          <div class="phones">
+            <div class="phone"><img src="assets/images/screen-health.webp" width="720" height="1560" alt="Mood chart next to walks" data-ru-alt="График настроения рядом с прогулками" loading="lazy"></div>
+            <div class="phone"><img src="assets/images/screen-pressure.webp" width="720" height="1408" alt="Blood pressure chart next to walks" data-ru-alt="График давления рядом с прогулками" loading="lazy"></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="stop stop-right" id="web">
+        <span class="stop-dot"></span>
+        <div class="stop-top">
+          <div class="stop-mark">
+            <p class="eyebrow" data-ru="Веб-клиент">Web client</p>
+            <p class="km"><b>4</b> <span data-ru="км">km</span></p>
+          </div>
+          <div class="stop-head">
+            <h2 data-ru="Дома откройте ноутбук.">Back home, open your laptop.</h2>
+            <p data-ru="Весь маршрут на большой карте, каждый снимок там, где он сделан, и год прогулок на одной странице.">The whole route on a big map, every photo where you took it, a year of walks on one page.</p>
+          </div>
+        </div>
+        <div class="web">
+          <figure class="browser">
+            <div class="browser-bar"><i></i><i></i><i></i><span data-ru="WalkSpot · Туманный вечер">WalkSpot · Misty Evening</span></div>
+            <div class="browser-view">
+              <div class="map-box">
+              <svg class="map" viewBox="0 0 1120 480" aria-hidden="true">
+                <rect width="1120" height="480" fill="#eef3f8"/>
+                <g fill="#d9eedd"><rect x="40" y="250" width="250" height="190" rx="24"/><rect x="470" y="30" width="270" height="120" rx="24"/><circle cx="960" cy="380" r="72"/></g>
+                <path d="M780 -20C740 120 820 300 760 500" fill="none" stroke="#cfe4f7" stroke-width="48"/>
+                <g fill="none" stroke="#fff" stroke-width="12"><path d="M-20 200L1140 150M330 -20L390 500M-20 420L1140 330M900 -20L1010 500"/><path stroke-width="6" d="M560 -20L600 500M-20 70L1140 40M150 -20L190 500"/></g>
+                <defs><path id="trail" d="M150 380L230 300L360 310L430 200L560 180L640 110L790 130L860 230L980 250"/></defs>
+                <g fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#trail" stroke="#fff" stroke-width="16"/><use href="#trail" stroke="url(#mood-across)" stroke-width="8"/></g>
+                <circle cx="150" cy="380" r="10" fill="#f5b82e" stroke="#0e2233" stroke-width="4"/>
+                <rect x="970" y="240" width="20" height="20" rx="6" fill="#2ecc8f" stroke="#0e2233" stroke-width="4"/>
+              </svg>
+              <img class="map-find" style="left:32%;top:65%" src="assets/images/clover.webp" alt="" loading="lazy">
+              <img class="map-find" style="left:57%;top:23%" src="assets/images/robin.webp" alt="" loading="lazy">
+              <img class="map-find" style="left:77%;top:48%" src="assets/images/chapel.webp" alt="" loading="lazy">
+              </div>
+              <figcaption class="map-card glass">
+                <strong data-ru="Туманный вечер">Misty Evening</strong>
+                <span data-ru="4 км · 48 мин · 3 фото">4 km · 48 min · 3 photos</span>
+                <span class="mood-pair"><i></i><span data-ru="Нормально">Neutral</span> → <i></i><span data-ru="Отлично">Great</span></span>
+              </figcaption>
+            </div>
+          </figure>
+          <figure class="year">
+            <div class="year-scroll" aria-hidden="true">
+              <div class="year-months"></div>
+              <div class="year-grid"></div>
+            </div>
+            <figcaption>
+              <span data-ru="110 прогулок · 431 км с начала года. Чем ярче квадрат, тем длиннее прогулка.">110 walks · 431 km this year. The brighter the square, the longer the walk.</span>
+              <span class="year-scale" aria-hidden="true"><i></i><i data-level="1"></i><i data-level="2"></i><i data-level="3"></i><i data-level="4"></i></span>
+            </figcaption>
+          </figure>
+          <div class="web-action">
+            <a class="button" href="walk.html" data-ru="Открыть демо">View demo</a>
+            <p class="note" data-ru="Без регистрации. Демо-аккаунт, в котором уже есть год прогулок.">No sign-up. A sample account with a year of walks already in it.</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="finish" id="get">
+        <img class="finish-photo" src="assets/images/finish.webp" width="2000" height="1500" alt="" loading="lazy">
+        <div class="finish-mark">
+          <span class="stop-dot stop-end"></span>
+          <p class="eyebrow" data-ru="Стоп · 4 км">Stop · 4 km</p>
+        </div>
+        <div class="finish-panel glass">
+          <div class="feel">
+            <p class="feel-question" data-ru="Как вы себя чувствуете теперь?">How do you feel now?</p>
+            <div class="moods" data-when="after"></div>
+          </div>
+          <p class="note" data-ru="Выберите ответ — и маршрут сохранит оба цвета: с каким настроением вы вышли и с каким вернулись.">Pick an answer and the route will keep both colours: the mood you left with and the mood you came back with.</p>
+          <h2><span data-ru="Эту прогулку вы провели за экраном.">You took this walk on a screen.</span> <span data-ru="Следующую проведите на улице.">Take the next one outside.</span></h2>
+          <dl class="counts">
+            <div><dt data-ru="км">km</dt><dd>4</dd></div>
+            <div><dt data-ru="минут">minutes</dt><dd>48</dd></div>
+            <div><dt data-ru="шагов">steps</dt><dd data-ru="5 230">5,230</dd></div>
+            <div><dt data-ru="находки">finds</dt><dd>3</dd></div>
+          </dl>
+          <div class="actions">
+            <a class="button" href="#get" data-ru="Скачать для Android">Get the Android app</a>
+            <a class="button button-ghost" href="walk.html" data-ru="Открыть демо">View demo</a>
+          </div>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <footer class="footer"></footer>
+  <script src="app.js"></script>
+  <script src="main.js"></script>
+</body>
+</html>
