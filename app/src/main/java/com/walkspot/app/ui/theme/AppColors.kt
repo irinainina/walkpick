@@ -66,7 +66,7 @@ data class AppColors(
 
 // Figma turns the gradient inside the box of the node: the colour is 0.7 * (x / width + y / height).
 private const val DIAGONAL_SCALE = 0.7f
-private const val BRONZE_STOP = 0.55f
+private const val BRONZE_STOP = 0.75f
 
 private class DiagonalGradient(private val colors: List<Color>) : ShaderBrush() {
     override fun createShader(size: Size): Shader {
