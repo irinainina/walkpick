@@ -74,6 +74,7 @@ internal val Unasked = setOf(FindKind.PHOTO, FindKind.UNKNOWN)
 internal fun FindCardBody(
     state: FindCardState,
     onWalk: (String) -> Unit,
+    onKind: () -> Unit,
     onNotThis: () -> Unit,
     onName: (String) -> Unit,
     onRetry: () -> Unit,
@@ -83,7 +84,7 @@ internal fun FindCardBody(
     val type = MaterialTheme.typography
     val colors = AppTheme.colors
     Column(modifier.padding(start = Spacing.ml, top = Spacing.l, end = Spacing.ml, bottom = Spacing.l)) {
-        KindChip(find.kind)
+        KindChip(find.kind, onKind)
         Spacer(Modifier.height(Spacing.sm))
         val (name, under) = when {
             find.name != null -> findTitle(find) to find.latinName
@@ -117,18 +118,24 @@ internal fun FindCardBody(
 }
 
 @Composable
-internal fun KindChip(kind: FindKind) {
+internal fun KindChip(kind: FindKind, onChange: (() -> Unit)? = null) {
     val look = kind.look()
     Row(
         modifier = Modifier
             .height(ChipHeight)
-            .background(look.tint, PillShape)
-            .padding(start = ChipStart, end = Spacing.m),
+            .clip(PillShape)
+            .background(look.tint)
+            .then(if (onChange == null) Modifier else Modifier.clickable(onClick = onChange))
+            .padding(start = ChipStart, end = if (onChange == null) Spacing.m else Spacing.s),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Icon(painterResource(look.icon), null, Modifier.size(ChipIcon), look.color)
         Spacer(Modifier.width(ChipGap))
         Text(stringResource(look.label), style = MaterialTheme.typography.labelMedium, color = look.color)
+        if (onChange != null) {
+            Spacer(Modifier.width(Spacing.s))
+            Icon(painterResource(R.drawable.ic_chevron_down), null, Modifier.size(ChipIcon), look.color)
+        }
     }
 }
 

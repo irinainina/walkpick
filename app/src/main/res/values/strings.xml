@@ -154,6 +154,7 @@
     <string name="find_place">Place</string>
     <string name="find_possibly">Possibly %1$s</string>
     <string name="find_photo">Photo</string>
+    <string name="find_just_photo">Just a photo</string>
     <string name="find_identify">Identify it</string>
     <string name="find_unknown">Unknown</string>
     <string name="find_unknown_title">Unknown find</string>
@@ -167,6 +168,7 @@
     <string name="find_name_it">Name it yourself</string>
     <string name="find_try_again">Try again</string>
     <string name="find_what_is_it">What is it?</string>
+    <string name="find_kind_text">Change the kind and we will identify it again</string>
     <string name="find_percent">%1$d%%</string>
     <string name="find_wikipedia">Read on Wikipedia</string>
     <string name="find_where">Where</string>

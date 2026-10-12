@@ -35,10 +35,12 @@ import com.walkspot.app.data.local.FindKind
 import com.walkspot.app.ui.components.AppButton
 import com.walkspot.app.ui.components.AppSheet
 import com.walkspot.app.ui.components.AppTextField
-import com.walkspot.app.ui.components.IconBadge
-import com.walkspot.app.ui.components.ListRow
+import com.walkspot.app.ui.components.FindPin
+import com.walkspot.app.ui.find.AskedKinds
+import com.walkspot.app.ui.find.answer
 import com.walkspot.app.ui.find.look
 import com.walkspot.app.ui.theme.AppTheme
+import com.walkspot.app.ui.theme.ParagraphStyle
 import com.walkspot.app.ui.theme.Sizes
 import com.walkspot.app.ui.theme.Spacing
 import kotlin.math.roundToInt
@@ -175,20 +177,35 @@ internal fun UnnamedControls(
     }
 }
 
-/** What an unknown find is, asked before the services are tried again. */
+/** What the find is, asked anew; [current] is marked. The services of the chosen kind are tried again. */
 @Composable
-internal fun KindSheet(onDismiss: () -> Unit, onKind: (FindKind) -> Unit) {
-    val kinds = listOf(FindKind.PLANT, FindKind.BIRD, FindKind.PLACE)
+internal fun KindSheet(current: FindKind, onDismiss: () -> Unit, onKind: (FindKind) -> Unit) {
+    val colors = AppTheme.colors
+    val type = MaterialTheme.typography
     AppSheet(stringResource(R.string.find_what_is_it), onDismiss) {
+        Spacer(Modifier.height(Spacing.xs))
+        Text(stringResource(R.string.find_kind_text), style = type.bodyMedium, color = colors.textSecondary)
         Spacer(Modifier.height(Spacing.s))
-        kinds.forEachIndexed { index, kind ->
-            val look = kind.look()
-            ListRow(
-                label = stringResource(look.label),
-                divider = index < kinds.lastIndex,
-                onClick = { onKind(kind) },
-                leading = { IconBadge(look.icon, look.tint, look.color, Sizes.iconSmall) },
-            )
+        AskedKinds.forEach { kind ->
+            val chosen = kind == current
+            Spacer(Modifier.height(Spacing.xs))
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(Sizes.control)
+                    .clip(MaterialTheme.shapes.medium)
+                    .background(if (chosen) colors.surfaceTint else colors.surface)
+                    .clickable { onKind(kind) }
+                    .padding(horizontal = Spacing.sm),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                FindPin(kind.look())
+                Spacer(Modifier.width(Spacing.sm))
+                val label = if (chosen) type.titleSmall else ParagraphStyle
+                Text(kind.answer(), Modifier.weight(1f), style = label, color = colors.textPrimary)
+                val check = painterResource(R.drawable.ic_check)
+                if (chosen) Icon(check, null, Modifier.size(Sizes.icon), colors.accent)
+            }
         }
     }
 }

@@ -4,6 +4,7 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.walkspot.app.data.find.FindStore
+import com.walkspot.app.data.find.asKind
 import com.walkspot.app.data.find.choosing
 import com.walkspot.app.data.find.renamed
 import com.walkspot.app.data.local.FindEntity
@@ -75,7 +76,7 @@ class FindCardViewModel @Inject constructor(
     fun rename(name: String) = change { it.renamed(name) }
 
     /** Asks the services again, as [kind] when the walker says anew what the find is. */
-    fun retry(kind: FindKind?) = change { it.copy(kind = kind ?: it.kind) }
+    fun retry(kind: FindKind?) = change { find -> kind?.let { find.asKind(it) } ?: find }
 
     // A new name wants its own description, a new kind its own service: both are asked at once.
     private fun change(transform: (FindEntity) -> FindEntity) {

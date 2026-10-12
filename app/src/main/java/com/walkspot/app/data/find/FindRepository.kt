@@ -21,9 +21,6 @@ import javax.inject.Inject
 private const val LONGEST_SIDE = 1600
 private const val JPEG_QUALITY = 85
 
-// How long the camera shows "Identifying" before it gives up waiting for a name.
-private const val NAMING_WAIT_MS = 12_000L
-
 // GPS loses the walker for minutes under trees: an older point of the route is not where the photo is
 // taken, so the phone is asked, but not for long.
 private const val FRESH_POINT_S = 30L
@@ -59,18 +56,18 @@ class FindRepository @Inject constructor(
     private val account: AccountStore,
     private val recorder: WalkRecorder,
     private val locations: LocationFinder,
-    private val identifier: FindIdentifier,
 ) {
     /**
      * Keeps [photo], which the camera gives [turned] degrees off, with the walk going on, as a find
-     * at the place the phone is, and names it if that can be done at once; null without a walk,
-     * a place or an owner.
+     * at the place the phone is; null without a walk, a place or an owner. It is a plain photo until
+     * the walker says what it shows.
      */
-    suspend fun add(photo: Bitmap, turned: Int, kind: FindKind): FindEntity? {
+    suspend fun add(photo: Bitmap, turned: Int): FindEntity? {
         val track = recorder.track.value ?: return null
         val place = place(track) ?: return null
         val owner = account.lastUserId() ?: return null
-        val find = newFind(UUID.randomUUID().toString(), owner, track.id, place, Instant.now(), kind)
+        val id = UUID.randomUUID().toString()
+        val find = newFind(id, owner, track.id, place, Instant.now(), FindKind.PHOTO)
         withContext(Dispatchers.IO) {
             val scale = keptScale(photo.width, photo.height)
             val upright = Matrix().apply {
@@ -81,9 +78,6 @@ class FindRepository @Inject constructor(
             photos.keep(find.photoPath) { kept.compress(Bitmap.CompressFormat.JPEG, JPEG_QUALITY, it) }
         }
         recorder.add(find)
-        // Without an answer in time the find keeps its kind and gets its name with a later sync.
-        val named = withTimeoutOrNull(NAMING_WAIT_MS) { identifier.identified(find) }
-        if (named != null && named != find) recorder.changeFind(find.id) { named }
         return find
     }
 

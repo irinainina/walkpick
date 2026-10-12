@@ -71,7 +71,9 @@ internal fun NavGraphBuilder.cameraRoute(navController: NavHostController) {
         }
         CameraScreen(
             state = state,
-            onClose = { navController.popBackStack() },
+            onClose = {
+                if (state.shot != null && !state.identifying) model.leave() else navController.popBackStack()
+            },
             onKind = model::choose,
             onFlash = model::toggleFlash,
             onZoom = model::nextZoom,

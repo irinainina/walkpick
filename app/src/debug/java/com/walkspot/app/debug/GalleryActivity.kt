@@ -53,7 +53,8 @@ private fun Page(page: String) {
         "walk-summary" -> WalkSummaryGallery()
         "gallery", "gallery-best", "gallery-select" -> GalleryGallery(page)
         "find-card", "find-unknown" -> FindCardGallery(unknown = page == "find-unknown")
-        "camera", "camera-identifying" -> CameraGallery(page == "camera-identifying")
+        "camera", "camera-what", "camera-identifying" ->
+            CameraGallery(identifying = page == "camera-identifying", asking = page == "camera-what")
         "profile" -> ProfileGallery()
         "settings" -> SettingsGallery(StepsAccess.COUNTING)
         "settings-off" -> SettingsGallery(StepsAccess.NOT_ALLOWED)

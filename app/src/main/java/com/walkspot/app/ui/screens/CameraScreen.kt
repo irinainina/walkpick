@@ -45,7 +45,7 @@ import com.walkspot.app.data.local.FindKind
 import com.walkspot.app.ui.camera.CameraState
 import com.walkspot.app.ui.components.CircleButton
 import com.walkspot.app.ui.components.DarkSystemBars
-import com.walkspot.app.ui.components.SegmentedControl
+import com.walkspot.app.ui.components.PhotoBox
 import com.walkspot.app.ui.theme.AppTheme
 import com.walkspot.app.ui.theme.CardShape
 import com.walkspot.app.ui.theme.PillShape
@@ -54,16 +54,6 @@ import com.walkspot.app.ui.theme.Spacing
 private val HintEdge = 40.dp
 private val HintHeight = 36.dp
 private val FocusSize = 196.dp
-private val PickerWidth = 296.dp
-
-// What a photo can be told to show; the rest is found out by the service of that kind. A photo taken
-// for its own sake - a sunset, a mushroom, a door - is asked about nowhere.
-private val Kinds = listOf(
-    FindKind.PLANT to R.string.find_plant,
-    FindKind.BIRD to R.string.find_bird,
-    FindKind.PLACE to R.string.find_place,
-    FindKind.PHOTO to R.string.find_photo,
-)
 private val FocusArm = 32.dp
 private val FocusLine = 3.dp
 private val BarTop = 36.dp
@@ -81,7 +71,10 @@ private const val SPINNER_ARC = 90f
 private const val TURN_MS = 900
 private const val FULL_TURN = 360f
 
-/** The camera of a walk; [viewfinder] is the live picture, laid under everything else. */
+/**
+ * The camera of a walk; [viewfinder] is the live picture, laid under everything else. A photo just
+ * taken covers it until the walker says what it shows.
+ */
 @Composable
 fun CameraScreen(
     state: CameraState,
@@ -102,6 +95,7 @@ fun CameraScreen(
             .background(colors.photoGround),
     ) {
         viewfinder()
+        state.shot?.photo?.let { PhotoBox(it, Modifier.fillMaxSize(), ground = colors.photoGround) }
         Column(Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally) {
             Row(
                 modifier = Modifier
@@ -117,7 +111,7 @@ fun CameraScreen(
                     tint = colors.onAccent,
                     ground = colors.photoButton,
                 )
-                if (!state.identifying) {
+                if (state.shot == null) {
                     CircleButton(
                         iconRes = R.drawable.ic_flash,
                         contentDescription = stringResource(R.string.camera_flash),
@@ -127,17 +121,21 @@ fun CameraScreen(
                     )
                 }
             }
-            if (state.identifying) {
-                Spacer(Modifier.weight(1f))
-                IdentifyingCard()
-            } else {
-                Spacer(Modifier.height(Spacing.l))
-                Hint(if (state.noPlace) R.string.camera_no_place else R.string.camera_hint)
-                Box(Modifier.weight(1f), contentAlignment = Alignment.Center) {
-                    FocusFrame()
-                    KindPicker(state.kind, onKind, Modifier.align(Alignment.BottomCenter))
+            when {
+                state.identifying -> {
+                    Spacer(Modifier.weight(1f))
+                    IdentifyingCard()
                 }
-                BottomBar(state.zoom, onZoom, onShutter, onFlip)
+                state.shot != null -> {
+                    Spacer(Modifier.weight(1f))
+                    KindAsk(onKind)
+                }
+                else -> {
+                    Spacer(Modifier.height(Spacing.l))
+                    Hint(if (state.noPlace) R.string.camera_no_place else R.string.camera_hint)
+                    Box(Modifier.weight(1f), contentAlignment = Alignment.Center) { FocusFrame() }
+                    BottomBar(state.zoom, onZoom, onShutter, onFlip)
+                }
             }
         }
     }
@@ -161,22 +159,6 @@ private fun Hint(textRes: Int) {
             maxLines = 1,
         )
     }
-}
-
-@Composable
-private fun KindPicker(kind: FindKind, onKind: (FindKind) -> Unit, modifier: Modifier = Modifier) {
-    val colors = AppTheme.colors
-    SegmentedControl(
-        options = Kinds.map { stringResource(it.second) },
-        selectedIndex = Kinds.indexOfFirst { it.first == kind },
-        onSelect = { onKind(Kinds[it].first) },
-        modifier = modifier
-            .padding(bottom = Spacing.m)
-            .width(PickerWidth),
-        ground = colors.photoHint,
-        selectedText = colors.textPrimary,
-        otherText = colors.onAccent,
-    )
 }
 
 // Four corners of a square: where to keep the subject.

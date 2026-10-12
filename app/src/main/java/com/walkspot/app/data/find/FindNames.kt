@@ -26,6 +26,20 @@ fun FindEntity.choosing(index: Int): FindEntity {
     )
 }
 
+/** The find said to be of another [kind]: what the service of the old kind found holds no longer. */
+fun FindEntity.asKind(kind: FindKind): FindEntity {
+    if (kind == this.kind) return this
+    return copy(
+        kind = kind,
+        name = null,
+        latinName = null,
+        match = null,
+        alternatives = emptyList(),
+        description = null,
+        wikipediaUrl = null,
+    )
+}
+
 /** The find under a name of the walker's own; the guesses of the service stay for a change of mind. */
 fun FindEntity.renamed(text: String): FindEntity {
     val typed = text.trim()

@@ -52,7 +52,7 @@ fun FindCardScreen(
     onWalk: (String) -> Unit,
     onChoose: (Int) -> Unit,
     onRename: (String) -> Unit,
-    /** Asks the services again, as the given kind when the find was unknown. */
+    /** Asks the services again, as the given kind when the walker says anew what the find is. */
     onRetry: (FindKind?) -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -96,6 +96,7 @@ fun FindCardScreen(
         FindCardBody(
             state = state,
             onWalk = onWalk,
+            onKind = { asking = true },
             onNotThis = { renaming = true },
             onName = onRename,
             // An unknown find has lost its kind: the walker says again what it is.
@@ -122,8 +123,8 @@ fun FindCardScreen(
         )
     }
     if (asking) {
-        KindSheet(onDismiss = { asking = false }) {
-            onRetry(it)
+        KindSheet(state.find.kind, onDismiss = { asking = false }) {
+            if (it != state.find.kind) onRetry(it)
             asking = false
         }
     }

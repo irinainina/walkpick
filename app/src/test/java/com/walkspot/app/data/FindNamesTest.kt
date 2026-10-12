@@ -1,5 +1,6 @@
 package com.walkspot.app.data
 
+import com.walkspot.app.data.find.asKind
 import com.walkspot.app.data.find.choosing
 import com.walkspot.app.data.find.options
 import com.walkspot.app.data.find.renamed
@@ -89,5 +90,20 @@ class FindNamesTest {
         )
 
         assertEquals("Old Town Hall" to null, church.choosing(1).let { it.name to it.match })
+    }
+
+    @Test
+    fun `a find said to be of another kind loses what the old service found`() {
+        val bird = yarrow.asKind(FindKind.BIRD)
+        assertEquals(FindKind.BIRD, bird.kind)
+        assertNull(bird.name)
+        assertNull(bird.latinName)
+        assertNull(bird.match)
+        assertEquals(emptyList<FindAlternative>(), bird.alternatives)
+    }
+
+    @Test
+    fun `a find said to be what it already is stays as it was`() {
+        assertSame(yarrow, yarrow.asKind(FindKind.PLANT))
     }
 }
