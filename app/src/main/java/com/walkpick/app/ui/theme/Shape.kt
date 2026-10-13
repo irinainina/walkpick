@@ -17,4 +17,6 @@ val CardShape = AppShapes.extraLarge
 
 val PillShape = RoundedCornerShape(percent = 50)
 
+val GlassRadius = 32.dp
+val GlassShape = RoundedCornerShape(GlassRadius)
 val SheetShape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp)

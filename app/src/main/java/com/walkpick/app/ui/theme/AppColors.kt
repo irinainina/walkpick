@@ -54,6 +54,9 @@ data class AppColors(
     val photoBar: Color,
     /** The ground of a button or a caption over a photo shown on the dark ground. */
     val photoChrome: Color,
+    /** A card of glass over a photo and the light line around it. */
+    val glass: Color,
+    val glassEdge: Color,
     val streak: Color,
     /** The badge behind a streak or notice icon. */
     val streakTint: Color,
@@ -118,6 +121,8 @@ private fun appColors(deep: Color, accent: Color, light: Color) = AppColors(
     photoHint = Black.copy(alpha = 0.4f),
     photoBar = Black.copy(alpha = 0.48f),
     photoChrome = White.copy(alpha = 0.12f),
+    glass = White.copy(alpha = 0.16f),
+    glassEdge = White.copy(alpha = 0.55f),
     streak = Orange,
     streakTint = Peach,
     positive = Green,

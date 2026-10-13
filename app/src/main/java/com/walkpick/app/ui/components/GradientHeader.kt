@@ -23,7 +23,8 @@ private val WaveHeight = 72.dp
 // How much of the photo the gradient hides: thinner, and the white text over the bright leaf is lost.
 private const val VEIL = 0.72f
 
-private fun Season.photo() = when (this) {
+/** The photo of a season: under the header and over the whole sign-in screen. */
+internal fun Season.photo() = when (this) {
     Season.SPRING -> R.drawable.header_spring
     Season.SUMMER -> R.drawable.header_summer
     Season.AUTUMN -> R.drawable.header_autumn
