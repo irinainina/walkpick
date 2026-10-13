@@ -4,6 +4,8 @@ export class Settings {
     readonly port: number,
     /** The Supabase project that signs the users in, without a slash at the end. */
     readonly supabaseUrl: string,
+    /** The Postgres of the same project, through its connection pooler. */
+    readonly databaseUrl: string,
   ) {}
 }
 
@@ -24,5 +26,11 @@ export function readSettings(
       'SUPABASE_URL must be the https address of the Supabase project',
     );
   }
-  return new Settings(port, supabaseUrl);
+  const databaseUrl = env.DATABASE_URL;
+  if (!databaseUrl?.startsWith('postgres')) {
+    throw new Error(
+      'DATABASE_URL must be the postgres:// address of the database',
+    );
+  }
+  return new Settings(port, supabaseUrl, databaseUrl);
 }

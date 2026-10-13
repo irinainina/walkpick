@@ -4,6 +4,7 @@ import request from 'supertest';
 import { App } from 'supertest/types';
 import { configure } from './../src/app';
 import { AppModule } from './../src/app.module';
+import { Accounts } from './../src/accounts';
 import { SigningKeys } from './../src/auth/signing-keys';
 import { ISSUER, publicKey, signToken } from './tokens';
 
@@ -19,9 +20,15 @@ describe('the service', () => {
 
   beforeAll(async () => {
     process.env.SUPABASE_URL = 'https://project.supabase.co';
+    process.env.DATABASE_URL = 'postgresql://nobody@localhost:1/none';
     const module = await Test.createTestingModule({ imports: [AppModule] })
       .overrideProvider(SigningKeys)
       .useValue({ issuer: ISSUER, find: () => Promise.resolve(publicKey) })
+      .overrideProvider(Accounts)
+      .useValue({
+        find: (id: string) =>
+          Promise.resolve({ id, profile: null, settings: null }),
+      })
       .compile();
     app = module.createNestApplication();
     configure(app);
@@ -43,5 +50,7 @@ describe('the service', () => {
   });
 
   it('takes the user from the token', () =>
-    get('/v1/me', token('user-a')).expect(200).expect({ id: 'user-a' }));
+    get('/v1/me', token('user-a'))
+      .expect(200)
+      .expect({ id: 'user-a', profile: null, settings: null }));
 });
