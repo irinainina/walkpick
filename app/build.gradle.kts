@@ -16,12 +16,12 @@ plugins {
 }
 
 android {
-    namespace = "com.walkspot.app"
+    namespace = "com.walkpick.app"
     // 37 is required by current androidx libraries
     compileSdk = 37
 
     defaultConfig {
-        applicationId = "com.walkspot.app"
+        applicationId = "com.walkpick.app"
         minSdk = 26
         targetSdk = 36
         versionCode = 1

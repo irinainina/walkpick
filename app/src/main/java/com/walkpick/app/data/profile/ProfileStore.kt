@@ -1,0 +1,58 @@
+package com.walkpick.app.data.profile
+
+import androidx.datastore.core.DataStore
+import androidx.datastore.preferences.core.MutablePreferences
+import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.core.doublePreferencesKey
+import androidx.datastore.preferences.core.intPreferencesKey
+import androidx.datastore.preferences.core.stringPreferencesKey
+import androidx.datastore.preferences.core.stringSetPreferencesKey
+import com.walkpick.app.data.local.HealthKind
+import com.walkpick.app.data.sync.SyncedPreferences
+import java.time.LocalDate
+import javax.inject.Inject
+
+/** The profile as the phone keeps it. */
+class ProfileStore @Inject constructor(
+    store: DataStore<Preferences>,
+) : SyncedPreferences<Profile>(store, "profile") {
+
+    override fun read(saved: Preferences): Profile {
+        val defaults = Profile()
+        return Profile(
+            sex = saved[SEX]?.let(Sex::valueOf),
+            birthDate = saved[BIRTH_DATE]?.let(LocalDate::parse),
+            heightCm = saved[HEIGHT],
+            dailyGoal = saved[GOAL] ?: defaults.dailyGoal,
+            ownTargetWeightKg = saved[TARGET_WEIGHT],
+            targetSystolic = saved[TARGET_SYSTOLIC] ?: defaults.targetSystolic,
+            targetDiastolic = saved[TARGET_DIASTOLIC] ?: defaults.targetDiastolic,
+            targetGlucose = saved[TARGET_GLUCOSE] ?: defaults.targetGlucose,
+            healthTabs = saved[TABS]?.map(HealthKind::valueOf)?.toSet() ?: defaults.healthTabs,
+        )
+    }
+
+    override fun write(saved: MutablePreferences, value: Profile) {
+        saved.put(SEX, value.sex?.name)
+        saved.put(BIRTH_DATE, value.birthDate?.toString())
+        saved.put(HEIGHT, value.heightCm)
+        saved.put(GOAL, value.dailyGoal)
+        saved.put(TARGET_WEIGHT, value.ownTargetWeightKg)
+        saved.put(TARGET_SYSTOLIC, value.targetSystolic)
+        saved.put(TARGET_DIASTOLIC, value.targetDiastolic)
+        saved.put(TARGET_GLUCOSE, value.targetGlucose)
+        saved.put(TABS, value.healthTabs.map { it.name }.toSet())
+    }
+
+    private companion object {
+        val SEX = stringPreferencesKey("profile_sex")
+        val BIRTH_DATE = stringPreferencesKey("profile_birth_date")
+        val HEIGHT = intPreferencesKey("profile_height_cm")
+        val GOAL = intPreferencesKey("profile_daily_goal")
+        val TARGET_WEIGHT = doublePreferencesKey("profile_target_weight_kg")
+        val TARGET_SYSTOLIC = intPreferencesKey("profile_target_systolic")
+        val TARGET_DIASTOLIC = intPreferencesKey("profile_target_diastolic")
+        val TARGET_GLUCOSE = doublePreferencesKey("profile_target_glucose")
+        val TABS = stringSetPreferencesKey("profile_health_tabs")
+    }
+}

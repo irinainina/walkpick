@@ -1,0 +1,69 @@
+package com.walkpick.app.debug
+
+import androidx.compose.runtime.Composable
+import com.walkpick.app.data.local.FindAlternative
+import com.walkpick.app.data.local.FindEntity
+import com.walkpick.app.data.local.FindKind
+import com.walkpick.app.data.local.WalkEntity
+import com.walkpick.app.ui.find.FindCardState
+import com.walkpick.app.ui.screens.FindCardScreen
+import java.time.LocalDateTime
+import java.time.ZoneId
+
+private val taken = LocalDateTime.of(2026, 9, 29, 18, 52).atZone(ZoneId.systemDefault()).toInstant()
+
+private val yarrow = FindEntity(
+    id = "find",
+    walkId = "walk",
+    takenAt = taken,
+    latitude = 50.4478,
+    longitude = 30.5222,
+    photoPath = "",
+    kind = FindKind.PLANT,
+    name = "Common yarrow",
+    latinName = "Achillea millefolium",
+    match = 0.94f,
+    description = "A hardy wildflower with flat clusters of tiny white flowers. It grows in meadows and " +
+        "along paths and blooms from June to September.",
+    wikipediaUrl = "https://en.wikipedia.org/wiki/Achillea_millefolium",
+    alternatives = listOf(
+        FindAlternative("Sneezewort", "Achillea ptarmica", 0.04f),
+        FindAlternative("Oxeye daisy", "Leucanthemum vulgare", 0.02f),
+    ),
+    updatedAt = taken,
+)
+
+private val nameless = yarrow.copy(
+    kind = FindKind.UNKNOWN,
+    name = null,
+    latinName = null,
+    match = null,
+    description = null,
+    wikipediaUrl = null,
+)
+
+private val walk = WalkEntity(
+    id = "walk",
+    number = 312,
+    startedAt = taken.minusSeconds(720),
+    endedAt = taken.plusSeconds(2160),
+    durationS = 2880,
+    name = "Misty Evening",
+    updatedAt = taken,
+)
+
+/** The card of a find with the data of the Figma frame, for the comparison with the design. */
+@Composable
+fun FindCardGallery(unknown: Boolean) {
+    FindCardScreen(
+        state = FindCardState(if (unknown) nameless else yarrow, walk = walk),
+        onBack = {},
+        onBest = {},
+        onDelete = {},
+        onPhoto = {},
+        onWalk = {},
+        onChoose = {},
+        onRename = {},
+        onRetry = {},
+    )
+}

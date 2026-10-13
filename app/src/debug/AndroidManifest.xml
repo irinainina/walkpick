@@ -10,7 +10,7 @@
             android:name=".debug.GalleryActivity"
             android:excludeFromRecents="true"
             android:exported="true"
-            android:taskAffinity="com.walkspot.app.debug"
+            android:taskAffinity="com.walkpick.app.debug"
             tools:ignore="ExportedActivity" />
 
         <!-- Exported so that adb can run the sync without a screen; debug builds only. -->

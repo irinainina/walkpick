@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Android 12 and later draw their own splash screen: the dark logo on beige. -->
+    <!-- Android 12 and later draw their own splash screen: the white logo on the green of the icon. -->
     <style name="Theme.WalkPick" parent="android:Theme.Material.Light.NoActionBar">
         <item name="android:windowBackground">@color/canvas</item>
         <item name="android:windowLightStatusBar">true</item>
