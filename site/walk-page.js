@@ -23,3 +23,13 @@ const highlight = (id, on) => {
   area.addEventListener('mouseover', event => event.target.closest('[data-find]') && highlight(event.target.closest('[data-find]').dataset.find, true));
   area.addEventListener('mouseout', event => event.target.closest('[data-find]') && highlight(event.target.closest('[data-find]').dataset.find, false));
 });
+
+// The name and the note are saved when the field is left
+const save = (field, read) => field.addEventListener('blur', () => {
+  const value = read().trim();
+  const key = field.id;
+  if (value === (walk[key] || '')) return;
+  live.api(`/walks/${walk.id}`, 'PATCH', { [key]: value }).then(saved => { walk[key] = saved[key]; });
+});
+save(document.querySelector('#name'), () => document.querySelector('#name').textContent);
+save(document.querySelector('#note'), () => document.querySelector('#note').value);

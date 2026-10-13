@@ -12,7 +12,7 @@ const findPin = find => {
   pin.className = find.photo ? 'pin' : 'pin pin-dot';
   pin.href = `photo-page.html?id=${find.id}`;
   pin.dataset.find = find.id;
-  pin.style.background = find.photo ? `center / cover url(assets/photos/${find.id}.jpg)` : kindColors[find.kind];
+  pin.style.background = find.photo ? `center / cover url("${find.photo}")` : kindColors[find.kind];
   pin.setAttribute('aria-label', findName(find));
   return pin;
 };

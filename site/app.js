@@ -80,7 +80,7 @@ const walkStats = walk => stat(number(walk.m / 1000, 1), t('km', 'км')) + stat
 const photosOf = walk => finds.filter(find => find.walk === walk.id).reverse();
 const findName = find => find.name || t(...kinds[find.kind]);
 const findPicture = find => (find.photo
-  ? `<img src="assets/photos/${find.id}.jpg" alt="" loading="lazy">`
+  ? `<img src="${find.photo}" alt="" loading="lazy">`
   : `<span class="no-photo" data-kind="${find.kind}">${icon(`kind-${find.kind}`)}</span>`);
 const findTile = (find, caption) => `<a class="tile" href="photo-page.html?id=${find.id}" data-find="${find.id}">
   ${findPicture(find)}
@@ -90,6 +90,7 @@ const findTile = (find, caption) => `<a class="tile" href="photo-page.html?id=${
 
 // A walk drawn as a small line: longitudes are squeezed by cos(latitude) to keep the shape true
 const routeSvg = walk => {
+  if (!walk.route.length) return '<svg class="route-thumb" viewBox="0 0 64 64"></svg>';
   const squeeze = Math.cos(walk.route[0][1] * Math.PI / 180);
   const points = walk.route.map(([lon, lat]) => [lon * squeeze, -lat]);
   const xs = points.map(point => point[0]);
