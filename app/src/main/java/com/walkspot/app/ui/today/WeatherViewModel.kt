@@ -3,6 +3,7 @@ package com.walkspot.app.ui.today
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.walkspot.app.data.walk.LocationFinder
+import com.walkspot.app.data.walk.SeasonStore
 import com.walkspot.app.data.walk.WalkWeather
 import com.walkspot.app.data.walk.Weather
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -21,6 +22,7 @@ private val KeepFor = Duration.ofMinutes(30)
 class WeatherViewModel @Inject constructor(
     private val locations: LocationFinder,
     private val weather: Weather,
+    private val seasons: SeasonStore,
 ) : ViewModel() {
 
     private val current = MutableStateFlow<WalkWeather?>(null)
@@ -35,8 +37,14 @@ class WeatherViewModel @Inject constructor(
         if (last != null && Duration.between(last, Instant.now()) < KeepFor) return
         asked = Instant.now()
         viewModelScope.launch {
-            val answer = locations.find()?.let { weather.at(it.latitude, it.longitude) }
-            if (answer == null) asked = null else current.value = answer
+            val place = locations.find()
+            val answer = place?.let { weather.at(it.latitude, it.longitude) }
+            if (answer == null) {
+                asked = null
+            } else {
+                current.value = answer
+                seasons.see(answer, south = place.latitude < 0)
+            }
         }
     }
 }

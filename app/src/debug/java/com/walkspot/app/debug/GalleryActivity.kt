@@ -6,13 +6,14 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.runtime.Composable
 import com.walkspot.app.data.steps.StepsAccess
+import com.walkspot.app.data.walk.Season
 import com.walkspot.app.ui.screens.SignInCodeScreen
 import com.walkspot.app.ui.screens.SignInEmailScreen
 import com.walkspot.app.ui.screens.SignInScreen
 import com.walkspot.app.ui.theme.WalkSpotTheme
 
 /**
- * adb shell am start -n com.walkspot.app/.debug.GalleryActivity [--es page <page>]
+ * adb shell am start -n com.walkspot.app/.debug.GalleryActivity [--es page <page>] [--es season winter]
  * Pages: charts, signin, signin-email, signin-code, steps, today, today-off, today-walking,
  * stats-week, stats-month, stats-year,
  * stats-all,
@@ -26,7 +27,8 @@ class GalleryActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            WalkSpotTheme {
+            val season = intent.getStringExtra("season")?.uppercase() ?: Season.AUTUMN.name
+            WalkSpotTheme(Season.valueOf(season)) {
                 val page = intent.getStringExtra("page").orEmpty()
                 if (page.endsWith("-new")) NewUserGallery(page) else Page(page)
             }

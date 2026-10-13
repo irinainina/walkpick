@@ -3,14 +3,20 @@ package com.walkspot.app.ui.theme
 import androidx.compose.ui.graphics.Color
 
 // Which colours exist; AppColors says what each one is for.
-internal val Olive = Color(0xFF5F6B2D)
-internal val Sage = Color(0xFFB9C06A)
-
-// The gradient of the header and the main buttons. Its gold end is darkened: white text on it is
-// 3.3:1, on a brighter gold it cannot be read.
-internal val Fern = Color(0xFF4F5A24)
-internal val Bronze = Color(0xFF8C7A2A)
-internal val Gold = Color(0xFFAD8A28)
+// A season is three shades of one colour of its header photo: the gradient of the header and the
+// main buttons runs through them. The light ends are held dark enough for white text, about 3.4:1.
+internal val SpringDeep = Color(0xFF35421F)
+internal val Spring = Color(0xFF4F6030)
+internal val SpringLight = Color(0xFF8E9C48)
+internal val SummerDeep = Color(0xFF2C4423)
+internal val Summer = Color(0xFF3F5A30)
+internal val SummerLight = Color(0xFF7D9440)
+internal val AutumnDeep = Color(0xFF5A3A1C)
+internal val Autumn = Color(0xFF76502D)
+internal val AutumnLight = Color(0xFFA87C34)
+internal val WinterDeep = Color(0xFF2C3438)
+internal val Winter = Color(0xFF414B50)
+internal val WinterLight = Color(0xFF7C8F98)
 internal val Sand = Color(0xFFD9C7A0)
 internal val Linen = Color(0xFFEADFC6)
 internal val Ink = Color(0xFF3B2A1E)

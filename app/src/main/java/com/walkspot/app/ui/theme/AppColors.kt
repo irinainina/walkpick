@@ -11,6 +11,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.LinearGradientShader
 import androidx.compose.ui.graphics.Shader
 import androidx.compose.ui.graphics.ShaderBrush
+import com.walkspot.app.data.walk.Season
 
 @Immutable
 data class AppColors(
@@ -66,7 +67,7 @@ data class AppColors(
 
 // Figma turns the gradient inside the box of the node: the colour is 0.7 * (x / width + y / height).
 private const val DIAGONAL_SCALE = 0.7f
-private const val BRONZE_STOP = 0.75f
+private const val ACCENT_STOP = 0.6f
 
 private class DiagonalGradient(private val colors: List<Color>) : ShaderBrush() {
     override fun createShader(size: Size): Shader {
@@ -76,22 +77,29 @@ private class DiagonalGradient(private val colors: List<Color>) : ShaderBrush() 
     }
 }
 
-internal val walkSpotColors = AppColors(
+internal fun appColors(season: Season): AppColors = when (season) {
+    Season.SPRING -> appColors(SpringDeep, Spring, SpringLight)
+    Season.SUMMER -> appColors(SummerDeep, Summer, SummerLight)
+    Season.AUTUMN -> appColors(AutumnDeep, Autumn, AutumnLight)
+    Season.WINTER -> appColors(WinterDeep, Winter, WinterLight)
+}
+
+private fun appColors(deep: Color, accent: Color, light: Color) = AppColors(
     textPrimary = Ink,
     textSecondary = Grey,
     textInactive = Tan,
-    accent = Olive,
-    accentLight = Sage,
+    accent = accent,
+    accentLight = light,
     onAccent = White,
     onAccentOverlay = White.copy(alpha = 0.2f),
     accentGradient = Brush.linearGradient(
-        0f to Fern,
-        BRONZE_STOP to Bronze,
-        1f to Gold,
+        0f to deep,
+        ACCENT_STOP to accent,
+        1f to light,
         start = Offset(0f, Float.POSITIVE_INFINITY),
         end = Offset(Float.POSITIVE_INFINITY, 0f),
     ),
-    accentDiagonal = DiagonalGradient(listOf(Olive, Sage)),
+    accentDiagonal = DiagonalGradient(listOf(accent, light)),
     canvas = Canvas,
     mapGround = Fog,
     surface = White,
@@ -116,11 +124,18 @@ internal val walkSpotColors = AppColors(
     dangerTint = Blush,
 )
 
-internal val LocalAppColors = staticCompositionLocalOf { walkSpotColors }
+internal val LocalSeason = staticCompositionLocalOf { Season.AUTUMN }
+
+internal val LocalAppColors = staticCompositionLocalOf { appColors(Season.AUTUMN) }
 
 object AppTheme {
     val colors: AppColors
         @Composable
         @ReadOnlyComposable
         get() = LocalAppColors.current
+
+    val season: Season
+        @Composable
+        @ReadOnlyComposable
+        get() = LocalSeason.current
 }

@@ -11,6 +11,7 @@ import kotlinx.coroutines.withTimeoutOrNull
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerializationException
+import kotlinx.serialization.Transient
 import java.io.IOException
 import java.time.LocalDateTime
 import java.time.ZoneId
@@ -25,12 +26,14 @@ private const val WEATHER_URL = "https://api.open-meteo.com/v1/forecast"
 // The walk is over and its summary waits for the name: a slow answer is not worth the wait.
 private const val WEATHER_WAIT_MS = 3_000L
 
+private const val WEEK_DAYS = 7
+
 private const val MORNING_FROM = 5
 private const val AFTERNOON_FROM = 12
 private const val EVENING_FROM = 17
 private const val NIGHT_FROM = 22
 private const val MONTHS = 12
-private const val HALF_YEAR = 6
+internal const val HALF_YEAR = 6
 private const val SEASON_MONTHS = 3
 
 private const val COLD_C = 8.0
@@ -52,14 +55,22 @@ data class WalkWeather(
     @SerialName("weather_code") val code: Int,
     @SerialName("temperature_2m") val celsius: Double,
     @SerialName("wind_speed_10m") val windMs: Double,
+    @SerialName("snow_depth") val snowM: Double = 0.0,
+    /** The mean of the last week, which tells the season better than one hour does. */
+    @Transient val weekCelsius: Double? = null,
 )
 
 @Serializable
-private data class WeatherAnswer(val current: WalkWeather)
+private data class WeatherDays(@SerialName("temperature_2m_mean") val means: List<Double?> = emptyList())
+
+@Serializable
+private data class WeatherAnswer(val current: WalkWeather, val daily: WeatherDays? = null)
 
 /** The weather in an answer of Open-Meteo; null when the answer is not one. */
 internal fun parseWeather(answer: String): WalkWeather? = try {
-    SyncJson.decodeFromString<WeatherAnswer>(answer).current
+    val read = SyncJson.decodeFromString<WeatherAnswer>(answer)
+    val days = read.daily?.means.orEmpty().filterNotNull()
+    read.current.copy(weekCelsius = days.takeIf { it.isNotEmpty() }?.average())
 } catch (_: SerializationException) {
     null
 }
@@ -72,10 +83,11 @@ internal fun timeOfDay(hour: Int): String = when (hour) {
 }
 
 /** The season of a month, 1 to 12; south of the equator the year is half a year ahead. */
-internal fun season(month: Int, south: Boolean): String {
-    val northern = if (south) (month + HALF_YEAR - 1) % MONTHS + 1 else month
-    return listOf("Winter", "Spring", "Summer", "Autumn")[northern % MONTHS / SEASON_MONTHS]
-}
+internal fun season(month: Int, south: Boolean): String =
+    listOf("Winter", "Spring", "Summer", "Autumn")[northernMonth(month, south) % MONTHS / SEASON_MONTHS]
+
+internal fun northernMonth(month: Int, south: Boolean): Int =
+    if (south) (month + HALF_YEAR - 1) % MONTHS + 1 else month
 
 /** What the weather of a walk is remembered by; null when nothing happens in it. */
 internal fun weatherEvent(weather: WalkWeather): String? = when {
@@ -150,7 +162,10 @@ class Weather @Inject constructor() {
         val answer = webClient.get(WEATHER_URL) {
             parameter("latitude", latitude)
             parameter("longitude", longitude)
-            parameter("current", "temperature_2m,weather_code,wind_speed_10m")
+            parameter("current", "temperature_2m,weather_code,wind_speed_10m,snow_depth")
+            parameter("daily", "temperature_2m_mean")
+            parameter("past_days", WEEK_DAYS)
+            parameter("forecast_days", 1)
             parameter("wind_speed_unit", "ms")
         }
         if (answer.status.isSuccess()) parseWeather(answer.bodyAsText()) else null

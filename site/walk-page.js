@@ -1,6 +1,6 @@
 const walk = walks.find(item => item.id === param('id')) || walks[0];
 const photos = photosOf(walk);
-document.title = `${walkName(walk)} — WalkSpot`;
+document.title = `${walkName(walk)} — WalkPick`;
 document.querySelector('#name').textContent = walkName(walk);
 document.querySelector('#when').textContent = `${day(walk.start, { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })} · ${clock(walk.start)}`;
 document.querySelector('#rename').addEventListener('click', () => document.querySelector('#name').focus());

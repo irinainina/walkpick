@@ -15,7 +15,7 @@ object AppShadows {
 
     // Pulled in by 8, so the shadow of a wide button ends 16 below it: clear of what stands under it.
     val button = shadow(y = 8.dp, blur = 16.dp, alpha = 0.12f, spread = (-8).dp)
-    val accentButton = shadow(y = 8.dp, blur = 16.dp, alpha = 0.3f, color = Olive, spread = (-8).dp)
+    val accentButton = shadow(y = 8.dp, blur = 16.dp, alpha = 0.3f, color = Ink, spread = (-8).dp)
     val circleButton = shadow(y = 4.dp, blur = 12.dp, alpha = 0.12f)
     val segment = shadow(y = 2.dp, blur = 8.dp, alpha = 0.16f)
     val chip = shadow(y = 2.dp, blur = 8.dp, alpha = 0.12f)

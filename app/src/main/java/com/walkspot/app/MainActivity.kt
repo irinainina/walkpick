@@ -15,6 +15,8 @@ import androidx.compose.runtime.produceState
 import androidx.compose.runtime.setValue
 import androidx.core.view.ViewCompat
 import com.walkspot.app.data.account.AccountStore
+import com.walkspot.app.data.walk.Season
+import com.walkspot.app.data.walk.SeasonStore
 import com.walkspot.app.ui.navigation.WalkSpotApp
 import com.walkspot.app.ui.theme.WalkSpotTheme
 import dagger.hilt.android.AndroidEntryPoint
@@ -25,6 +27,9 @@ class MainActivity : ComponentActivity() {
 
     @Inject
     lateinit var account: AccountStore
+
+    @Inject
+    lateinit var seasons: SeasonStore
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -41,11 +46,14 @@ class MainActivity : ComponentActivity() {
         var walkAsked by mutableIntStateOf(if (intent.asksForWalk()) 1 else 0)
         addOnNewIntentListener { if (it.asksForWalk()) walkAsked++ }
         setContent {
-            WalkSpotTheme {
-                // Nothing is drawn until the phone knows whether somebody is signed in.
-                val signedIn by produceState<Boolean?>(null) { value = account.isSignedIn() }
-                if (signedIn != null && barsKnown) {
-                    WalkSpotApp(signedIn == true, walkAsked, onStartShown = { firstScreenReady = true })
+            // Nothing is drawn until the phone knows the season and whether somebody is signed in.
+            val season by produceState<Season?>(null) { seasons.now.collect { value = it } }
+            val signedIn by produceState<Boolean?>(null) { value = account.isSignedIn() }
+            season?.let {
+                WalkSpotTheme(it) {
+                    if (signedIn != null && barsKnown) {
+                        WalkSpotApp(signedIn == true, walkAsked, onStartShown = { firstScreenReady = true })
+                    }
                 }
             }
         }

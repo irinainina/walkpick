@@ -15,12 +15,20 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.walkspot.app.R
+import com.walkspot.app.data.walk.Season
 import com.walkspot.app.ui.theme.AppTheme
 
 private val WaveHeight = 72.dp
 
 // How much of the photo the gradient hides: thinner, and the white text over the bright leaf is lost.
 private const val VEIL = 0.72f
+
+private fun Season.photo() = when (this) {
+    Season.SPRING -> R.drawable.header_spring
+    Season.SUMMER -> R.drawable.header_summer
+    Season.AUTUMN -> R.drawable.header_autumn
+    Season.WINTER -> R.drawable.header_winter
+}
 
 /** The top of a screen: a photo under the gradient, cut by the wave; [height] includes the status bar. */
 @Composable
@@ -35,7 +43,7 @@ fun GradientHeader(
             .height(height),
     ) {
         Image(
-            painter = painterResource(R.drawable.header_photo),
+            painter = painterResource(AppTheme.season.photo()),
             contentDescription = null,
             modifier = Modifier.matchParentSize(),
             contentScale = ContentScale.Crop,

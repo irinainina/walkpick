@@ -28,7 +28,7 @@ private const val SEARCH_URL = "https://en.wikipedia.org/w/api.php"
 private const val SUMMARY_URL = "https://en.wikipedia.org/api/rest_v1/page/summary/"
 
 // Wikipedia refuses requests that do not say who is asking.
-private const val ASKED_BY = "WalkSpot/${BuildConfig.VERSION_NAME} (Android; ${BuildConfig.APPLICATION_ID})"
+private const val ASKED_BY = "WalkPick/${BuildConfig.VERSION_NAME} (Android; ${BuildConfig.APPLICATION_ID})"
 
 // One of the widths Wikipedia keeps ready; a phone screen is about this wide.
 private const val CARD_PICTURE_PX = 960

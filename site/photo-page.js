@@ -8,13 +8,13 @@ const set = (id, text) => {
   el.hidden = !text;
 };
 
-document.title = `${findName(shown)} — WalkSpot`;
+document.title = `${findName(shown)} — WalkPick`;
 document.querySelector('#photo').innerHTML = findPicture(shown);
 title.textContent = findName(shown);
 set('#kind', t(...kinds[shown.kind]));
 set('#latin', shown.latin);
-set('#text', shown.text || (shown.name ? '' : t('WalkSpot could not name this one. Give it a name yourself.', 'WalkSpot не смог это назвать. Дайте название сами.')));
-set('#match', shown.match && t(`WalkSpot is ${shown.match}% sure about the name.`, `WalkSpot уверен в названии на ${shown.match}%.`));
+set('#text', shown.text || (shown.name ? '' : t('WalkPick could not name this one. Give it a name yourself.', 'WalkPick не смог это назвать. Дайте название сами.')));
+set('#match', shown.match && t(`WalkPick is ${shown.match}% sure about the name.`, `WalkPick уверен в названии на ${shown.match}%.`));
 set('#seen', same.length > 1 ? t(`Met ${same.length} times`, `Встречено раз: ${same.length}`) : t('Met once', 'Встречено один раз'));
 set('#taken', `${day(shown.at, { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })} · ${clock(shown.at)}`);
 

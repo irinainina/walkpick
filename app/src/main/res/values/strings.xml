@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">WalkSpot</string>
+    <string name="app_name">WalkPick</string>
     <string name="back">Back</string>
     <string name="tab_today">Today</string>
     <string name="tab_map">Map</string>
@@ -142,7 +142,7 @@
     <string name="walk_mood_after">How do you feel now?</string>
     <string name="walk_keep_walking">Keep walking</string>
     <string name="walk_battery_title">Count every step</string>
-    <string name="walk_battery_text">This phone switches the step sensor off a few minutes after the screen goes dark. Choose No restrictions for WalkSpot to keep counting.</string>
+    <string name="walk_battery_text">This phone switches the step sensor off a few minutes after the screen goes dark. Choose No restrictions for WalkPick to keep counting.</string>
     <string name="walk_battery_open">Open battery settings</string>
     <string name="walk_battery_later">Not now</string>
     <string name="walk_back_to_start">%s back to start</string>
@@ -238,7 +238,7 @@
     <string name="walk_delete_text">Its route and note will be removed for good. This can\'t be undone.</string>
     <string name="walk_channel">Walk recording</string>
     <string name="walk_notification_title">Walk in progress</string>
-    <string name="walk_notification_text">WalkSpot is recording your route</string>
+    <string name="walk_notification_text">WalkPick is recording your route</string>
     <string name="health_how_feel">How do you feel?</string>
     <string name="health_date_time">Date and time</string>
     <string name="health_lower_wrong">Lower than systolic</string>
