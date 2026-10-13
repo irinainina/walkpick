@@ -1,56 +1,60 @@
-import { Test } from '@nestjs/testing';
-import { INestApplication } from '@nestjs/common';
 import request from 'supertest';
-import { App } from 'supertest/types';
-import { configure } from './../src/app';
-import { AppModule } from './../src/app.module';
-import { Accounts } from './../src/accounts';
-import { SigningKeys } from './../src/auth/signing-keys';
-import { ISSUER, publicKey, signToken } from './tokens';
+import { start, Started } from './start';
+import { ISSUER, signToken } from './tokens';
 
-const token = (sub: string, exp = Date.now() / 1000 + 60) =>
-  signToken({ iss: ISSUER, aud: 'authenticated', sub, exp });
+const USER = '00000000-0000-4000-8000-00000000000a';
 
 describe('the service', () => {
-  let app: INestApplication<App>;
-  const get = (path: string, bearer?: string) =>
-    request(app.getHttpServer())
-      .get(path)
-      .set(bearer ? { Authorization: `Bearer ${bearer}` } : {});
+  let it_: Started;
 
   beforeAll(async () => {
-    process.env.SUPABASE_URL = 'https://project.supabase.co';
-    process.env.DATABASE_URL = 'postgresql://nobody@localhost:1/none';
-    const module = await Test.createTestingModule({ imports: [AppModule] })
-      .overrideProvider(SigningKeys)
-      .useValue({ issuer: ISSUER, find: () => Promise.resolve(publicKey) })
-      .overrideProvider(Accounts)
-      .useValue({
-        find: (id: string) =>
-          Promise.resolve({ id, profile: null, settings: null }),
-      })
-      .compile();
-    app = module.createNestApplication();
-    configure(app);
-    await app.init();
+    it_ = await start();
+    await it_.sql
+      .exec(`insert into profiles (id, name) values ('${USER}', 'Ira');
+      insert into settings (user_id, distance_unit) values ('${USER}', 'mi');`);
   });
 
-  afterAll(() => app.close());
+  afterAll(() => it_.app.close());
 
   it('says it is alive without a token', () =>
-    get('/health').expect(200).expect({ status: 'ok' }));
+    it_.get('/health').expect(200).expect({ status: 'ok' }));
 
   it('answers 401 without a token, with a wrong one and with an expired one', async () => {
     const unauthorized = {
       error: { code: 'unauthorized', message: 'a valid token is required' },
     };
-    await get('/v1/me').expect(401).expect(unauthorized);
-    await get('/v1/me', 'a.b.c').expect(401);
-    await get('/v1/me', token('user-a', 1)).expect(401);
+    const expired = signToken({
+      iss: ISSUER,
+      aud: 'authenticated',
+      sub: USER,
+      exp: 1,
+    });
+    const server = request(it_.app.getHttpServer());
+    await it_.get('/v1/me').expect(401).expect(unauthorized);
+    await it_.get('/v1/walks').expect(401);
+    await server.get('/v1/me').set('Authorization', 'Bearer a.b.c').expect(401);
+    await server
+      .get('/v1/me')
+      .set('Authorization', `Bearer ${expired}`)
+      .expect(401);
   });
 
-  it('takes the user from the token', () =>
-    get('/v1/me', token('user-a'))
+  it('gives the profile and the settings of the user of the token', async () => {
+    const { body } = await it_.get('/v1/me', USER).expect(200);
+    expect(body).toMatchObject({
+      id: USER,
+      profile: { name: 'Ira', daily_goal: 5000 },
+      settings: { distance_unit: 'mi' },
+    });
+  });
+
+  it('gives nulls to a user the phone has written nothing of yet', () =>
+    it_
+      .get('/v1/me', '00000000-0000-4000-8000-00000000000c')
       .expect(200)
-      .expect({ id: 'user-a', profile: null, settings: null }));
+      .expect({
+        id: '00000000-0000-4000-8000-00000000000c',
+        profile: null,
+        settings: null,
+      }));
 });

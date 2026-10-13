@@ -1,5 +1,6 @@
 import { Injectable, OnModuleDestroy } from '@nestjs/common';
-import { drizzle, NodePgDatabase } from 'drizzle-orm/node-postgres';
+import { drizzle } from 'drizzle-orm/node-postgres';
+import { PgDatabase, PgQueryResultHKT } from 'drizzle-orm/pg-core';
 import { Pool } from 'pg';
 import { Settings } from '../config';
 import * as schema from './schema';
@@ -15,7 +16,7 @@ const MAX_CONNECTIONS = 5;
 @Injectable()
 export class Database implements OnModuleDestroy {
   private readonly pool: Pool;
-  readonly rows: NodePgDatabase<typeof schema>;
+  readonly rows: PgDatabase<PgQueryResultHKT, typeof schema>;
 
   constructor(settings: Settings) {
     this.pool = new Pool({
