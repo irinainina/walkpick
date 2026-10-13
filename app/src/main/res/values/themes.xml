@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <color name="canvas">#FBF7F0</color>
-    <color name="splash">#5F6B2D</color>
+    <color name="splash">#EADFC6</color>
 
     <!-- Window theme before Compose takes over -->
     <style name="Theme.WalkPick" parent="android:Theme.Material.Light.NoActionBar">

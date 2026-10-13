@@ -20,6 +20,8 @@ data class AppColors(
     /** An unselected tab or chip. */
     val textInactive: Color,
     val accent: Color,
+    /** The dark end of the gradient: the selected tab. */
+    val accentDeep: Color,
     /** The light end of the gradient: the latest point of a chart. */
     val accentLight: Color,
     val onAccent: Color,
@@ -89,6 +91,7 @@ private fun appColors(deep: Color, accent: Color, light: Color) = AppColors(
     textSecondary = Grey,
     textInactive = Tan,
     accent = accent,
+    accentDeep = deep,
     accentLight = light,
     onAccent = White,
     onAccentOverlay = White.copy(alpha = 0.2f),

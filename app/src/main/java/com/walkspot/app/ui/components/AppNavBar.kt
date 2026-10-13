@@ -54,8 +54,8 @@ fun AppNavBar(
     onSelect: (NavItem) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    // Plain blue, not the gradient of the buttons: the small label stays readable from edge to edge.
-    val pill = Modifier.background(AppTheme.colors.accent)
+    // The dark end of the buttons' gradient, plain: the small label stays readable from edge to edge.
+    val pill = Modifier.background(AppTheme.colors.accentDeep)
     val tintColor = AppTheme.colors.accent
     Row(
         modifier = modifier
@@ -63,7 +63,7 @@ fun AppNavBar(
             .height(BarHeight)
             .dropShadow(RectangleShape, AppShadows.navBar)
             .background(AppTheme.colors.surface)
-            .padding(Spacing.s),
+            .padding(horizontal = Spacing.ml, vertical = Spacing.s),
     ) {
         items.forEach { item ->
             val selected = item.route == selectedRoute
