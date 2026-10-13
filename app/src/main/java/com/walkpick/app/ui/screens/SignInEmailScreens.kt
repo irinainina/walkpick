@@ -2,6 +2,7 @@ package com.walkpick.app.ui.screens
 
 import androidx.annotation.StringRes
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Spacer
@@ -14,6 +15,7 @@ import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
@@ -22,9 +24,11 @@ import com.walkpick.app.R
 import com.walkpick.app.data.account.AuthProblem
 import com.walkpick.app.ui.components.AppButton
 import com.walkpick.app.ui.components.AppTextField
-import com.walkpick.app.ui.components.AppTopBar
+import com.walkpick.app.ui.components.CircleButton
 import com.walkpick.app.ui.components.CodeField
+import com.walkpick.app.ui.components.GlassScreen
 import com.walkpick.app.ui.theme.AppTheme
+import com.walkpick.app.ui.theme.Sizes
 import com.walkpick.app.ui.theme.Spacing
 
 @StringRes
@@ -98,10 +102,10 @@ fun SignInCodeScreen(
             text = stringResource(R.string.auth_code_slow),
             modifier = Modifier.fillMaxWidth(),
             style = MaterialTheme.typography.bodyMedium,
-            color = AppTheme.colors.textSecondary,
+            color = AppTheme.colors.onAccent,
             textAlign = TextAlign.Center,
         )
-        Spacer(Modifier.weight(1f))
+        Spacer(Modifier.height(Spacing.s))
         val waiting = resendIn > 0
         Text(
             text = if (waiting) {
@@ -112,14 +116,15 @@ fun SignInCodeScreen(
             modifier = Modifier
                 .fillMaxWidth()
                 .clickable(enabled = !waiting, onClick = onResend)
-                .padding(vertical = Spacing.m),
-            style = MaterialTheme.typography.titleSmall,
-            color = if (waiting) AppTheme.colors.textSecondary else AppTheme.colors.accent,
+                .padding(top = Spacing.m),
+            style = with(MaterialTheme.typography) { if (waiting) bodyMedium else titleSmall },
+            color = AppTheme.colors.onAccent,
             textAlign = TextAlign.Center,
         )
     }
 }
 
+/** A step of the sign-in: the back button over the photo and a glass card with the step in it. */
 @Composable
 private fun SignInStep(
     title: String,
@@ -127,25 +132,42 @@ private fun SignInStep(
     onBack: () -> Unit,
     content: @Composable ColumnScope.() -> Unit,
 ) {
-    Column(
-        Modifier
-            .fillMaxSize()
-            .safeDrawingPadding()
-            // From Android 15 the window is not resized for the keyboard any more.
-            .imePadding(),
-    ) {
-        AppTopBar(title = "", onBack = onBack)
+    GlassScreen { glass ->
         Column(
             Modifier
-                .weight(1f)
-                .padding(horizontal = Spacing.ml),
+                .fillMaxSize()
+                .safeDrawingPadding()
+                // From Android 15 the window is not resized for the keyboard any more.
+                .imePadding(),
         ) {
+            Box(
+                Modifier
+                    .height(Sizes.control)
+                    .padding(horizontal = Spacing.sm),
+                contentAlignment = Alignment.Center,
+            ) {
+                CircleButton(
+                    iconRes = R.drawable.ic_back,
+                    contentDescription = stringResource(R.string.back),
+                    onClick = onBack,
+                    tint = AppTheme.colors.onAccent,
+                    ground = AppTheme.colors.photoChrome,
+                )
+            }
             Spacer(Modifier.height(Spacing.m))
-            Text(title, style = MaterialTheme.typography.headlineLarge, color = AppTheme.colors.textPrimary)
-            Spacer(Modifier.height(Spacing.s))
-            Text(subtitle, style = MaterialTheme.typography.bodyLarge, color = AppTheme.colors.textSecondary)
-            Spacer(Modifier.height(Spacing.l))
-            content()
+            Column(
+                Modifier
+                    .padding(horizontal = Spacing.s)
+                    .fillMaxWidth()
+                    .then(glass)
+                    .padding(horizontal = Spacing.sm, vertical = Spacing.l),
+            ) {
+                Text(title, style = MaterialTheme.typography.headlineLarge, color = AppTheme.colors.onAccent)
+                Spacer(Modifier.height(Spacing.s))
+                Text(subtitle, style = MaterialTheme.typography.bodyLarge, color = AppTheme.colors.onAccent)
+                Spacer(Modifier.height(Spacing.l))
+                content()
+            }
         }
     }
 }
