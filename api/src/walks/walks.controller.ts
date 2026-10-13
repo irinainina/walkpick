@@ -1,5 +1,15 @@
-import { Controller, Get, Param, Query } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  HttpCode,
+  Param,
+  Patch,
+  Query,
+} from '@nestjs/common';
 import { UserId } from '../auth/auth.guard';
+import { change, fields, text } from '../body';
 import { PERIODS } from '../period';
 import {
   day,
@@ -14,6 +24,9 @@ import {
 import { Walks } from './walks';
 
 type Asked = Record<string, string | undefined>;
+
+const NAME_LENGTH = 80;
+const NOTE_LENGTH = 2000;
 
 @Controller('v1/walks')
 export class WalksController {
@@ -53,5 +66,27 @@ export class WalksController {
   @Get(':id')
   async one(@UserId() userId: string, @Param('id') walkId: string) {
     return (await this.walks.find(userId, id('id', walkId))) ?? notFound();
+  }
+
+  @Patch(':id')
+  async change(
+    @UserId() userId: string,
+    @Param('id') walkId: string,
+    @Body() body: unknown,
+  ) {
+    const patch = change(
+      fields(body, { name: text(NAME_LENGTH), note: text(NOTE_LENGTH) }),
+    );
+    if (!(await this.walks.change(userId, id('id', walkId), patch))) notFound();
+    return this.one(userId, walkId);
+  }
+
+  @Delete(':id')
+  @HttpCode(204)
+  async remove(
+    @UserId() userId: string,
+    @Param('id') walkId: string,
+  ): Promise<void> {
+    if (!(await this.walks.remove(userId, id('id', walkId)))) notFound();
   }
 }

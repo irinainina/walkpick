@@ -9,6 +9,7 @@ import { Database } from './db/database';
 import { HealthEntries } from './health/health-entries';
 import { HealthController } from './health/health.controller';
 import { MeController } from './me.controller';
+import { PhotoLinks } from './photos/photo-links';
 import { Photos } from './photos/photos';
 import { PhotosController } from './photos/photos.controller';
 import { Walks } from './walks/walks';
@@ -27,6 +28,7 @@ import { WalksController } from './walks/walks.controller';
     SigningKeys,
     Database,
     Accounts,
+    PhotoLinks,
     Walks,
     Photos,
     HealthEntries,

@@ -6,6 +6,7 @@ import {
   getTableColumns,
   gte,
   ilike,
+  inArray,
   lt,
   sql,
 } from 'drizzle-orm';
@@ -15,6 +16,7 @@ import { finds, walks } from '../db/schema';
 import { localKey } from '../period';
 import { page } from '../query';
 import { photoCard } from '../walks/walks';
+import { PhotoLinks } from './photo-links';
 
 export const MODES = ['all', 'best'] as const;
 export const KINDS = finds.kind.enumValues;
@@ -28,13 +30,22 @@ export interface PhotoFilter {
   to?: Date;
 }
 
-// The path of the file stays inside: a client gets a one-time link instead.
+export interface PhotoChange {
+  name?: string | null;
+  latin_name?: string | null;
+  kind?: (typeof KINDS)[number];
+  is_best?: boolean;
+}
+
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-const { user_id, photo_path, ...shown } = getTableColumns(finds);
+const { user_id, deleted_at, ...shown } = getTableColumns(finds);
 
 @Injectable()
 export class Photos {
-  constructor(private readonly database: Database) {}
+  constructor(
+    private readonly database: Database,
+    private readonly links: PhotoLinks,
+  ) {}
 
   private matching(userId: string, filter: PhotoFilter) {
     return and(
@@ -62,7 +73,8 @@ export class Photos {
       )
       .orderBy(desc(finds.taken_at))
       .limit(size + 1);
-    return page(rows, size, (last) => last.taken_at);
+    const { items, next } = page(rows, size, (last) => last.taken_at);
+    return { items: await this.links.attach(items), next };
   }
 
   /** Only what a mark of the map needs: the grid may hold hundreds of photos. */
@@ -103,6 +115,21 @@ export class Photos {
           .where(and(ownedBy(finds, userId), eq(finds.name, photo.name)))
           .orderBy(sql`1`)
       : [];
-    return { ...photo, months: months.map((row) => row.month) };
+    const [linked] = await this.links.attach([photo]);
+    return { ...linked, months: months.map((row) => row.month) };
+  }
+
+  /** Changes the photos of this user among the named ones and says how many they were. */
+  async change(
+    userId: string,
+    ids: string[],
+    patch: PhotoChange & { deleted_at?: Date },
+  ): Promise<number> {
+    const changed = await this.database.rows
+      .update(finds)
+      .set({ ...patch, updated_at: new Date() })
+      .where(and(ownedBy(finds, userId), inArray(finds.id, ids)))
+      .returning({ id: finds.id });
+    return changed.length;
   }
 }

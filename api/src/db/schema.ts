@@ -98,6 +98,7 @@ export const walks = pgTable('walks', {
   mood_after: smallint('mood_after'),
   created_at: instant('created_at').notNull(),
   updated_at: instant('updated_at').notNull(),
+  deleted_at: instant('deleted_at'),
 });
 
 export const finds = pgTable('finds', {
@@ -120,6 +121,7 @@ export const finds = pgTable('finds', {
   is_best: boolean('is_best').notNull(),
   created_at: instant('created_at').notNull(),
   updated_at: instant('updated_at').notNull(),
+  deleted_at: instant('deleted_at'),
 });
 
 export const healthEntries = pgTable('health_entries', {
@@ -132,4 +134,6 @@ export const healthEntries = pgTable('health_entries', {
   value: numeric('value', { precision: 5, scale: 1, mode: 'number' }).notNull(),
   diastolic: smallint('diastolic'),
   created_at: instant('created_at').notNull(),
+  updated_at: instant('updated_at').notNull(),
+  deleted_at: instant('deleted_at'),
 });

@@ -6,6 +6,8 @@ export class Settings {
     readonly supabaseUrl: string,
     /** The Postgres of the same project, through its connection pooler. */
     readonly databaseUrl: string,
+    /** The secret key of the project: the service signs the links to photo files with it. */
+    readonly supabaseKey: string,
   ) {}
 }
 
@@ -32,5 +34,10 @@ export function readSettings(
       'DATABASE_URL must be the postgres:// address of the database',
     );
   }
-  return new Settings(port, supabaseUrl, databaseUrl);
+  const supabaseKey = env.SUPABASE_SECRET_KEY;
+  if (!supabaseKey)
+    throw new Error(
+      'SUPABASE_SECRET_KEY must be the secret key of the Supabase project',
+    );
+  return new Settings(port, supabaseUrl, databaseUrl, supabaseKey);
 }

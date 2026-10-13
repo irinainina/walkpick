@@ -13,6 +13,7 @@ import {
   Step,
   within,
 } from '../period';
+import { PhotoLinks } from '../photos/photo-links';
 import { page } from '../query';
 
 // Degrees, about five metres: a list of walks must not carry every point of every route.
@@ -45,6 +46,7 @@ export const photoCard = {
   name: finds.name,
   latin_name: finds.latin_name,
   is_best: finds.is_best,
+  photo_path: finds.photo_path,
 };
 
 const total = (column: PgColumn) =>
@@ -60,9 +62,17 @@ export interface Bar {
   steps: number;
 }
 
+export interface WalkChange {
+  name?: string | null;
+  note?: string | null;
+}
+
 @Injectable()
 export class Walks {
-  constructor(private readonly database: Database) {}
+  constructor(
+    private readonly database: Database,
+    private readonly links: PhotoLinks,
+  ) {}
 
   async list(
     userId: string,
@@ -78,7 +88,7 @@ export class Walks {
           string | null
         >`st_asgeojson(st_simplify(${walks.route}::geometry, ${SIMPLIFY}))`,
         // Written out: inside a sub-query the query builder drops the table from a column's name.
-        photos: sql<number>`(select count(*)::int from finds where finds.walk_id = walks.id)`,
+        photos: sql<number>`(select count(*)::int from finds where finds.walk_id = walks.id and finds.deleted_at is null)`,
       })
       .from(walks)
       .where(
@@ -173,6 +183,44 @@ export class Walks {
         .where(and(ownedBy(finds, userId), eq(finds.walk_id, id)))
         .orderBy(asc(finds.taken_at)),
     ]);
-    return walk ? { ...walk, route: geoJson(walk.route), photos } : null;
+    return walk
+      ? {
+          ...walk,
+          route: geoJson(walk.route),
+          photos: await this.links.attach(photos),
+        }
+      : null;
+  }
+
+  /** False when the walk is not this user's. */
+  async change(
+    userId: string,
+    id: string,
+    patch: WalkChange,
+  ): Promise<boolean> {
+    const changed = await this.database.rows
+      .update(walks)
+      .set({ ...patch, updated_at: new Date() })
+      .where(and(ownedBy(walks, userId), eq(walks.id, id)))
+      .returning({ id: walks.id });
+    return changed.length > 0;
+  }
+
+  /** Marks the walk and its photos as deleted, together or not at all. */
+  remove(userId: string, id: string): Promise<boolean> {
+    return this.database.rows.transaction(async (rows) => {
+      const now = new Date();
+      const gone = await rows
+        .update(walks)
+        .set({ deleted_at: now, updated_at: now })
+        .where(and(ownedBy(walks, userId), eq(walks.id, id)))
+        .returning({ id: walks.id });
+      if (gone.length === 0) return false;
+      await rows
+        .update(finds)
+        .set({ deleted_at: now, updated_at: now })
+        .where(and(ownedBy(finds, userId), eq(finds.walk_id, id)));
+      return true;
+    });
   }
 }
