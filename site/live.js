@@ -26,6 +26,18 @@
     localStorage.removeItem('session');
     location.replace(SIGN_IN);
   };
+  // The session ends on the server too, so the token kept by a copied link stops working
+  const signOut = async () => {
+    const session = saved();
+    localStorage.removeItem('session');
+    if (session) {
+      await fetch(`${SUPABASE}/auth/v1/logout?scope=local`, {
+        method: 'POST',
+        headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${session.access}` },
+      }).catch(() => {});
+    }
+    location.replace('index.html');
+  };
   const google = () => {
     const back = new URL('walk.html', location.href).href;
     location.href = `${SUPABASE}/auth/v1/authorize?provider=google&redirect_to=${encodeURIComponent(back)}`;
@@ -73,7 +85,7 @@
     return items;
   };
 
-  window.live = { api, auth, keep, leave, google, signedIn: () => Boolean(saved()) };
+  window.live = { api, auth, keep, leave, signOut, google, signedIn: () => Boolean(saved()) };
 
   // The page scripts were written over three lists; they are filled here and the scripts run after
   const then = document.currentScript.dataset.then;
