@@ -4,7 +4,7 @@
     <color name="splash">#5F6B2D</color>
 
     <!-- Window theme before Compose takes over -->
-    <style name="Theme.WalkSpot" parent="android:Theme.Material.Light.NoActionBar">
+    <style name="Theme.WalkPick" parent="android:Theme.Material.Light.NoActionBar">
         <item name="android:windowBackground">@color/canvas</item>
         <item name="android:windowLightStatusBar">true</item>
     </style>

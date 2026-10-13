@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <!-- Android 12 and later draw their own splash screen: the logo on the blue of the gradient. -->
-    <style name="Theme.WalkSpot" parent="android:Theme.Material.Light.NoActionBar">
+    <style name="Theme.WalkPick" parent="android:Theme.Material.Light.NoActionBar">
         <item name="android:windowBackground">@color/canvas</item>
         <item name="android:windowLightStatusBar">true</item>
         <item name="android:windowSplashScreenBackground">@color/splash</item>

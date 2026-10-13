@@ -29,7 +29,7 @@ private fun AppColors.scheme() =
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun WalkSpotTheme(season: Season, content: @Composable () -> Unit) {
+fun WalkPickTheme(season: Season, content: @Composable () -> Unit) {
     val colors = remember(season) { appColors(season) }
     CompositionLocalProvider(
         LocalSeason provides season,

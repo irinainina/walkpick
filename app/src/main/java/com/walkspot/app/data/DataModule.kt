@@ -14,7 +14,7 @@ import com.walkspot.app.data.local.FindDao
 import com.walkspot.app.data.local.HealthEntryDao
 import com.walkspot.app.data.local.PendingDeleteDao
 import com.walkspot.app.data.local.WalkDao
-import com.walkspot.app.data.local.WalkSpotDatabase
+import com.walkspot.app.data.local.WalkPickDatabase
 import com.walkspot.app.data.profile.ProfileSync
 import com.walkspot.app.data.settings.SettingsSync
 import com.walkspot.app.data.sync.RemoteTables
@@ -45,27 +45,27 @@ object DataModule {
     // One instance: Room caches rows per instance.
     @Provides
     @Singleton
-    fun database(@ApplicationContext context: Context): WalkSpotDatabase =
-        Room.databaseBuilder(context, WalkSpotDatabase::class.java, WalkSpotDatabase.NAME).build()
+    fun database(@ApplicationContext context: Context): WalkPickDatabase =
+        Room.databaseBuilder(context, WalkPickDatabase::class.java, WalkPickDatabase.NAME).build()
 
     @Provides
-    fun pendingDeletes(database: WalkSpotDatabase): PendingDeleteDao = database.pendingDeletes()
+    fun pendingDeletes(database: WalkPickDatabase): PendingDeleteDao = database.pendingDeletes()
 
     @Provides
-    fun dailySteps(database: WalkSpotDatabase): DailyStepsDao = database.dailySteps()
+    fun dailySteps(database: WalkPickDatabase): DailyStepsDao = database.dailySteps()
 
     @Provides
-    fun walks(database: WalkSpotDatabase): WalkDao = database.walks()
+    fun walks(database: WalkPickDatabase): WalkDao = database.walks()
 
     @Provides
-    fun finds(database: WalkSpotDatabase): FindDao = database.finds()
+    fun finds(database: WalkPickDatabase): FindDao = database.finds()
 
     @Provides
-    fun healthEntries(database: WalkSpotDatabase): HealthEntryDao = database.healthEntries()
+    fun healthEntries(database: WalkPickDatabase): HealthEntryDao = database.healthEntries()
 
     @Provides
     fun synced(
-        database: WalkSpotDatabase,
+        database: WalkPickDatabase,
         profile: ProfileSync,
         settings: SettingsSync,
         photos: PhotoStore,

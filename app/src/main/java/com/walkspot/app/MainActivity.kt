@@ -17,8 +17,8 @@ import androidx.core.view.ViewCompat
 import com.walkspot.app.data.account.AccountStore
 import com.walkspot.app.data.walk.Season
 import com.walkspot.app.data.walk.SeasonStore
-import com.walkspot.app.ui.navigation.WalkSpotApp
-import com.walkspot.app.ui.theme.WalkSpotTheme
+import com.walkspot.app.ui.navigation.WalkPickApp
+import com.walkspot.app.ui.theme.WalkPickTheme
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 
@@ -50,9 +50,9 @@ class MainActivity : ComponentActivity() {
             val season by produceState<Season?>(null) { seasons.now.collect { value = it } }
             val signedIn by produceState<Boolean?>(null) { value = account.isSignedIn() }
             season?.let {
-                WalkSpotTheme(it) {
+                WalkPickTheme(it) {
                     if (signedIn != null && barsKnown) {
-                        WalkSpotApp(signedIn == true, walkAsked, onStartShown = { firstScreenReady = true })
+                        WalkPickApp(signedIn == true, walkAsked, onStartShown = { firstScreenReady = true })
                     }
                 }
             }

@@ -7,7 +7,7 @@ import com.walkspot.app.data.local.HealthEntryEntity
 import com.walkspot.app.data.local.HealthKind
 import com.walkspot.app.data.local.PendingDeleteEntity
 import com.walkspot.app.data.local.WalkEntity
-import com.walkspot.app.data.local.WalkSpotDatabase
+import com.walkspot.app.data.local.WalkPickDatabase
 import com.walkspot.app.data.steps.StepsRepository
 import com.walkspot.app.data.sync.PHOTO_BUCKET
 import com.walkspot.app.data.sync.SyncScheduler
@@ -58,7 +58,7 @@ internal fun moodEntries(walk: WalkEntity): List<HealthEntryEntity> =
     }
 
 class WalkRepository @Inject constructor(
-    private val database: WalkSpotDatabase,
+    private val database: WalkPickDatabase,
     private val photos: PhotoStore,
     private val sync: SyncScheduler,
     private val namer: WalkNamer,

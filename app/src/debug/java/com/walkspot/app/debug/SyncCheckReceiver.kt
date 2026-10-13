@@ -5,7 +5,7 @@ import android.content.Context
 import android.content.Intent
 import android.util.Log
 import com.walkspot.app.data.local.PendingDeleteEntity
-import com.walkspot.app.data.local.WalkSpotDatabase
+import com.walkspot.app.data.local.WalkPickDatabase
 import com.walkspot.app.data.remote.SupabaseProvider
 import com.walkspot.app.data.sync.SyncScheduler
 import dagger.hilt.EntryPoint
@@ -32,7 +32,7 @@ class SyncCheckReceiver : BroadcastReceiver() {
     @InstallIn(SingletonComponent::class)
     interface Graph {
         fun supabase(): SupabaseProvider
-        fun database(): WalkSpotDatabase
+        fun database(): WalkPickDatabase
         fun scheduler(): SyncScheduler
     }
 
@@ -92,7 +92,7 @@ class SyncCheckReceiver : BroadcastReceiver() {
     }
 
     // Rows already there are replaced: the made-up history can be written again after a change to it.
-    private suspend fun seed(database: WalkSpotDatabase) {
+    private suspend fun seed(database: WalkPickDatabase) {
         val data = seedData()
         database.dailySteps().save(data.days)
         database.walks().save(data.walks)
@@ -101,7 +101,7 @@ class SyncCheckReceiver : BroadcastReceiver() {
         Log.i(TAG, "seeded ${data.days.size} days, ${data.walks.size} walks, ${data.finds.size} finds")
     }
 
-    private fun dump(database: WalkSpotDatabase) {
+    private fun dump(database: WalkPickDatabase) {
         val reader = database.openHelper.readableDatabase
         listOf("daily_steps", "walks", "finds", "health_entries").forEach { table ->
             reader.query("SELECT COUNT(*), COALESCE(SUM(synced), 0) FROM $table").use {

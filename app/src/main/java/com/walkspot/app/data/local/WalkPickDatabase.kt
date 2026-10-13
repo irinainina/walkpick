@@ -17,7 +17,7 @@ import androidx.room.TypeConverters
     autoMigrations = [AutoMigration(from = 1, to = 2), AutoMigration(from = 2, to = 3)],
 )
 @TypeConverters(Converters::class)
-abstract class WalkSpotDatabase : RoomDatabase() {
+abstract class WalkPickDatabase : RoomDatabase() {
     abstract fun dailySteps(): DailyStepsDao
     abstract fun walks(): WalkDao
     abstract fun finds(): FindDao

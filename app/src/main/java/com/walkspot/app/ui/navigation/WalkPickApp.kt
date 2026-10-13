@@ -25,7 +25,7 @@ import com.walkspot.app.ui.theme.AppTheme
 
 /** [onStartShown] is called once the first screen has something to show. */
 @Composable
-fun WalkSpotApp(signedIn: Boolean, walkAsked: Int, onStartShown: () -> Unit) {
+fun WalkPickApp(signedIn: Boolean, walkAsked: Int, onStartShown: () -> Unit) {
     val navController = rememberNavController()
     // Above the NavHost: the three sign-in screens share it.
     val auth: AuthViewModel = hiltViewModel()

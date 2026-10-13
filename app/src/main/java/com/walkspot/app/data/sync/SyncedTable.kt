@@ -5,7 +5,7 @@ import com.walkspot.app.data.local.FindEntity
 import com.walkspot.app.data.local.HealthEntryEntity
 import com.walkspot.app.data.local.SyncJson
 import com.walkspot.app.data.local.WalkEntity
-import com.walkspot.app.data.local.WalkSpotDatabase
+import com.walkspot.app.data.local.WalkPickDatabase
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.json.jsonObject
 
@@ -60,7 +60,7 @@ class SyncedTable<T : Any>(
 }
 
 // Walks stand before finds: a find points at its walk.
-fun syncedTables(database: WalkSpotDatabase): List<SyncedTable<*>> = listOf(
+fun syncedTables(database: WalkPickDatabase): List<SyncedTable<*>> = listOf(
     database.dailySteps().let { dao ->
         SyncedTable(
             name = "daily_steps",

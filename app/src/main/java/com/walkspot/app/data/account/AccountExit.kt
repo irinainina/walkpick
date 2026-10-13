@@ -5,7 +5,7 @@ import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
 import com.walkspot.app.data.find.PhotoStore
-import com.walkspot.app.data.local.WalkSpotDatabase
+import com.walkspot.app.data.local.WalkPickDatabase
 import com.walkspot.app.data.settings.AppSettings
 import com.walkspot.app.data.settings.Reminders
 import com.walkspot.app.data.walk.WalkRecorder
@@ -19,7 +19,7 @@ private const val TAG = "AccountExit"
 class AccountExit @Inject constructor(
     private val auth: AuthRepository,
     private val account: AccountStore,
-    private val database: WalkSpotDatabase,
+    private val database: WalkPickDatabase,
     private val preferences: DataStore<Preferences>,
     private val reminders: Reminders,
     private val photos: PhotoStore,

@@ -31,7 +31,7 @@
     </queries>
 
     <application
-        android:name=".WalkSpotApplication"
+        android:name=".WalkPickApplication"
         android:allowBackup="false"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
@@ -39,7 +39,7 @@
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher"
         android:supportsRtl="true"
-        android:theme="@style/Theme.WalkSpot">
+        android:theme="@style/Theme.WalkPick">
 
         <activity
             android:name=".MainActivity"
@@ -59,7 +59,7 @@
             android:name="com.google.android.geo.API_KEY"
             android:value="${mapsKey}" />
 
-        <!-- WorkManager is started by WalkSpotApplication, so workers get Hilt dependencies. -->
+        <!-- WorkManager is started by WalkPickApplication, so workers get Hilt dependencies. -->
         <provider
             android:name="androidx.startup.InitializationProvider"
             android:authorities="${applicationId}.androidx-startup"

@@ -10,7 +10,7 @@ import com.walkspot.app.data.walk.Season
 import com.walkspot.app.ui.screens.SignInCodeScreen
 import com.walkspot.app.ui.screens.SignInEmailScreen
 import com.walkspot.app.ui.screens.SignInScreen
-import com.walkspot.app.ui.theme.WalkSpotTheme
+import com.walkspot.app.ui.theme.WalkPickTheme
 
 /**
  * adb shell am start -n com.walkspot.app/.debug.GalleryActivity [--es page <page>] [--es season winter]
@@ -28,7 +28,7 @@ class GalleryActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             val season = intent.getStringExtra("season")?.uppercase() ?: Season.AUTUMN.name
-            WalkSpotTheme(Season.valueOf(season)) {
+            WalkPickTheme(Season.valueOf(season)) {
                 val page = intent.getStringExtra("page").orEmpty()
                 if (page.endsWith("-new")) NewUserGallery(page) else Page(page)
             }
