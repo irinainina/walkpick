@@ -1,6 +1,10 @@
 /** What the service is told from outside; injected wherever a setting is needed. */
 export class Settings {
-  constructor(readonly port: number) {}
+  constructor(
+    readonly port: number,
+    /** The Supabase project that signs the users in, without a slash at the end. */
+    readonly supabaseUrl: string,
+  ) {}
 }
 
 // Cloud Run tells the port through PORT; 8080 is what it expects when nothing is said.
@@ -14,5 +18,11 @@ export function readSettings(
   if (!Number.isInteger(port) || port <= 0) {
     throw new Error(`PORT must be a port number, got "${env.PORT}"`);
   }
-  return new Settings(port);
+  const supabaseUrl = env.SUPABASE_URL?.replace(/\/+$/, '');
+  if (!supabaseUrl?.startsWith('https://')) {
+    throw new Error(
+      'SUPABASE_URL must be the https address of the Supabase project',
+    );
+  }
+  return new Settings(port, supabaseUrl);
 }
