@@ -87,7 +87,7 @@ fun PhotoViewerScreen(
             .fillMaxSize()
             .background(colors.photoGround),
     ) {
-        HorizontalPager(pager, Modifier.fillMaxSize(), key = { state.finds[it].id }) { page ->
+        HorizontalPager(pager, Modifier.fillMaxSize()) { page ->
             ZoomablePhoto(state.finds[page], photo)
         }
         Box(

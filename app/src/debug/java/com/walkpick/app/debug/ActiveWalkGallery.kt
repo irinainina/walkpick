@@ -3,7 +3,9 @@ package com.walkpick.app.debug
 import androidx.compose.runtime.Composable
 import com.walkpick.app.data.walk.TrackPoint
 import com.walkpick.app.ui.screens.ActiveWalkScreen
+import com.walkpick.app.ui.screens.FinishWalkSheet
 import com.walkpick.app.ui.walk.ActiveWalkState
+import com.walkpick.app.ui.walk.WalkEnding
 import java.time.Instant
 
 // A walk through the centre of Kyiv shaped like the route of the Figma frame.
@@ -19,7 +21,7 @@ private val route = listOf(
 
 /** Active walk with the numbers of the Figma frame, for the comparison with the design. */
 @Composable
-fun ActiveWalkGallery(asked: Boolean = false) {
+fun ActiveWalkGallery(asked: Boolean = false, finishing: Boolean = false) {
     ActiveWalkScreen(
         state = ActiveWalkState(
             recording = true,
@@ -40,4 +42,5 @@ fun ActiveWalkGallery(asked: Boolean = false) {
         onCamera = {},
         onStop = {},
     )
+    if (finishing) FinishWalkSheet(WalkEnding.KeptWithMood, onFinish = {}, onDismiss = {})
 }

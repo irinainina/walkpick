@@ -6,7 +6,10 @@ import com.walkpick.app.data.local.FindEntity
 import com.walkpick.app.data.local.FindKind
 import com.walkpick.app.data.local.WalkEntity
 import com.walkpick.app.ui.find.FindCardState
+import com.walkpick.app.ui.find.PhotoViewerState
 import com.walkpick.app.ui.screens.FindCardScreen
+import com.walkpick.app.ui.screens.NotThisSheet
+import com.walkpick.app.ui.screens.PhotoViewerScreen
 import java.time.LocalDateTime
 import java.time.ZoneId
 
@@ -54,7 +57,7 @@ private val walk = WalkEntity(
 
 /** The card of a find with the data of the Figma frame, for the comparison with the design. */
 @Composable
-fun FindCardGallery(unknown: Boolean) {
+fun FindCardGallery(unknown: Boolean, notThis: Boolean = false) {
     FindCardScreen(
         state = FindCardState(if (unknown) nameless else yarrow, walk = walk),
         onBack = {},
@@ -66,4 +69,12 @@ fun FindCardGallery(unknown: Boolean) {
         onRename = {},
         onRetry = {},
     )
+    if (notThis) NotThisSheet(yarrow, onDismiss = {}, onChoose = {}, onRename = {})
+}
+
+// The photo viewer on the third of the seven photos of the walk, the yarrow of the frame.
+@Composable
+fun PhotoViewerGallery() {
+    val finds = List(7) { index -> yarrow.copy(id = "find$index") }
+    PhotoViewerScreen(PhotoViewerState(finds, start = 2, walk = walk), { null }, {}, {}, {})
 }

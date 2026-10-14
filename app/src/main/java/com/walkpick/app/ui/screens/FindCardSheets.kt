@@ -86,6 +86,7 @@ internal fun NotThisSheet(
             placeholder = stringResource(R.string.find_enter_name),
             onDone = save,
             autoFocus = false,
+            textStyle = MaterialTheme.typography.bodyLarge,
         )
         Spacer(Modifier.height(Spacing.sm))
         AppButton(stringResource(R.string.profile_save), onClick = save)
@@ -160,6 +161,7 @@ internal fun UnnamedControls(
             placeholder = stringResource(R.string.find_name_it),
             onDone = { onName(typed) },
             autoFocus = false,
+            textStyle = MaterialTheme.typography.bodyLarge,
         )
         Spacer(Modifier.height(Spacing.m))
     }

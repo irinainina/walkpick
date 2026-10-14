@@ -10,16 +10,13 @@ import com.walkpick.app.data.walk.Season
 import com.walkpick.app.ui.screens.SignInCodeScreen
 import com.walkpick.app.ui.screens.SignInEmailScreen
 import com.walkpick.app.ui.screens.SignInScreen
+import com.walkpick.app.ui.screens.StartWalkSheet
 import com.walkpick.app.ui.theme.WalkPickTheme
 
 /**
  * adb shell am start -n com.walkpick.app/.debug.GalleryActivity [--es page <page>] [--es season winter]
- * Pages: charts, signin, signin-email, signin-code, steps, today, today-off, today-walking,
- * stats-week, stats-month, stats-year,
- * stats-all,
- * health-mood, health-weight, health-pressure, health-glucose, health-empty, map, walk, active-walk,
- * walk-summary, profile, settings, settings-off; a new user's screens: today-new, stats-new,
- * stats-month-new, map-new, diary-new, gallery-new, gallery-best-new, profile-new.
+ * Pages: the names in [Page] below; a new user's screens: today-new, gallery-new, gallery-best-new,
+ * profile-new.
  */
 class GalleryActivity : ComponentActivity() {
 
@@ -50,14 +47,21 @@ private fun Page(page: String) {
         "today-off" -> TodayGallery(StepsAccess.NOT_ALLOWED)
         "today-walking" -> TodayGallery(StepsAccess.COUNTING, walkSeconds = 1935)
         "today-paused" -> TodayGallery(StepsAccess.COUNTING, walkSeconds = 1935, paused = true)
-        "health-mood", "health-weight", "health-pressure", "health-glucose", "health-empty" ->
+        "start-walk" -> {
+            TodayGallery(StepsAccess.COUNTING)
+            StartWalkSheet(onStart = {}, onDismiss = {})
+        }
+        "health-mood", "health-weight", "health-pressure", "health-glucose", "health-empty", "health-entry" ->
             HealthGallery(page)
         "walk" -> WalkCheck()
         "active-walk" -> ActiveWalkGallery()
         "active-walk-mood" -> ActiveWalkGallery(asked = true)
+        "active-walk-finish" -> ActiveWalkGallery(finishing = true)
         "walk-summary" -> WalkSummaryGallery()
         "gallery", "gallery-best", "gallery-select", "gallery-map" -> GalleryGallery(page)
         "find-card", "find-unknown" -> FindCardGallery(unknown = page == "find-unknown")
+        "find-not-this" -> FindCardGallery(unknown = false, notThis = true)
+        "photo-viewer" -> PhotoViewerGallery()
         "camera-place" -> CameraGallery(identifying = false, placing = true)
         "camera", "camera-what", "camera-identifying" ->
             CameraGallery(identifying = page == "camera-identifying", asking = page == "camera-what")

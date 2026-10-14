@@ -10,6 +10,7 @@ import com.walkpick.app.ui.health.HealthInsight
 import com.walkpick.app.ui.health.HealthState
 import com.walkpick.app.ui.health.MoodWay
 import com.walkpick.app.ui.screens.HealthScreen
+import com.walkpick.app.ui.screens.NewEntrySheet
 import com.walkpick.app.ui.stats.StatsTab
 import java.time.LocalDate
 import java.time.LocalTime
@@ -85,20 +86,24 @@ private val pages = mapOf(
 /** Health with the data of the Figma frames, for the comparison with the design. */
 @Composable
 fun HealthGallery(page: String) {
-    val shown = pages[page]
+    // The sheet of a new entry lies over Pressure, as in the frame.
+    val entry = page == "health-entry"
+    val shown = pages[if (entry) "health-pressure" else page]
+    val state = HealthState(
+        tabs = HealthKind.entries,
+        tab = shown?.current?.latest?.kind ?: HealthKind.WEIGHT,
+        period = if (page == "health-mood") StatsTab.Month else StatsTab.Year,
+        today = today,
+        current = shown?.current,
+        chart = shown?.chart,
+        insight = shown?.insight,
+    )
     HealthScreen(
-        state = HealthState(
-            tabs = HealthKind.entries,
-            tab = shown?.current?.latest?.kind ?: HealthKind.WEIGHT,
-            period = if (page == "health-mood") StatsTab.Month else StatsTab.Year,
-            today = today,
-            current = shown?.current,
-            chart = shown?.chart,
-            insight = shown?.insight,
-        ),
+        state = state,
         onDelete = {},
         onSave = { _, _, _, _ -> },
         onTab = {},
         onPeriod = {},
     )
+    if (entry) NewEntrySheet(state, onSave = { _, _, _, _ -> }, onDismiss = {})
 }

@@ -19,20 +19,17 @@ class ProfileStore @Inject constructor(
 
     override fun read(saved: Preferences): Profile {
         val defaults = Profile()
-        // Until the first save the targets are read from the keys of 0.1, where 120/80 and 5.5 were
-        // defaults nobody chose: those mean "not set" (migration 0014 on the server).
-        val (upper, lower) = saved[OLD_SYSTOLIC] to saved[OLD_DIASTOLIC]
-        val chosen = upper != null && lower != null && (upper to lower) != OLD_DEFAULT_PRESSURE
-        val pressure = if (chosen) upper to lower else null
+        // Until the first save the targets are read from the keys of 0.1.
+        val old = oldTargets(saved[OLD_SYSTOLIC], saved[OLD_DIASTOLIC], saved[OLD_GLUCOSE])
         return Profile(
             sex = saved[SEX]?.let(Sex::valueOf),
             birthDate = saved[BIRTH_DATE]?.let(LocalDate::parse),
             heightCm = saved[HEIGHT],
             dailyGoal = saved[GOAL] ?: defaults.dailyGoal,
             ownTargetWeightKg = saved[TARGET_WEIGHT],
-            targetSystolic = saved[TARGET_SYSTOLIC] ?: pressure?.first,
-            targetDiastolic = saved[TARGET_DIASTOLIC] ?: pressure?.second,
-            targetGlucose = saved[TARGET_GLUCOSE] ?: saved[OLD_GLUCOSE]?.takeIf { it != OLD_DEFAULT_GLUCOSE },
+            targetSystolic = saved[TARGET_SYSTOLIC] ?: old.targetSystolic,
+            targetDiastolic = saved[TARGET_DIASTOLIC] ?: old.targetDiastolic,
+            targetGlucose = saved[TARGET_GLUCOSE] ?: old.targetGlucose,
             healthTabs = saved[TABS]?.map(HealthKind::valueOf)?.toSet() ?: defaults.healthTabs,
         )
     }
@@ -63,8 +60,22 @@ class ProfileStore @Inject constructor(
         val OLD_SYSTOLIC = intPreferencesKey("profile_target_systolic")
         val OLD_DIASTOLIC = intPreferencesKey("profile_target_diastolic")
         val OLD_GLUCOSE = doublePreferencesKey("profile_target_glucose")
-        val OLD_DEFAULT_PRESSURE = 120 to 80
-        const val OLD_DEFAULT_GLUCOSE = 5.5
         val TABS = stringSetPreferencesKey("profile_health_tabs")
     }
+}
+
+private val OldDefaultPressure = 120 to 80
+private const val OLD_DEFAULT_GLUCOSE = 5.5
+
+/**
+ * The targets the phone kept in 0.1, where 120/80 and 5.5 were defaults nobody chose: those mean
+ * "not set", as migration 0014 made them on the server. A pressure is a pair or nothing.
+ */
+internal fun oldTargets(systolic: Int?, diastolic: Int?, glucose: Double?): Profile {
+    val chosen = systolic != null && diastolic != null && (systolic to diastolic) != OldDefaultPressure
+    return Profile(
+        targetSystolic = systolic.takeIf { chosen },
+        targetDiastolic = diastolic.takeIf { chosen },
+        targetGlucose = glucose?.takeIf { it != OLD_DEFAULT_GLUCOSE },
+    )
 }

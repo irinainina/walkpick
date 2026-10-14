@@ -86,9 +86,11 @@ fun GalleryGallery(page: String) {
         GalleryScreen(state, actions, Modifier.weight(1f)) { top ->
             PhotoMap(map, PhotoMapActions({}, {}, {}, {}), top)
         }
-        // Above the buttons of the phone, as in the app.
-        Box(Modifier.background(AppTheme.colors.surface).navigationBarsPadding()) {
-            AppNavBar(bottomTabs, selectedRoute = Screen.Gallery.route, onSelect = {})
+        // Above the buttons of the phone, as in the app, and gone while photos are picked.
+        if (state.selected == null) {
+            Box(Modifier.background(AppTheme.colors.surface).navigationBarsPadding()) {
+                AppNavBar(bottomTabs, selectedRoute = Screen.Gallery.route, onSelect = {})
+            }
         }
     }
 }

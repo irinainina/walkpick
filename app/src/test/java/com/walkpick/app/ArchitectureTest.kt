@@ -52,6 +52,16 @@ class ArchitectureTest {
             .assertTrue { it.resideInPackage("$ROOT.data.local") }
     }
 
+    // The service, Wikipedia and the weather are asked by the data layer; a screen only shows answers.
+    @Test
+    fun theUiDoesNotGoToTheNetwork() {
+        app.files
+            .filter { it.packagee?.name.orEmpty().startsWith("$ROOT.ui") }
+            .assertTrue(additionalMessage = "Network calls belong to the data layer") { file ->
+                file.imports.none { it.name.startsWith("io.ktor") || it.name.endsWith(".webClient") }
+            }
+    }
+
     @Test
     fun theUiReadsTheDatabaseThroughTheDataLayer() {
         app.files

@@ -129,7 +129,7 @@ private fun PlaceText(place: NearPlace, chosen: Boolean, unit: DistanceUnit, mod
 }
 
 // A place a few steps away is "40 m", not "0.0 km"; in miles it is feet.
-private fun nearText(metres: Int, unit: DistanceUnit): String = when {
+internal fun nearText(metres: Int, unit: DistanceUnit): String = when {
     metres >= METRES_IN_KM -> distanceText(metres, unit)
     unit == DistanceUnit.KM -> "$metres m"
     else -> "${(metres * FEET_IN_METRE).roundToInt()} ft"
