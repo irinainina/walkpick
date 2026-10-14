@@ -14,7 +14,6 @@ import kotlin.math.roundToInt
 
 private const val METRES_IN_KM = 1000.0
 private const val WHOLE_FROM = 100
-private const val MILLION = 1_000_000
 
 /**
  * "1 day" or "21 days". Android plurals follow the language of the phone, and in Russian
@@ -26,12 +25,6 @@ fun counted(count: Int, @StringRes one: Int, @StringRes many: Int): String =
 
 /** 6420 -> "6,420". */
 fun grouped(number: Int): String = String.format(Locale.ENGLISH, "%,d", number)
-
-/** 1680000 -> "1.68M"; below a million the number is written in full. */
-fun compact(number: Int): String {
-    if (number < MILLION) return grouped(number)
-    return String.format(Locale.ENGLISH, "%.2fM", number / MILLION.toFloat())
-}
 
 /** "0 km", "4.8 km", "1,209 km" - or miles, when the user chose them. */
 fun distanceText(metres: Int, unit: DistanceUnit): String {

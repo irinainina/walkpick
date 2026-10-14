@@ -77,9 +77,9 @@ internal fun Profile.withProfileRow(row: JsonObject?): Profile {
         heightCm = whole("height_cm"),
         dailyGoal = whole("daily_goal") ?: dailyGoal,
         ownTargetWeightKg = number("target_weight_kg"),
-        targetSystolic = whole("target_systolic") ?: targetSystolic,
-        targetDiastolic = whole("target_diastolic") ?: targetDiastolic,
-        targetGlucose = number("target_glucose_mmol") ?: targetGlucose,
+        targetSystolic = whole("target_systolic"),
+        targetDiastolic = whole("target_diastolic"),
+        targetGlucose = number("target_glucose_mmol"),
     )
 }
 

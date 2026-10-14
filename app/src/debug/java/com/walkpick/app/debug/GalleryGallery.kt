@@ -1,7 +1,10 @@
 package com.walkpick.app.debug
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -20,6 +23,7 @@ import com.walkpick.app.ui.screens.GalleryActions
 import com.walkpick.app.ui.screens.GalleryScreen
 import com.walkpick.app.ui.screens.PhotoMap
 import com.walkpick.app.ui.screens.PhotoMapActions
+import com.walkpick.app.ui.theme.AppTheme
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.ZoneId
@@ -82,6 +86,9 @@ fun GalleryGallery(page: String) {
         GalleryScreen(state, actions, Modifier.weight(1f)) { top ->
             PhotoMap(map, PhotoMapActions({}, {}, {}, {}), top)
         }
-        AppNavBar(bottomTabs, selectedRoute = Screen.Gallery.route, onSelect = {})
+        // Above the buttons of the phone, as in the app.
+        Box(Modifier.background(AppTheme.colors.surface).navigationBarsPadding()) {
+            AppNavBar(bottomTabs, selectedRoute = Screen.Gallery.route, onSelect = {})
+        }
     }
 }

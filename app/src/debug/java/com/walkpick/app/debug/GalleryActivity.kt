@@ -61,6 +61,7 @@ private fun Page(page: String) {
         "camera", "camera-what", "camera-identifying" ->
             CameraGallery(identifying = page == "camera-identifying", asking = page == "camera-what")
         "profile" -> ProfileGallery()
+        "profile-consent" -> ProfileGallery(consent = true)
         "settings" -> SettingsGallery(StepsAccess.COUNTING)
         "settings-off" -> SettingsGallery(StepsAccess.NOT_ALLOWED)
         else -> ComponentGallery()

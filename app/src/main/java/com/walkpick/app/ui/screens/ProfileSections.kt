@@ -5,6 +5,10 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import com.walkpick.app.R
@@ -54,14 +58,15 @@ internal fun ProfileBody(state: ProfileState, onEdit: (ProfileField) -> Unit, on
         val glucose = HealthKind.GLUCOSE in profile.healthTabs
         ListRow(
             label = stringResource(R.string.profile_target_weight),
-            value = profile.targetWeightKg?.let { weightText(it, state.units.weight) } ?: notSet,
+            // Only a target of the walker's own: a weight worked out by a formula is not shown.
+            value = profile.ownTargetWeightKg?.let { weightText(it, state.units.weight) } ?: notSet,
             divider = pressure || glucose,
             onClick = { onEdit(ProfileField.TargetWeight) },
         )
         if (pressure) {
             ListRow(
                 label = stringResource(R.string.profile_target_pressure),
-                value = "${profile.targetSystolic}/${profile.targetDiastolic}",
+                value = profile.targetSystolic?.let { "$it/${profile.targetDiastolic}" } ?: notSet,
                 divider = glucose,
                 onClick = { onEdit(ProfileField.TargetPressure) },
             )
@@ -69,7 +74,7 @@ internal fun ProfileBody(state: ProfileState, onEdit: (ProfileField) -> Unit, on
         if (glucose) {
             ListRow(
                 label = stringResource(R.string.profile_target_glucose),
-                value = glucoseText(profile.targetGlucose, state.units.glucose),
+                value = profile.targetGlucose?.let { glucoseText(it, state.units.glucose) } ?: notSet,
                 divider = false,
                 onClick = { onEdit(ProfileField.TargetGlucose) },
             )
@@ -79,6 +84,8 @@ internal fun ProfileBody(state: ProfileState, onEdit: (ProfileField) -> Unit, on
 
 @Composable
 internal fun ProfileTabs(profile: Profile, onChange: ((Profile) -> Profile) -> Unit) {
+    // Pressure and glucose are health data: they are turned on only after the walker has read so.
+    var asking by rememberSaveable { mutableStateOf<HealthKind?>(null) }
     SectionTitle(stringResource(R.string.profile_tabs))
     AppCard {
         HealthKind.entries.forEach { tab ->
@@ -90,7 +97,10 @@ internal fun ProfileTabs(profile: Profile, onChange: ((Profile) -> Profile) -> U
                 trailing = {
                     AppSwitch(
                         on = on,
-                        onToggle = { turnedOn -> onChange { it.withTab(tab, turnedOn) } },
+                        onToggle = { turnedOn ->
+                            val ask = turnedOn && tab in AskedTabs
+                            if (ask) asking = tab else onChange { it.withTab(tab, turnedOn) }
+                        },
                         label = label,
                         // The last tab left on cannot be turned off.
                         enabled = !on || profile.healthTabs.size > 1,
@@ -105,7 +115,19 @@ internal fun ProfileTabs(profile: Profile, onChange: ((Profile) -> Profile) -> U
         style = MaterialTheme.typography.bodySmall,
         color = AppTheme.colors.textSecondary,
     )
+    asking?.let { tab ->
+        ConsentSheet(
+            tab = tab,
+            onTurnOn = {
+                asking = null
+                onChange { it.withTab(tab, true) }
+            },
+            onDismiss = { asking = null },
+        )
+    }
 }
+
+private val AskedTabs = setOf(HealthKind.PRESSURE, HealthKind.GLUCOSE)
 
 internal fun Sex.titleRes() = if (this == Sex.FEMALE) R.string.profile_female else R.string.profile_male
 

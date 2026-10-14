@@ -3,6 +3,7 @@ package com.walkpick.app.ui.health
 import com.walkpick.app.data.local.DailyStepsEntity
 import com.walkpick.app.data.local.HealthEntryEntity
 import com.walkpick.app.data.local.HealthKind
+import com.walkpick.app.data.local.WalkEntity
 import com.walkpick.app.data.steps.DayRange
 import com.walkpick.app.data.steps.monthOf
 import com.walkpick.app.data.steps.stepsStats
@@ -44,11 +45,14 @@ data class HealthChart(
     /** One line, or two for pressure; a value 0..1 or a gap for each column. */
     val lines: List<List<Float?>>,
     val goals: List<ChartGoal> = emptyList(),
-    /** Mood only: the mood of each column, 1..5; its point stands at [moodLevel]. */
-    val moods: List<Int?> = emptyList(),
+    /** Mood only: how the walks of each column began and ended; null where no mood was noted. */
+    val moods: List<MoodWay?> = emptyList(),
 )
 
-/** How high the point of a mood stands, 0..1 of the chart. */
+/** The mood before the first walk of a day or month and after its last one, 1..5. */
+data class MoodWay(val before: Int, val after: Int)
+
+/** How high the grid line of a mood stands, 0..1 of the chart. */
 fun moodLevel(mood: Int): Float = MOOD_FLOOR + (mood - 1) * MOOD_STEP
 
 internal fun chartColumns(period: StatsTab, today: LocalDate, first: LocalDate): List<DayRange> {
@@ -85,16 +89,23 @@ internal fun chartLabels(
     }
 }
 
-/** [entries] are of [kind], oldest first; [targets] are the lines of Profile, the upper one first. */
+/** What a tab is drawn from: its entries, oldest first, the steps of the days, the walks with their moods. */
+data class HealthData(
+    val entries: List<HealthEntryEntity>,
+    val days: List<DailyStepsEntity>,
+    val walks: List<WalkEntity> = emptyList(),
+)
+
+/** [data] is of [kind]; [targets] are the lines of Profile, the upper one first. */
 internal fun healthChart(
     kind: HealthKind,
-    entries: List<HealthEntryEntity>,
-    days: List<DailyStepsEntity>,
+    data: HealthData,
     period: StatsTab,
     today: LocalDate,
     targets: List<Double>,
     zone: ZoneId,
 ): HealthChart {
+    val (entries, days, walks) = data
     val first = entries.firstOrNull()?.measuredAt?.localDay(zone) ?: today
     val columns = chartColumns(period, today, first)
     val (labels, current) = chartLabels(period, today, columns)
@@ -103,8 +114,13 @@ internal fun healthChart(
     val top = (steps.maxOrNull() ?: 0) * BARS_TOP
     val bars = steps.map { if (top > 0) it / top else 0f }
     if (kind == HealthKind.MOOD) {
-        // The last mood of the day or month speaks for it.
-        val moods = inColumns.map { column -> column.lastOrNull()?.value?.toInt() }
+        val moods = columns.map { column ->
+            val inColumn = walks.filter { it.startedAt.localDay(zone) in column }.sortedBy { it.startedAt }
+            val before = inColumn.firstNotNullOfOrNull { it.moodBefore }
+            val after = inColumn.lastOrNull { it.moodAfter != null }?.moodAfter
+            // One mood said colours the whole bar.
+            (before ?: after)?.let { MoodWay(it, after ?: it) }
+        }
         return HealthChart(columns.size, labels, current, bars, lines = emptyList(), moods = moods)
     }
     val upper = inColumns.map { column -> column.map { it.value }.averageOrNull() }

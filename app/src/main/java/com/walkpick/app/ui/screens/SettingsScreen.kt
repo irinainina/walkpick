@@ -35,6 +35,7 @@ import com.walkpick.app.ui.components.ListRow
 import com.walkpick.app.ui.components.SegmentedControl
 import com.walkpick.app.ui.components.TabTitle
 import com.walkpick.app.ui.grouped
+import com.walkpick.app.ui.settings.ExportState
 import com.walkpick.app.ui.settings.SettingsState
 import com.walkpick.app.ui.theme.AppTheme
 import com.walkpick.app.ui.theme.Sizes
@@ -58,6 +59,8 @@ class SettingsActions(
     val onAllowSteps: () -> Unit,
     val onSignOut: () -> Unit,
     val onDelete: () -> Unit,
+    /** Asks where to save the file of Export my data. */
+    val onExport: () -> Unit,
 )
 
 @Composable
@@ -127,6 +130,21 @@ fun SettingsScreen(state: SettingsState, actions: SettingsActions, modifier: Mod
             val setMood = { on: Boolean -> actions.onChange { it.copy(walkMood = on) } }
             ListRow(mood, trailing = { AppSwitch(settings.walkMood, setMood, mood) })
             StepCounting(state.steps, actions.onAllowSteps)
+            val exported = when (state.export) {
+                ExportState.Idle -> null
+                ExportState.Working -> R.string.settings_export_working
+                ExportState.Saved -> R.string.settings_export_saved
+                ExportState.Failed -> R.string.settings_export_failed
+            }
+            ListRow(
+                label = stringResource(R.string.settings_export),
+                value = exported?.let { stringResource(it) },
+                divider = false,
+                onClick = actions.onExport,
+                valueColor = with(AppTheme.colors) {
+                    if (state.export == ExportState.Failed) danger else textSecondary
+                },
+            )
         }
         Section(R.string.settings_about) {
             val links = LocalUriHandler.current
@@ -178,7 +196,8 @@ private fun StepCounting(access: StepsAccess, onAllow: () -> Unit) {
     ListRow(
         label = stringResource(R.string.settings_step_counting),
         value = stringResource(if (counting) R.string.settings_on else R.string.settings_off),
-        divider = false,
+        // Without counting the row is followed by its explanation, not by a line.
+        divider = counting,
         valueColor = with(AppTheme.colors) { if (counting) textSecondary else streak },
         trailing = {},
     )

@@ -20,9 +20,12 @@ import com.walkpick.app.ui.theme.AppColors
 import com.walkpick.app.ui.theme.AppTheme
 import com.walkpick.app.ui.theme.Sizes
 
-// A bar takes four sevenths of its column, as in the design: 13.33 of 23.33; among dots 6.33 of 9.33.
+// A bar takes four sevenths of its column, as in the design: 13.33 of 23.33; a mood bar 6.33 of 9.33.
 private const val BAR_SHARE = 4f / 7
 private const val DOT_BAR_SHARE = 0.68f
+
+// The moods over the bars are pale, as in variant A of the design.
+private const val MOOD_BAR_ALPHA = 0.55f
 private val LineWidth = 3.dp
 private val GoalWidth = 2.dp
 private val GoalDash = 6.dp
@@ -30,7 +33,6 @@ private val GoalGap = 4.dp
 private val PointRadius = 3.dp
 private val LastPointRadius = 5.dp
 private val PointStroke = 2.dp
-private val DotRadius = 4.dp
 private val LineLevels = listOf(0f, 0.5f, 1f)
 
 /**
@@ -70,24 +72,34 @@ fun LineChart(
     }
 }
 
-/** A dot of its own colour in every column that has one, on grid lines at [levels], over bars of steps. */
+/**
+ * Bars of steps on grid lines at [levels]; a bar with [ways] colours runs from the first colour at its
+ * foot to the second at its top, a bar without them stays pale.
+ */
 @Composable
-fun DotChart(
-    dots: List<Pair<Float, Color>?>,
+fun GradientBarChart(
     bars: List<Float>,
+    ways: List<Pair<Color, Color>?>,
     levels: List<Float>,
     modifier: Modifier = Modifier,
 ) {
     val colors = AppTheme.colors
     Canvas(modifier) {
-        val slot = size.width / dots.size.coerceAtLeast(1)
-        drawGround(levels, bars, slot, DOT_BAR_SHARE, colors)
-        dots.forEachIndexed { column, dot ->
-            if (dot != null) {
-                val centre = Offset((column + 0.5f) * slot, size.height * (1 - dot.first))
-                drawCircle(dot.second, DotRadius.toPx(), centre)
-                drawCircle(colors.surface, DotRadius.toPx(), centre, style = Stroke(PointStroke.toPx()))
-            }
+        val slot = size.width / bars.size.coerceAtLeast(1)
+        // Only a bar without a mood is pale: under a mood the pale one would tint it.
+        val pale = bars.mapIndexed { index, value -> if (ways.getOrNull(index) == null) value else 0f }
+        drawGround(levels, pale, slot, DOT_BAR_SHARE, colors)
+        val barWidth = slot * DOT_BAR_SHARE
+        bars.forEachIndexed { index, value ->
+            val (foot, top) = ways.getOrNull(index) ?: return@forEachIndexed
+            val y = size.height * (1 - value)
+            drawRoundRect(
+                brush = Brush.verticalGradient(listOf(top, foot), startY = y, endY = size.height),
+                topLeft = Offset(index * slot + (slot - barWidth) / 2, y),
+                size = Size(barWidth, size.height * value),
+                cornerRadius = CornerRadius(barWidth / 2),
+                alpha = MOOD_BAR_ALPHA,
+            )
         }
     }
 }

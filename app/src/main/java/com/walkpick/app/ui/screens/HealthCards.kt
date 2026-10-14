@@ -24,9 +24,8 @@ import com.walkpick.app.ui.components.AppCard
 import com.walkpick.app.ui.components.IconBadge
 import com.walkpick.app.ui.components.Mood
 import com.walkpick.app.ui.components.MoodFace
+import com.walkpick.app.ui.counted
 import com.walkpick.app.ui.glucoseNumber
-import com.walkpick.app.ui.grouped
-import com.walkpick.app.ui.health.ACTIVE_DAY_STEPS
 import com.walkpick.app.ui.health.HealthCurrent
 import com.walkpick.app.ui.health.HealthInsight
 import com.walkpick.app.ui.health.HealthState
@@ -36,7 +35,6 @@ import com.walkpick.app.ui.stats.StatsTab
 import com.walkpick.app.ui.theme.AppTheme
 import com.walkpick.app.ui.theme.ParagraphStyle
 import com.walkpick.app.ui.theme.Spacing
-import com.walkpick.app.ui.weightText
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
@@ -53,10 +51,6 @@ private val ReadingHeight = 40.dp
 private val TimeDrop = 6.dp
 private val UnitLift = 2.dp
 
-private val WeekdayName = DateTimeFormatter.ofPattern("EEEE", Locale.ENGLISH)
-private val MonthDay = DateTimeFormatter.ofPattern("MMM d", Locale.ENGLISH)
-private val MonthName = DateTimeFormatter.ofPattern("MMMM", Locale.ENGLISH)
-private val MonthAndYear = DateTimeFormatter.ofPattern("MMMM yyyy", Locale.ENGLISH)
 private val ClockTime = DateTimeFormatter.ofPattern("HH:mm", Locale.ENGLISH)
 private val DayAndTime = DateTimeFormatter.ofPattern("MMM d, HH:mm", Locale.ENGLISH)
 
@@ -196,39 +190,17 @@ internal fun InsightCard(insight: HealthInsight, state: HealthState, modifier: M
     }
 }
 
+// "Your mood went up on 14 of 20 walks this month."
 @Composable
 private fun insightText(insight: HealthInsight, state: HealthState): String {
-    // "in January", "in January 2025", "on Monday", "on Sep 1": the start of what the chart shows.
-    val since = { day: LocalDate ->
-        when (state.period) {
-            StatsTab.Week -> R.string.health_since_day to WeekdayName
-            StatsTab.Month -> R.string.health_since_day to MonthDay
-            StatsTab.Year -> R.string.health_since_month to MonthName
-            StatsTab.All -> R.string.health_since_month to MonthAndYear
-        }.let { (res, format) -> res to format.format(day) }
+    val period = when (state.period) {
+        StatsTab.Week -> R.string.health_this_week
+        StatsTab.Month -> R.string.health_this_month
+        StatsTab.Year -> R.string.health_this_year
+        StatsTab.All -> R.string.health_overall
     }
-    return when (insight) {
-        HealthInsight.BetterMoodOnActiveDays ->
-            stringResource(R.string.health_insight_mood, grouped(ACTIVE_DAY_STEPS))
-        is HealthInsight.WalkMore -> since(insight.since).let { (res, day) ->
-            stringResource(R.string.health_insight_steps, grouped(insight.steps), stringResource(res, day))
-        }
-        is HealthInsight.Changed -> {
-            val size = abs(insight.change)
-            val (subject, amount) = when (state.tab) {
-                HealthKind.WEIGHT -> R.string.health_weight to weightText(size, state.units.weight)
-                HealthKind.GLUCOSE -> R.string.health_glucose to glucoseNumber(size, state.units.glucose)
-                else -> R.string.health_systolic_pressure to size.roundToInt().toString()
-            }
-            val (res, day) = since(insight.since)
-            stringResource(
-                if (insight.change < 0) R.string.health_insight_lower else R.string.health_insight_higher,
-                stringResource(subject),
-                amount,
-                stringResource(res, day),
-            )
-        }
-    }
+    val walks = counted(insight.walks, R.string.health_walk, R.string.health_walks)
+    return stringResource(R.string.health_mood_up, insight.up, walks, stringResource(period))
 }
 
 @Composable

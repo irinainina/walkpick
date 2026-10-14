@@ -10,7 +10,6 @@ import com.walkpick.app.data.profile.Profile
 import com.walkpick.app.data.profile.ProfileRepository
 import com.walkpick.app.data.settings.AppSettings
 import com.walkpick.app.data.settings.SettingsStore
-import com.walkpick.app.data.steps.StepsRepository
 import com.walkpick.app.data.walk.WalkRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
@@ -25,7 +24,7 @@ import javax.inject.Inject
 private const val KEEP_AFTER_LEAVING_MS = 5_000L
 
 /** Steps, walks and photos since the first day. */
-data class Totals(val steps: Int = 0, val walks: Int = 0, val photos: Int = 0)
+data class Totals(val walks: Int = 0, val metres: Long = 0, val photos: Int = 0)
 
 data class ProfileState(
     val today: LocalDate,
@@ -41,7 +40,6 @@ data class ProfileState(
 @HiltViewModel
 class ProfileViewModel @Inject constructor(
     private val profiles: ProfileRepository,
-    steps: StepsRepository,
     walks: WalkRepository,
     finds: FindStore,
     private val health: HealthRepository,
@@ -50,8 +48,8 @@ class ProfileViewModel @Inject constructor(
 ) : ViewModel() {
 
     private val totals =
-        combine(steps.watchDays(), walks.watchStarts(), finds.watchCount()) { days, starts, photos ->
-            Totals(days.sumOf { it.steps }, starts.size, photos)
+        combine(walks.watchAll(), finds.watchCount()) { walked, photos ->
+            Totals(walked.size, walked.sumOf { it.distanceM.toLong() }, photos)
         }
 
     private val weight = health.watchLatest(HealthKind.WEIGHT)

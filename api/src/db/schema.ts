@@ -40,13 +40,13 @@ export const profiles = pgTable('profiles', {
     scale: 1,
     mode: 'number',
   }),
-  target_systolic: smallint('target_systolic').notNull(),
-  target_diastolic: smallint('target_diastolic').notNull(),
+  target_systolic: smallint('target_systolic'),
+  target_diastolic: smallint('target_diastolic'),
   target_glucose_mmol: numeric('target_glucose_mmol', {
     precision: 3,
     scale: 1,
     mode: 'number',
-  }).notNull(),
+  }),
   created_at: instant('created_at').notNull(),
   updated_at: instant('updated_at').notNull(),
 });

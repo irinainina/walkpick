@@ -3,7 +3,6 @@ package com.walkpick.app.data
 import com.walkpick.app.data.local.HealthKind
 import com.walkpick.app.data.profile.Profile
 import com.walkpick.app.data.profile.Sex
-import com.walkpick.app.data.profile.idealWeightKg
 import com.walkpick.app.data.profile.strideM
 import com.walkpick.app.data.profile.toProfileRow
 import com.walkpick.app.data.profile.toSettingsRow
@@ -17,21 +16,6 @@ import java.time.LocalDate
 class ProfileTest {
 
     private val today = LocalDate.of(2026, 9, 30)
-
-    @Test
-    fun theIdealWeightFollowsSexAndHeight() {
-        assertEquals(59.4, idealWeightKg(Sex.FEMALE, 168))
-        assertEquals(72.6, idealWeightKg(Sex.MALE, 180))
-        assertEquals(null, idealWeightKg(null, 168))
-        assertEquals(null, idealWeightKg(Sex.FEMALE, null))
-    }
-
-    @Test
-    fun aTargetSetByHandReplacesTheCalculatedOne() {
-        val profile = Profile(sex = Sex.FEMALE, heightCm = 168)
-        assertEquals(59.4, profile.targetWeightKg)
-        assertEquals(62.0, profile.copy(ownTargetWeightKg = 62.0).targetWeightKg)
-    }
 
     @Test
     fun theStrideComesFromTheHeight() {
@@ -66,6 +50,7 @@ class ProfileTest {
             dailyGoal = 8000,
             ownTargetWeightKg = 62.0,
             targetSystolic = 118,
+            targetDiastolic = 76,
             targetGlucose = 5.2,
             healthTabs = setOf(HealthKind.MOOD, HealthKind.PRESSURE),
         )

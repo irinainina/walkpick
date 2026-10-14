@@ -3,6 +3,9 @@ package com.walkpick.app.ui
 import com.walkpick.app.data.local.DailyStepsEntity
 import com.walkpick.app.data.local.HealthEntryEntity
 import com.walkpick.app.data.local.HealthKind
+import com.walkpick.app.data.local.WalkEntity
+import com.walkpick.app.ui.health.HealthData
+import com.walkpick.app.ui.health.MoodWay
 import com.walkpick.app.ui.health.chartColumns
 import com.walkpick.app.ui.health.chartLabels
 import com.walkpick.app.ui.health.healthChart
@@ -39,7 +42,13 @@ class HealthChartTest {
         entries: List<HealthEntryEntity> = emptyList(),
         days: List<DailyStepsEntity> = emptyList(),
         targets: List<Double> = emptyList(),
-    ) = healthChart(kind, entries, days, period, today, targets, zone)
+        walks: List<WalkEntity> = emptyList(),
+    ) = healthChart(kind, HealthData(entries, days, walks), period, today, targets, zone)
+
+    private fun walk(day: String, hour: Int, before: Int?, after: Int?): WalkEntity {
+        val at = LocalDate.parse(day).atTime(hour, 0).toInstant(zone)
+        return WalkEntity("$day$hour", 0, at, at, 0, moodBefore = before, moodAfter = after, updatedAt = at)
+    }
 
     @Test
     fun theColumnsAreDaysOrMonthsOfThePeriodThatHoldsToday() {
@@ -87,14 +96,14 @@ class HealthChartTest {
     }
 
     @Test
-    fun moodStandsOnFiveLevelsAndKeepsTheLastOfTheDay() {
-        val entries = listOf(
-            entry(HealthKind.MOOD, "2026-09-28", 2.0),
-            entry(HealthKind.MOOD, "2026-09-28", 5.0),
-            entry(HealthKind.MOOD, "2026-09-30", 1.0),
+    fun aMoodBarRunsFromTheMoodBeforeTheFirstWalkToTheMoodAfterTheLast() {
+        val walks = listOf(
+            walk("2026-09-28", 18, before = 4, after = 5),
+            walk("2026-09-28", 8, before = 2, after = 3),
+            walk("2026-09-30", 9, before = null, after = 1),
         )
-        val chart = chart(HealthKind.MOOD, StatsTab.Week, entries)
-        assertEquals(listOf(5, null, 1), chart.moods.take(3))
+        val chart = chart(HealthKind.MOOD, StatsTab.Week, walks = walks)
+        assertEquals(listOf(MoodWay(2, 5), null, MoodWay(1, 1)), chart.moods.take(3))
         assertEquals(8f / 140, moodLevel(1), 1e-6f)
         assertEquals(132f / 140, moodLevel(5), 1e-6f)
     }

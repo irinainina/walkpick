@@ -15,7 +15,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentWidth
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -23,13 +22,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.walkpick.app.R
 import com.walkpick.app.data.local.HealthKind
 import com.walkpick.app.ui.components.AppCard
-import com.walkpick.app.ui.components.DotChart
+import com.walkpick.app.ui.components.GradientBarChart
 import com.walkpick.app.ui.components.LineChart
 import com.walkpick.app.ui.components.Mood
 import com.walkpick.app.ui.glucoseNumber
@@ -70,9 +70,11 @@ internal fun ChartCard(state: HealthState, chart: HealthChart, modifier: Modifie
                     .height(ChartHeight),
             ) {
                 if (state.tab == HealthKind.MOOD) {
-                    val dots = chart.moods.map { mood -> mood?.let { moodLevel(it) to colors.moods[it - 1] } }
+                    val ways = chart.moods.map { way ->
+                        way?.let { colors.moods[it.before - 1] to colors.moods[it.after - 1] }
+                    }
                     val levels = colors.moods.indices.map { moodLevel(it + 1) }
-                    DotChart(dots, chart.bars, levels, Modifier.fillMaxSize())
+                    GradientBarChart(chart.bars, ways, levels, Modifier.fillMaxSize())
                 } else {
                     val goals = chart.goals.map { it.at }
                     LineChart(chart.lines, chart.bars, chart.columns, Modifier.fillMaxSize(), goals)
@@ -152,13 +154,15 @@ private fun Legend(state: HealthState, targets: Boolean) {
             HealthKind.WEIGHT -> stringResource(R.string.health_legend_weight, state.units.weight.symbol)
             HealthKind.GLUCOSE -> stringResource(R.string.health_glucose)
             HealthKind.PRESSURE -> stringResource(R.string.profile_systolic)
-            HealthKind.MOOD -> stringResource(R.string.health_mood)
+            HealthKind.MOOD -> stringResource(R.string.health_mood_way)
         }
-        LegendItem(name, if (pressure) Modifier else Modifier.width(FirstLegendWidth)) {
+        val mood = state.tab == HealthKind.MOOD
+        val first = if (pressure || mood) Modifier else Modifier.width(FirstLegendWidth)
+        LegendItem(name, first) {
             if (state.tab == HealthKind.MOOD) {
-                Box(Modifier.width(LineSwatch)) {
-                    Box(Modifier.size(Spacing.s).background(colors.moods[Mood.Good.ordinal], CircleShape))
-                }
+                val (top, foot) = colors.moods[Mood.Great.ordinal] to colors.moods[Mood.Neutral.ordinal]
+                val way = Brush.verticalGradient(listOf(top, foot))
+                Box(Modifier.size(BarSwatch).background(way, BarSwatchShape))
             } else {
                 Box(line.background(colors.accentGradient, PillShape))
             }
@@ -168,7 +172,13 @@ private fun Legend(state: HealthState, targets: Boolean) {
                 Box(line.background(colors.positive, PillShape))
             }
         }
-        LegendItem(stringResource(if (pressure) R.string.health_steps else R.string.health_avg_steps)) {
+        val bars = when {
+            pressure -> R.string.health_steps
+            state.tab == HealthKind.MOOD -> R.string.health_no_mood
+            else -> R.string.health_avg_steps
+        }
+        if (state.tab == HealthKind.MOOD) Spacer(Modifier.width(Spacing.ml))
+        LegendItem(stringResource(bars)) {
             Box(Modifier.size(BarSwatch).background(colors.surfaceTint, BarSwatchShape))
         }
         if (targets) {

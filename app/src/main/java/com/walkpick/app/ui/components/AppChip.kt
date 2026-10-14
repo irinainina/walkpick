@@ -13,6 +13,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.dropShadow
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.walkpick.app.ui.theme.AppShadows
 import com.walkpick.app.ui.theme.AppTheme
@@ -27,6 +28,7 @@ fun AppChip(
     selected: Boolean,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
+    side: Dp = Spacing.m,
 ) {
     val ground = if (selected) {
         Modifier.background(AppTheme.colors.accentGradient, PillShape)
@@ -40,13 +42,14 @@ fun AppChip(
             .then(ground)
             .clip(PillShape)
             .selectable(selected = selected, role = Role.Checkbox, onClick = onClick)
-            .padding(horizontal = Spacing.m),
+            .padding(horizontal = side),
         contentAlignment = Alignment.Center,
     ) {
         Text(
             text = text,
             style = MaterialTheme.typography.labelMedium,
             color = if (selected) AppTheme.colors.onAccent else AppTheme.colors.textInactive,
+            maxLines = 1,
         )
     }
 }

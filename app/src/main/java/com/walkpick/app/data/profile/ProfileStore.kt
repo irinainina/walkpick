@@ -25,9 +25,9 @@ class ProfileStore @Inject constructor(
             heightCm = saved[HEIGHT],
             dailyGoal = saved[GOAL] ?: defaults.dailyGoal,
             ownTargetWeightKg = saved[TARGET_WEIGHT],
-            targetSystolic = saved[TARGET_SYSTOLIC] ?: defaults.targetSystolic,
-            targetDiastolic = saved[TARGET_DIASTOLIC] ?: defaults.targetDiastolic,
-            targetGlucose = saved[TARGET_GLUCOSE] ?: defaults.targetGlucose,
+            targetSystolic = saved[TARGET_SYSTOLIC],
+            targetDiastolic = saved[TARGET_DIASTOLIC],
+            targetGlucose = saved[TARGET_GLUCOSE],
             healthTabs = saved[TABS]?.map(HealthKind::valueOf)?.toSet() ?: defaults.healthTabs,
         )
     }

@@ -1,11 +1,13 @@
 package com.walkpick.app.ui.settings
 
+import android.net.Uri
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.walkpick.app.BuildConfig
 import com.walkpick.app.data.account.AccountExit
 import com.walkpick.app.data.account.AuthRefused
+import com.walkpick.app.data.account.DataExport
 import com.walkpick.app.data.local.HealthKind
 import com.walkpick.app.data.profile.ProfileRepository
 import com.walkpick.app.data.settings.AppSettings
@@ -39,7 +41,11 @@ data class SettingsState(
     /** A sign-out or a deletion is on its way to the server. */
     val busy: Boolean = false,
     val deleteFailed: Boolean = false,
+    val export: ExportState = ExportState.Idle,
 )
+
+/** How far Export my data has gone; the row says it. */
+enum class ExportState { Idle, Working, Saved, Failed }
 
 @HiltViewModel
 class SettingsViewModel @Inject constructor(
@@ -49,17 +55,21 @@ class SettingsViewModel @Inject constructor(
     private val reminders: Reminders,
     private val sync: SyncScheduler,
     private val exit: AccountExit,
+    private val exporter: DataExport,
 ) : ViewModel() {
 
     private val access = MutableStateFlow(steps.access())
     private val busy = MutableStateFlow(false)
     private val deleteFailed = MutableStateFlow(false)
+    private val export = MutableStateFlow(ExportState.Idle)
 
     val state: StateFlow<SettingsState> =
         combine(store.value, profiles.profile, access, busy, deleteFailed) { chosen, me, access, busy, bad ->
             val glucose = HealthKind.GLUCOSE in me.healthTabs
             SettingsState(chosen, access, me.dailyGoal, glucose, busy = busy, deleteFailed = bad)
-        }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(KEEP_AFTER_LEAVING_MS), SettingsState())
+        }
+            .combine(export) { state, export -> state.copy(export = export) }
+            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(KEEP_AFTER_LEAVING_MS), SettingsState())
 
     /** The permission may have been given or taken away while the screen was out of sight. */
     fun lookAgain() {
@@ -75,6 +85,15 @@ class SettingsViewModel @Inject constructor(
             store.change(transform)
             reminders.schedule(store.value.first())
             sync.pushSoon()
+        }
+    }
+
+    /** Puts the whole account into the file at [target], chosen by the walker. */
+    fun exportTo(target: Uri) {
+        if (export.value == ExportState.Working) return
+        export.value = ExportState.Working
+        viewModelScope.launch {
+            export.value = if (exporter.into(target)) ExportState.Saved else ExportState.Failed
         }
     }
 

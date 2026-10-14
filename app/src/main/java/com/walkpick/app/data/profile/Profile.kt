@@ -4,7 +4,6 @@ import com.walkpick.app.data.local.HealthKind
 import com.walkpick.app.data.steps.DEFAULT_DAILY_GOAL
 import java.time.LocalDate
 import java.time.Period
-import kotlin.math.roundToInt
 
 enum class Sex { FEMALE, MALE }
 
@@ -13,16 +12,14 @@ data class Profile(
     val birthDate: LocalDate? = null,
     val heightCm: Int? = null,
     val dailyGoal: Int = DEFAULT_DAILY_GOAL,
-    /** Set by hand; until then the target is [idealWeightKg]. */
+    /** The targets are the walker's own or none: nothing is worked out for them. */
     val ownTargetWeightKg: Double? = null,
-    val targetSystolic: Int = 120,
-    val targetDiastolic: Int = 80,
-    val targetGlucose: Double = 5.5,
+    val targetSystolic: Int? = null,
+    val targetDiastolic: Int? = null,
+    val targetGlucose: Double? = null,
     /** The tabs shown on Health and on Today; never empty. */
     val healthTabs: Set<HealthKind> = setOf(HealthKind.MOOD, HealthKind.WEIGHT),
 ) {
-    val targetWeightKg: Double? get() = ownTargetWeightKg ?: idealWeightKg(sex, heightCm)
-
     fun age(today: LocalDate): Int? = birthDate?.let { Period.between(it, today).years }
 
     /** The last tab left on stays on. */
@@ -30,21 +27,6 @@ data class Profile(
         val tabs = if (on) healthTabs + tab else healthTabs - tab
         return if (tabs.isEmpty()) this else copy(healthTabs = tabs)
     }
-}
-
-private const val CM_IN_INCH = 2.54
-private const val FIVE_FEET_IN = 60
-private const val TENTHS = 10.0
-
-// Robinson, 1983: kg at five feet and kg for every inch above, by sex.
-private val RobinsonFemale = 49.0 to 1.7
-private val RobinsonMale = 52.0 to 1.9
-
-fun idealWeightKg(sex: Sex?, heightCm: Int?): Double? {
-    if (sex == null || heightCm == null) return null
-    val (base, perInch) = if (sex == Sex.FEMALE) RobinsonFemale else RobinsonMale
-    val kg = base + perInch * (heightCm / CM_IN_INCH - FIVE_FEET_IN)
-    return (kg * TENTHS).roundToInt() / TENTHS
 }
 
 private const val DEFAULT_STRIDE_M = 0.7

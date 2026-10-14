@@ -32,9 +32,10 @@ data class HealthTile(val kind: HealthKind, val current: HealthCurrent?)
 /** The target lines of a chart, the upper one first; the card and the tile compare with the first. */
 internal fun Profile.healthTargets(kind: HealthKind): List<Double> = when (kind) {
     HealthKind.MOOD -> emptyList()
-    HealthKind.WEIGHT -> listOfNotNull(targetWeightKg)
-    HealthKind.PRESSURE -> listOf(targetSystolic.toDouble(), targetDiastolic.toDouble())
-    HealthKind.GLUCOSE -> listOf(targetGlucose)
+    // Only a target set by hand: a weight worked out by a formula is not the walker's own.
+    HealthKind.WEIGHT -> listOfNotNull(ownTargetWeightKg)
+    HealthKind.PRESSURE -> listOfNotNull(targetSystolic, targetDiastolic).map { it.toDouble() }
+    HealthKind.GLUCOSE -> listOfNotNull(targetGlucose)
 }
 
 /** Health shows the period that holds today; there is nothing to page through. */

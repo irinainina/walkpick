@@ -2,7 +2,9 @@ package com.walkpick.app.ui.screens
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
@@ -21,10 +23,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.unit.dp
 import com.walkpick.app.R
 import com.walkpick.app.data.local.HealthKind
 import com.walkpick.app.ui.components.AppButton
 import com.walkpick.app.ui.components.AppButtonStyle
+import com.walkpick.app.ui.components.AppChip
 import com.walkpick.app.ui.components.AppSheet
 import com.walkpick.app.ui.components.CircleButton
 import com.walkpick.app.ui.components.SegmentedControl
@@ -34,6 +38,9 @@ import com.walkpick.app.ui.stats.StatsTab
 import com.walkpick.app.ui.theme.AppTheme
 import com.walkpick.app.ui.theme.Spacing
 import java.time.Instant
+
+// As drawn: the chips of Health are 14 to the sides.
+private val ChipSide = 14.dp
 
 @Composable
 fun HealthScreen(
@@ -55,27 +62,32 @@ fun HealthScreen(
             .verticalScroll(rememberScrollState()),
     ) {
         TabTitle(stringResource(R.string.screen_health)) {
-            CircleButton(
-                iconRes = R.drawable.ic_plus,
-                contentDescription = stringResource(R.string.health_new_entry),
-                onClick = { adding = true },
-                tint = AppTheme.colors.accent,
-                raised = true,
-            )
+            // A mood is noted on walks only: there is nothing to add by hand.
+            if (state.tab != HealthKind.MOOD) {
+                CircleButton(
+                    iconRes = R.drawable.ic_plus,
+                    contentDescription = stringResource(R.string.health_new_entry),
+                    onClick = { adding = true },
+                    tint = AppTheme.colors.accent,
+                    ground = AppTheme.colors.surfaceTint,
+                )
+            }
         }
         Spacer(Modifier.height(Spacing.sm))
         // A single tab has nothing to switch to.
         if (state.tabs.size > 1) {
-            SegmentedControl(
-                options = state.tabs.map { stringResource(it.titleRes()) },
-                selectedIndex = state.tabs.indexOf(state.tab),
-                onSelect = { onTab(state.tabs[it]) },
+            Row(
                 modifier = Modifier.padding(horizontal = Spacing.ml),
-            )
-            Spacer(Modifier.height(Spacing.ml))
+                horizontalArrangement = Arrangement.spacedBy(Spacing.s),
+            ) {
+                state.tabs.forEach { tab ->
+                    AppChip(stringResource(tab.chipRes()), tab == state.tab, { onTab(tab) }, side = ChipSide)
+                }
+            }
+            Spacer(Modifier.height(Spacing.m))
         }
         CurrentCard(state, Modifier.padding(horizontal = Spacing.ml))
-        Spacer(Modifier.height(Spacing.ml))
+        Spacer(Modifier.height(Spacing.m))
         SegmentedControl(
             options = StatsTab.entries.map { stringResource(it.titleRes()) },
             selectedIndex = state.period.ordinal,
@@ -84,7 +96,7 @@ fun HealthScreen(
         )
         val chart = state.chart
         if (chart != null) {
-            Spacer(Modifier.height(Spacing.ml))
+            Spacer(Modifier.height(Spacing.m))
             ChartCard(state, chart, Modifier.padding(horizontal = Spacing.ml))
         }
         state.insight?.let {
@@ -134,4 +146,11 @@ private fun DeleteEntrySheet(moment: String, onDelete: () -> Unit, onDismiss: ()
         Spacer(Modifier.height(Spacing.sm))
         AppButton(stringResource(R.string.settings_cancel), onDismiss, style = AppButtonStyle.Secondary)
     }
+}
+
+// Blood pressure and blood glucose are BP and BG on the chips (author's decision 2026-10-14).
+private fun HealthKind.chipRes() = when (this) {
+    HealthKind.PRESSURE -> R.string.health_chip_bp
+    HealthKind.GLUCOSE -> R.string.health_chip_bg
+    else -> titleRes()
 }

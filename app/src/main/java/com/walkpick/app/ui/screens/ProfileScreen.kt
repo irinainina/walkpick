@@ -33,7 +33,6 @@ import androidx.compose.ui.unit.dp
 import com.walkpick.app.R
 import com.walkpick.app.data.local.HealthKind
 import com.walkpick.app.data.profile.Profile
-import com.walkpick.app.ui.compact
 import com.walkpick.app.ui.components.AppCard
 import com.walkpick.app.ui.components.Avatar
 import com.walkpick.app.ui.components.CircleButton
@@ -46,6 +45,7 @@ import com.walkpick.app.ui.theme.AppTheme
 import com.walkpick.app.ui.theme.Sizes
 import com.walkpick.app.ui.theme.Spacing
 import java.time.Instant
+import kotlin.math.roundToInt
 
 // Below the status bar: the frame draws 232 with a status bar of 24.
 private val HeaderHeight = 252.dp
@@ -57,6 +57,7 @@ private val AvatarSize = 72.dp
 private val AvatarBorder = 3.dp
 private val NameGap = 2.dp
 private val TotalsHeight = 88.dp
+private const val METRES_IN_KM = 1000.0
 private val TotalDividerHeight = 40.dp
 
 @Composable
@@ -140,17 +141,19 @@ private fun Header(statusBar: Dp, name: String?, email: String, onBack: () -> Un
 private fun TotalsCard(state: ProfileState) {
     AppCard {
         Row(Modifier.height(TotalsHeight)) {
-            Total(compact(state.totals.steps), R.string.profile_steps)
+            Total(grouped(state.totals.walks), stringResource(R.string.profile_walks))
             TotalDivider()
-            Total(grouped(state.totals.walks), R.string.profile_walks)
+            val unit = state.units.distance
+            val far = (state.totals.metres / METRES_IN_KM * unit.perMetric).roundToInt()
+            Total(grouped(far), unit.symbol)
             TotalDivider()
-            Total(grouped(state.totals.photos), R.string.profile_photos)
+            Total(grouped(state.totals.photos), stringResource(R.string.profile_photos))
         }
     }
 }
 
 @Composable
-private fun RowScope.Total(value: String, labelRes: Int) {
+private fun RowScope.Total(value: String, label: String) {
     Column(
         modifier = Modifier
             .weight(1f)
@@ -160,7 +163,7 @@ private fun RowScope.Total(value: String, labelRes: Int) {
         Text(value, style = MaterialTheme.typography.headlineSmall, color = AppTheme.colors.textPrimary)
         Spacer(Modifier.height(NameGap))
         Text(
-            text = stringResource(labelRes),
+            text = label,
             style = MaterialTheme.typography.bodyMedium,
             color = AppTheme.colors.textSecondary,
         )

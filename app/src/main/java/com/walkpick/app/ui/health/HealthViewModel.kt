@@ -8,6 +8,7 @@ import com.walkpick.app.data.profile.ProfileRepository
 import com.walkpick.app.data.settings.AppSettings
 import com.walkpick.app.data.settings.SettingsStore
 import com.walkpick.app.data.steps.StepsRepository
+import com.walkpick.app.data.walk.WalkRepository
 import com.walkpick.app.ui.stats.StatsTab
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -50,6 +51,7 @@ class HealthViewModel @Inject constructor(
     profiles: ProfileRepository,
     private val health: HealthRepository,
     steps: StepsRepository,
+    walks: WalkRepository,
     settings: SettingsStore,
 ) : ViewModel() {
 
@@ -60,7 +62,9 @@ class HealthViewModel @Inject constructor(
         profiles.profile
             .combine(choice) { profile, made -> profile to healthState(profile.healthTabs, made) }
             .flatMapLatest { (profile, chosen) ->
-                combine(health.watch(chosen.tab), steps.watchDays(), settings.value) { entries, days, units ->
+                val entries = health.watch(chosen.tab)
+                val sources = combine(entries, steps.watchDays(), walks.watchAll(), ::HealthData)
+                combine(sources, settings.value) { data, units ->
                     val today = LocalDate.now()
                     val zone = ZoneId.systemDefault()
                     val (tab, period) = chosen.tab to chosen.period
@@ -68,9 +72,11 @@ class HealthViewModel @Inject constructor(
                     val target = targets.firstOrNull()
                     chosen.copy(
                         today = today,
-                        current = healthCurrent(entries, period, today, target, zone),
-                        chart = healthChart(tab, entries, days, period, today, targets, zone),
-                        insight = healthInsight(tab, entries, days, period, today, target, zone),
+                        current = healthCurrent(data.entries, period, today, target, zone),
+                        chart = healthChart(tab, data, period, today, targets, zone),
+                        // Only the mood has a remark: a count of the walker's own walks, never a cause.
+                        insight = moodInsight(data.walks, period, today, zone)
+                            .takeIf { tab == HealthKind.MOOD },
                         units = units,
                     )
                 }

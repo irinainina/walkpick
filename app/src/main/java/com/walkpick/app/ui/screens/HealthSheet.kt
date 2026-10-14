@@ -3,32 +3,20 @@ package com.walkpick.app.ui.screens
 import android.app.DatePickerDialog
 import android.app.TimePickerDialog
 import android.content.Context
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.selection.selectable
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.unit.dp
 import com.walkpick.app.R
 import com.walkpick.app.data.health.HealthLimits
 import com.walkpick.app.data.local.HealthKind
@@ -36,19 +24,13 @@ import com.walkpick.app.data.settings.GlucoseUnit
 import com.walkpick.app.ui.components.AppButton
 import com.walkpick.app.ui.components.AppSheet
 import com.walkpick.app.ui.components.AppTextField
-import com.walkpick.app.ui.components.Mood
-import com.walkpick.app.ui.components.MoodFace
 import com.walkpick.app.ui.components.PickerField
 import com.walkpick.app.ui.components.SegmentedControl
 import com.walkpick.app.ui.health.HealthState
-import com.walkpick.app.ui.theme.AppTheme
-import com.walkpick.app.ui.theme.Sizes
 import com.walkpick.app.ui.theme.Spacing
 import java.time.Instant
 import java.time.LocalDateTime
 import java.time.ZoneId
-
-private val MoodOptionHeight = 88.dp
 
 /** A new entry of any tab turned on; [onSave] takes the kind, the value, the lower pressure, the moment. */
 @Composable
@@ -57,8 +39,9 @@ internal fun NewEntrySheet(
     onSave: (HealthKind, Double, Int?, Instant) -> Unit,
     onDismiss: () -> Unit,
 ) {
-    var kind by rememberSaveable { mutableStateOf(state.tab) }
-    var mood by rememberSaveable { mutableStateOf(Mood.Good) }
+    // A mood is noted at the start and the end of a walk, not here.
+    val kinds = state.tabs - HealthKind.MOOD
+    var kind by rememberSaveable { mutableStateOf(state.tab.takeIf { it in kinds } ?: kinds.first()) }
     var number by rememberSaveable(kind) { mutableStateOf("") }
     var lowerNumber by rememberSaveable(kind) { mutableStateOf("") }
     var moment by rememberSaveable { mutableLongStateOf(System.currentTimeMillis()) }
@@ -74,7 +57,7 @@ internal fun NewEntrySheet(
     }
     val shown = range.start * scale..range.endInclusive * scale
     val typed = parse(number, shown, decimal)?.div(scale)
-    val value = if (kind == HealthKind.MOOD) mood.value.toDouble() else typed
+    val value = typed
     val lower = parse(lowerNumber, HealthLimits.diastolic, decimal = false)?.toInt()
     val lowerFits = kind != HealthKind.PRESSURE || (lower != null && value != null && lower < value)
     val save = {
@@ -86,17 +69,16 @@ internal fun NewEntrySheet(
 
     AppSheet(stringResource(R.string.health_new_entry), onDismiss) {
         Spacer(Modifier.height(Spacing.m))
-        if (state.tabs.size > 1) {
+        if (kinds.size > 1) {
             SegmentedControl(
-                options = state.tabs.map { stringResource(it.titleRes()) },
-                selectedIndex = state.tabs.indexOf(kind),
-                onSelect = { kind = state.tabs[it] },
+                options = kinds.map { stringResource(it.titleRes()) },
+                selectedIndex = kinds.indexOf(kind),
+                onSelect = { kind = kinds[it] },
             )
             Spacer(Modifier.height(Spacing.m))
         }
         val numberError = rangeHint(shown).takeIf { number.isNotBlank() && value == null }
         when (kind) {
-            HealthKind.MOOD -> MoodPicker(mood, onPick = { mood = it })
             HealthKind.PRESSURE -> Row(horizontalArrangement = Arrangement.spacedBy(Spacing.m)) {
                 val unit = stringResource(R.string.profile_mmhg)
                 AppTextField(
@@ -144,46 +126,6 @@ internal fun NewEntrySheet(
         )
         Spacer(Modifier.height(Spacing.xl))
         AppButton(stringResource(R.string.profile_save), onClick = save)
-    }
-}
-
-@Composable
-private fun MoodPicker(selected: Mood, onPick: (Mood) -> Unit) {
-    val type = MaterialTheme.typography
-    val colors = AppTheme.colors
-    val shape = MaterialTheme.shapes.medium
-    Text(stringResource(R.string.health_how_feel), style = type.bodySmall, color = colors.textSecondary)
-    Spacer(Modifier.height(Spacing.s))
-    Row(Modifier.fillMaxWidth()) {
-        // Great comes first, as the design draws it.
-        Mood.entries.reversed().forEach { mood ->
-            val picked = mood == selected
-            val ground = if (picked) {
-                Modifier
-                    .background(colors.surfaceTint, shape)
-                    .border(Sizes.focusBorder, colors.accent, shape)
-            } else {
-                Modifier
-            }
-            Column(
-                modifier = Modifier
-                    .weight(1f)
-                    .height(MoodOptionHeight)
-                    .clip(shape)
-                    .then(ground)
-                    .selectable(picked, role = Role.RadioButton, onClick = { onPick(mood) })
-                    .padding(vertical = Spacing.s),
-                verticalArrangement = Arrangement.SpaceBetween,
-                horizontalAlignment = Alignment.CenterHorizontally,
-            ) {
-                MoodFace(mood)
-                Text(
-                    text = stringResource(mood.titleRes),
-                    style = if (picked) type.labelSmall else type.bodySmall,
-                    color = if (picked) colors.accent else colors.textSecondary,
-                )
-            }
-        }
     }
 }
 
