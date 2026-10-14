@@ -92,7 +92,6 @@ fun HealthGallery(page: String) {
             chart = shown?.chart,
             insight = shown?.insight,
         ),
-        onBack = {},
         onDelete = {},
         onSave = { _, _, _, _ -> },
         onTab = {},

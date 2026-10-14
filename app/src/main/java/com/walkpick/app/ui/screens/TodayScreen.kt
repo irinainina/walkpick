@@ -2,6 +2,7 @@ package com.walkpick.app.ui.screens
 
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -26,8 +27,12 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -37,10 +42,11 @@ import com.walkpick.app.data.settings.DistanceUnit
 import com.walkpick.app.data.steps.StepsAccess
 import com.walkpick.app.data.walk.WalkWeather
 import com.walkpick.app.data.walk.sky
-import com.walkpick.app.ui.components.CircleButton
+import com.walkpick.app.ui.components.Avatar
 import com.walkpick.app.ui.components.GradientHeader
 import com.walkpick.app.ui.map.DiaryWalk
 import com.walkpick.app.ui.theme.AppTheme
+import com.walkpick.app.ui.theme.AvatarLetterStyle
 import com.walkpick.app.ui.theme.ParagraphStyle
 import com.walkpick.app.ui.theme.PillShape
 import com.walkpick.app.ui.theme.Sizes
@@ -76,7 +82,7 @@ class TodayActions(
     val onHealth: () -> Unit,
     val onAddHealth: (HealthKind) -> Unit,
     val onWalk: (String) -> Unit,
-    val onReminders: () -> Unit,
+    val onProfile: () -> Unit,
 )
 
 @Composable
@@ -118,7 +124,7 @@ private fun Cards(
     actions: TodayActions,
 ) {
     Box(Modifier.verticalScroll(rememberScrollState())) {
-        Header(statusBar, state, weather, actions.onReminders)
+        Header(statusBar, state, weather, actions.onProfile)
         Column(
             Modifier.padding(
                 start = Spacing.ml,
@@ -152,7 +158,7 @@ private fun Cards(
 }
 
 @Composable
-private fun Header(statusBar: Dp, state: TodayState, weather: WalkWeather?, onReminders: () -> Unit) {
+private fun Header(statusBar: Dp, state: TodayState, weather: WalkWeather?, onProfile: () -> Unit) {
     val colors = AppTheme.colors
     val now = state.now
     GradientHeader(statusBar + HeaderHeight) {
@@ -180,12 +186,16 @@ private fun Header(statusBar: Dp, state: TodayState, weather: WalkWeather?, onRe
                     WeatherPill(weather, state.distanceUnit, now.hour)
                     Spacer(Modifier.width(Spacing.s))
                 }
-                CircleButton(
-                    iconRes = R.drawable.ic_bell,
-                    contentDescription = stringResource(R.string.today_reminders),
-                    onClick = onReminders,
-                    modifier = Modifier.background(colors.onAccentOverlay, CircleShape),
-                    tint = colors.onAccent,
+                val profile = stringResource(R.string.tab_profile)
+                Avatar(
+                    name = state.name.orEmpty(),
+                    size = Sizes.circle,
+                    ring = Sizes.focusBorder,
+                    style = AvatarLetterStyle,
+                    modifier = Modifier
+                        .clip(CircleShape)
+                        .clickable(role = Role.Button, onClickLabel = profile, onClick = onProfile)
+                        .semantics { contentDescription = profile },
                 )
             }
             Spacer(Modifier.height(GreetingTop))

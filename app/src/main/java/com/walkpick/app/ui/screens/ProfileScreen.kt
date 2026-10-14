@@ -1,7 +1,6 @@
 package com.walkpick.app.ui.screens
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -17,7 +16,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -37,9 +35,9 @@ import com.walkpick.app.data.local.HealthKind
 import com.walkpick.app.data.profile.Profile
 import com.walkpick.app.ui.compact
 import com.walkpick.app.ui.components.AppCard
+import com.walkpick.app.ui.components.Avatar
+import com.walkpick.app.ui.components.CircleButton
 import com.walkpick.app.ui.components.GradientHeader
-import com.walkpick.app.ui.components.IconBadge
-import com.walkpick.app.ui.components.ListRow
 import com.walkpick.app.ui.grouped
 import com.walkpick.app.ui.health.HealthState
 import com.walkpick.app.ui.profile.ProfileState
@@ -50,10 +48,11 @@ import com.walkpick.app.ui.theme.Spacing
 import java.time.Instant
 
 // Below the status bar: the frame draws 232 with a status bar of 24.
-private val HeaderHeight = 208.dp
+private val HeaderHeight = 252.dp
 
 // The totals card starts on the header, this far below the status bar.
-private val CardsTop = 144.dp
+private val CardsTop = 188.dp
+private val AvatarTop = 76.dp
 private val AvatarSize = 72.dp
 private val AvatarBorder = 3.dp
 private val NameGap = 2.dp
@@ -65,7 +64,7 @@ fun ProfileScreen(
     state: ProfileState,
     onChange: ((Profile) -> Profile) -> Unit,
     onWeight: (Double, Instant) -> Unit,
-    onSettings: () -> Unit,
+    onBack: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val statusBar = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
@@ -77,23 +76,11 @@ fun ProfileScreen(
             .background(AppTheme.colors.canvas)
             .verticalScroll(rememberScrollState()),
     ) {
-        Header(statusBar, state.name, state.email)
+        Header(statusBar, state.name, state.email, onBack)
         Column(Modifier.padding(Spacing.ml, statusBar + CardsTop, Spacing.ml, Spacing.l)) {
             TotalsCard(state)
             ProfileBody(state, onEdit = { editing = it }, onWeigh = { weighing = true })
             ProfileTabs(state.profile, onChange)
-            Spacer(Modifier.height(Spacing.ml))
-            AppCard {
-                ListRow(
-                    label = stringResource(R.string.screen_settings),
-                    divider = false,
-                    onClick = onSettings,
-                    leading = {
-                        val colors = AppTheme.colors
-                        IconBadge(R.drawable.ic_settings, colors.surfaceTint, colors.accent, Sizes.iconSmall)
-                    },
-                )
-            }
         }
     }
     editing?.let { field ->
@@ -111,25 +98,20 @@ fun ProfileScreen(
 }
 
 @Composable
-private fun Header(statusBar: Dp, name: String?, email: String) {
+private fun Header(statusBar: Dp, name: String?, email: String, onBack: () -> Unit) {
     val colors = AppTheme.colors
     GradientHeader(statusBar + HeaderHeight) {
+        CircleButton(
+            iconRes = R.drawable.ic_back,
+            contentDescription = stringResource(R.string.back),
+            onClick = onBack,
+            modifier = Modifier.padding(start = Spacing.ml, top = statusBar + Spacing.sm),
+            raised = true,
+        )
         Row(
-            modifier = Modifier.padding(start = Spacing.ml, top = statusBar + Spacing.xl, end = Spacing.ml),
+            modifier = Modifier.padding(start = Spacing.ml, top = statusBar + AvatarTop, end = Spacing.ml),
         ) {
-            Box(
-                modifier = Modifier
-                    .size(AvatarSize)
-                    .background(colors.surfaceTint, CircleShape)
-                    .border(AvatarBorder, colors.onAccent, CircleShape),
-                contentAlignment = Alignment.Center,
-            ) {
-                Text(
-                    text = (name ?: email).take(1).uppercase(),
-                    style = MaterialTheme.typography.headlineLarge,
-                    color = colors.accent,
-                )
-            }
+            Avatar(name ?: email, AvatarSize, AvatarBorder, MaterialTheme.typography.headlineLarge)
             Spacer(Modifier.width(Spacing.m))
             Column(Modifier.padding(top = Spacing.s)) {
                 if (name != null) {

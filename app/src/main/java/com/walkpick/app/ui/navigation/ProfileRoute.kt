@@ -19,7 +19,7 @@ internal fun NavGraphBuilder.profileRoute(navController: NavHostController) {
                 state = it,
                 onChange = model::change,
                 onWeight = model::addWeight,
-                onSettings = { navController.navigate(Screen.Settings.route) },
+                onBack = { navController.popBackStack() },
             )
         }
     }

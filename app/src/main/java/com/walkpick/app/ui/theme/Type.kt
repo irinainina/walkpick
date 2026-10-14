@@ -43,6 +43,9 @@ private fun regular(size: Int, lineHeight: Int) = style(Cabin, FontWeight.Normal
 /** A line of running text, taller than the list-row bodyLarge. */
 val ParagraphStyle = regular(16, 24)
 
+/** The letter in the small avatar of a header. */
+val AvatarLetterStyle = heading(16, 20)
+
 // Names follow Material 3 slots, values come from the Figma frames
 val AppTypography = Typography(
     displayMedium = heading(36, 44),

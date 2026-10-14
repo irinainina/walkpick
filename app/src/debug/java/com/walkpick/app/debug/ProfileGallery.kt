@@ -29,6 +29,6 @@ fun ProfileGallery() {
         ),
         onChange = {},
         onWeight = { _, _ -> },
-        onSettings = {},
+        onBack = {},
     )
 }

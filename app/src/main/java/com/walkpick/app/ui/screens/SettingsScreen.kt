@@ -5,7 +5,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.rememberScrollState
@@ -31,10 +30,10 @@ import com.walkpick.app.ui.TERMS_URL
 import com.walkpick.app.ui.components.AppButton
 import com.walkpick.app.ui.components.AppCard
 import com.walkpick.app.ui.components.AppSwitch
-import com.walkpick.app.ui.components.AppTopBar
 import com.walkpick.app.ui.components.IconBadge
 import com.walkpick.app.ui.components.ListRow
 import com.walkpick.app.ui.components.SegmentedControl
+import com.walkpick.app.ui.components.TabTitle
 import com.walkpick.app.ui.grouped
 import com.walkpick.app.ui.settings.SettingsState
 import com.walkpick.app.ui.theme.AppTheme
@@ -52,7 +51,6 @@ private val Clock = DateTimeFormatter.ofPattern("HH:mm", Locale.ENGLISH)
 enum class SettingsSheet { Time, Days, Distance, Weight, Glucose, Steps, Delete }
 
 class SettingsActions(
-    val onBack: () -> Unit,
     val onChange: ((AppSettings) -> AppSettings) -> Unit,
     val onDailySteps: (Int) -> Unit,
     /** Asks Android for the right to show notifications first. */
@@ -72,11 +70,10 @@ fun SettingsScreen(state: SettingsState, actions: SettingsActions, modifier: Mod
             .background(AppTheme.colors.canvas)
             .statusBarsPadding()
             .verticalScroll(rememberScrollState())
-            .navigationBarsPadding()
             .padding(bottom = Spacing.l),
     ) {
-        val title = stringResource(R.string.screen_settings)
-        AppTopBar(title, actions.onBack, Modifier.padding(top = Spacing.xs))
+        TabTitle(stringResource(R.string.screen_settings))
+        Spacer(Modifier.height(Spacing.s))
         Section(R.string.settings_reminders) {
             val reminder = stringResource(R.string.settings_walk_reminder)
             ListRow(reminder, trailing = { AppSwitch(settings.remindersOn, actions.onReminders, reminder) })

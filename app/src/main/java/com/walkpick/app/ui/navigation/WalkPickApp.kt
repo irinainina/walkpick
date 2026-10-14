@@ -46,7 +46,7 @@ fun WalkPickApp(signedIn: Boolean, walkAsked: Int, onStartShown: () -> Unit) {
             signInRoutes(navController, auth, onStartShown)
             todayRoute(navController, onStartShown)
             statsRoute(navController)
-            healthRoute(navController)
+            healthRoute()
             activeWalkRoute(navController)
             walkSummaryRoute(navController)
             cameraRoute(navController)

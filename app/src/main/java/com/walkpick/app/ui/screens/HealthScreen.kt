@@ -6,7 +6,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.rememberScrollState
@@ -27,9 +26,9 @@ import com.walkpick.app.data.local.HealthKind
 import com.walkpick.app.ui.components.AppButton
 import com.walkpick.app.ui.components.AppButtonStyle
 import com.walkpick.app.ui.components.AppSheet
-import com.walkpick.app.ui.components.AppTopBar
 import com.walkpick.app.ui.components.CircleButton
 import com.walkpick.app.ui.components.SegmentedControl
+import com.walkpick.app.ui.components.TabTitle
 import com.walkpick.app.ui.health.HealthState
 import com.walkpick.app.ui.stats.StatsTab
 import com.walkpick.app.ui.theme.AppTheme
@@ -39,7 +38,6 @@ import java.time.Instant
 @Composable
 fun HealthScreen(
     state: HealthState,
-    onBack: () -> Unit,
     onSave: (HealthKind, Double, Int?, Instant) -> Unit,
     /** Takes the id of the entry to remove. */
     onDelete: (String) -> Unit,
@@ -54,10 +52,9 @@ fun HealthScreen(
             .fillMaxSize()
             .background(AppTheme.colors.canvas)
             .statusBarsPadding()
-            .verticalScroll(rememberScrollState())
-            .navigationBarsPadding(),
+            .verticalScroll(rememberScrollState()),
     ) {
-        AppTopBar(stringResource(R.string.screen_health), onBack, Modifier.padding(top = Spacing.xs)) {
+        TabTitle(stringResource(R.string.screen_health)) {
             CircleButton(
                 iconRes = R.drawable.ic_plus,
                 contentDescription = stringResource(R.string.health_new_entry),

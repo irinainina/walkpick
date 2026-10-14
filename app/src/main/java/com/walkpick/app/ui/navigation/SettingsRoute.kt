@@ -31,7 +31,6 @@ internal fun NavGraphBuilder.settingsRoute(navController: NavHostController) {
         SettingsScreen(
             state = state,
             actions = SettingsActions(
-                onBack = { navController.popBackStack() },
                 onChange = model::change,
                 onDailySteps = model::setDailySteps,
                 onReminders = { on ->

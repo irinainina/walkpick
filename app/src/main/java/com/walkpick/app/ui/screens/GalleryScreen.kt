@@ -46,6 +46,7 @@ import com.walkpick.app.ui.components.AppButtonStyle
 import com.walkpick.app.ui.components.AppSheet
 import com.walkpick.app.ui.components.EmptyState
 import com.walkpick.app.ui.components.SegmentedControl
+import com.walkpick.app.ui.components.TabTitle
 import com.walkpick.app.ui.counted
 import com.walkpick.app.ui.gallery.GalleryGroup
 import com.walkpick.app.ui.gallery.GalleryState
@@ -139,28 +140,19 @@ fun GalleryScreen(state: GalleryState, actions: GalleryActions, modifier: Modifi
 // "Gallery" and Select, or the number picked and Cancel.
 @Composable
 private fun Heading(selected: Set<String>?, actions: GalleryActions, canSelect: Boolean) {
-    val colors = AppTheme.colors
-    Row(
-        modifier = Modifier.padding(start = Spacing.ml, top = Spacing.m, end = Spacing.ml),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Text(
-            text = selected?.let { stringResource(R.string.gallery_selected, it.size) }
-                ?: stringResource(R.string.tab_gallery),
-            modifier = Modifier.weight(1f),
-            style = MaterialTheme.typography.headlineLarge,
-            color = colors.textPrimary,
-        )
+    val title = selected?.let { stringResource(R.string.gallery_selected, it.size) }
+        ?: stringResource(R.string.tab_gallery)
+    TabTitle(title) {
         val picking = selected != null
         // Nothing to pick from: the word would lead nowhere.
-        if (!picking && !canSelect) return@Row
+        if (!picking && !canSelect) return@TabTitle
         Text(
             text = stringResource(if (picking) R.string.settings_cancel else R.string.gallery_select),
             modifier = Modifier.clickable(role = Role.Button) {
                 actions.onSelecting(!picking)
             },
             style = MaterialTheme.typography.labelLarge,
-            color = colors.accent,
+            color = AppTheme.colors.accent,
         )
     }
 }

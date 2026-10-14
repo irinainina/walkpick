@@ -62,7 +62,7 @@ internal fun NavGraphBuilder.todayRoute(navController: NavHostController, onShow
                 onHealth = { navController.navigate(Screen.Health.route) },
                 onAddHealth = { adding = it },
                 onWalk = { navController.navigate(walkSummaryRoute(it)) },
-                onReminders = { navController.navigate(Screen.Settings.route) },
+                onProfile = { navController.navigate(Screen.Profile.route) },
             ),
             onStartWalk = { navController.navigate(Screen.ActiveWalk.route) },
             onStopWalk = { mood ->

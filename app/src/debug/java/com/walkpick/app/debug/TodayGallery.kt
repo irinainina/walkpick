@@ -106,7 +106,7 @@ fun TodayGallery(access: StepsAccess, walkSeconds: Long? = null) {
             onHealth = {},
             onAddHealth = {},
             onWalk = {},
-            onReminders = {},
+            onProfile = {},
         ),
         onStartWalk = {},
         onStopWalk = {},

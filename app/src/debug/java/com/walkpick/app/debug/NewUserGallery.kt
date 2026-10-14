@@ -70,7 +70,7 @@ fun NewUserGallery(page: String) {
                 onHealth = {},
                 onAddHealth = {},
                 onWalk = {},
-                onReminders = {},
+                onProfile = {},
             ),
             onStartWalk = {},
             onStopWalk = {},

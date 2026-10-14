@@ -40,6 +40,7 @@ class GalleryActivity : ComponentActivity() {
 private fun Page(page: String) {
     when (page) {
         "charts" -> ChartGallery()
+        "nav" -> NavGallery()
         "signin" -> SignInScreen(onGoogle = {}, onEmail = {})
         "signin-email" -> SignInEmailScreen("ira@example.com", {}, {}, {}, busy = false, problem = null)
         "signin-code" -> SignInCodeScreen("ira@example.com", "42", {}, {}, 48, {}, {}, problem = null)

@@ -63,6 +63,27 @@ fun CircleButton(
     }
 }
 
+/** The title of a tab's own screen: no Back, the bar below leads to the other tabs. */
+@Composable
+fun TabTitle(title: String, modifier: Modifier = Modifier, action: @Composable () -> Unit = {}) {
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(start = Spacing.ml, top = Spacing.m, end = Spacing.ml),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text(
+            text = title,
+            modifier = Modifier.weight(1f),
+            style = MaterialTheme.typography.headlineLarge,
+            color = AppTheme.colors.textPrimary,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+        )
+        action()
+    }
+}
+
 @Composable
 fun AppTopBar(
     title: String,

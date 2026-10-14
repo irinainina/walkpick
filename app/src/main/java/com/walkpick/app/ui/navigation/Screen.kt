@@ -25,7 +25,7 @@ enum class Screen(@StringRes val titleRes: Int) {
     /** The tab lit in the bottom bar; null on a screen inside a tab, which has Back and no bar. */
     val tab: Screen?
         get() = when (this) {
-            Today, Map, Gallery, Profile -> this
+            Today, Gallery, Health, Settings -> this
             else -> null
         }
 
@@ -33,20 +33,19 @@ enum class Screen(@StringRes val titleRes: Int) {
     val links: List<Screen>
         get() = when (this) {
             SignIn -> listOf(Today)
-            Today -> listOf(Stats, Health, ActiveWalk)
+            Today -> listOf(Stats, Profile, ActiveWalk)
             ActiveWalk -> listOf(Camera, WalkSummary)
             Camera, PhotoViewer -> listOf(FindCard)
             Map -> listOf(WalkSummary, FindCard)
             Gallery -> listOf(PhotoViewer)
-            Profile -> listOf(Settings)
             Settings -> listOf(SignIn)
             else -> emptyList()
         }
 }
 
 val bottomTabs = listOf(
-    NavItem(R.string.tab_today, R.drawable.ic_home, Screen.Today.route),
-    NavItem(R.string.tab_map, R.drawable.ic_map, Screen.Map.route),
-    NavItem(R.string.tab_gallery, R.drawable.ic_gallery, Screen.Gallery.route),
-    NavItem(R.string.tab_profile, R.drawable.ic_profile, Screen.Profile.route),
+    NavItem(R.string.tab_walk, R.drawable.ic_walk, Screen.Today.route),
+    NavItem(R.string.tab_photo, R.drawable.ic_gallery, Screen.Gallery.route),
+    NavItem(R.string.screen_health, R.drawable.ic_health, Screen.Health.route),
+    NavItem(R.string.screen_settings, R.drawable.ic_settings, Screen.Settings.route),
 )

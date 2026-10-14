@@ -64,6 +64,7 @@ fun AppNavBar(
             .dropShadow(RectangleShape, AppShadows.navBar)
             .background(AppTheme.colors.surface)
             .padding(horizontal = Spacing.ml, vertical = Spacing.s),
+        horizontalArrangement = Arrangement.spacedBy(Spacing.s),
     ) {
         items.forEach { item ->
             val selected = item.route == selectedRoute

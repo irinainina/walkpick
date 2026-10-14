@@ -21,6 +21,6 @@ fun SettingsGallery(steps: StepsAccess) {
             glucoseShown = true,
             version = "1.0.0",
         ),
-        actions = SettingsActions({}, {}, {}, {}, {}, {}, {}),
+        actions = SettingsActions({}, {}, {}, {}, {}, {}),
     )
 }
