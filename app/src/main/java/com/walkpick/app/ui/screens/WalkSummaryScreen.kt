@@ -26,27 +26,18 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.SolidColor
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
-import com.google.android.gms.maps.model.LatLng
-import com.google.maps.android.compose.MarkerComposable
-import com.google.maps.android.compose.rememberCameraPositionState
-import com.google.maps.android.compose.rememberUpdatedMarkerState
 import com.walkpick.app.R
 import com.walkpick.app.data.walk.paceSecondsPerKm
-import com.walkpick.app.data.walk.routePlaces
 import com.walkpick.app.data.walk.title
 import com.walkpick.app.ui.components.AppButton
 import com.walkpick.app.ui.components.AppButtonStyle
@@ -54,11 +45,7 @@ import com.walkpick.app.ui.components.AppCard
 import com.walkpick.app.ui.components.AppSheet
 import com.walkpick.app.ui.components.CircleButton
 import com.walkpick.app.ui.components.IconBadge
-import com.walkpick.app.ui.components.RouteLine
-import com.walkpick.app.ui.components.StartFlag
-import com.walkpick.app.ui.components.WalkMap
-import com.walkpick.app.ui.components.look
-import com.walkpick.app.ui.components.routeView
+import com.walkpick.app.ui.components.RoutePicture
 import com.walkpick.app.ui.distanceText
 import com.walkpick.app.ui.grouped
 import com.walkpick.app.ui.theme.AppTheme
@@ -77,8 +64,6 @@ private val MapHeight = 320.dp
 private val CardTop = 268.dp
 private val MapCoveredTop = 56.dp
 private val RouteEdge = 32.dp
-private val RouteWidth = 4.dp
-private val StartPin = 28.dp
 private val CardBottom = 28.dp
 private const val SECONDS_IN_MINUTE = 60.0
 
@@ -111,7 +96,15 @@ fun WalkSummaryScreen(
             .background(AppTheme.colors.canvas)
             .verticalScroll(rememberScrollState()),
     ) {
-        RouteMap(state)
+        RoutePicture(
+            walk = state.walk,
+            finds = state.finds,
+            edge = RouteEdge,
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(MapHeight),
+            covered = PaddingValues(top = MapCoveredTop, bottom = MapHeight - CardTop),
+        )
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -153,38 +146,6 @@ fun WalkSummaryScreen(
             AppButton(stringResource(R.string.walk_delete), onDelete, style = AppButtonStyle.Danger)
             Spacer(Modifier.height(Spacing.sm))
             AppButton(cancel, { deleting = false }, style = AppButtonStyle.Secondary)
-        }
-    }
-}
-
-// The whole route as a picture at the top of the page: the page scrolls, the map does not.
-@Composable
-private fun RouteMap(state: WalkSummaryState) {
-    // A walk kept for its photos alone has no line: the map shows where the first photo was taken.
-    val route = remember(state.walk.route, state.finds) {
-        val photo = state.finds.take(1).map { it.latitude to it.longitude }
-        routePlaces(state.walk.route).ifEmpty { photo }.map { (lat, lon) -> LatLng(lat, lon) }
-    }
-    val camera = rememberCameraPositionState()
-    val edge = with(LocalDensity.current) { RouteEdge.roundToPx() }
-    var loaded by remember { mutableStateOf(false) }
-    LaunchedEffect(route, loaded) {
-        if (loaded) routeView(route, edge)?.let { camera.move(it) }
-    }
-    WalkMap(
-        camera = camera,
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(MapHeight),
-        covered = PaddingValues(top = MapCoveredTop, bottom = MapHeight - CardTop),
-        still = true,
-        onLoaded = { loaded = true },
-    ) {
-        RouteLine(route, RouteWidth, state.walk.look())
-        route.firstOrNull()?.let { start ->
-            MarkerComposable(state = rememberUpdatedMarkerState(start), anchor = Offset(0.5f, 0.5f)) {
-                StartFlag(StartPin)
-            }
         }
     }
 }

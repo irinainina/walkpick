@@ -63,6 +63,7 @@ internal fun NavGraphBuilder.todayRoute(navController: NavHostController, onShow
                 onAddHealth = { adding = it },
                 onWalk = { navController.navigate(walkSummaryRoute(it)) },
                 onProfile = { navController.navigate(Screen.Profile.route) },
+                photo = last::photo,
             ),
             onStartWalk = { navController.navigate(Screen.ActiveWalk.route) },
             onStopWalk = { mood ->

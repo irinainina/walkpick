@@ -38,6 +38,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.walkpick.app.R
+import com.walkpick.app.data.local.FindEntity
 import com.walkpick.app.data.local.HealthKind
 import com.walkpick.app.data.settings.DistanceUnit
 import com.walkpick.app.data.steps.StepsAccess
@@ -57,6 +58,7 @@ import com.walkpick.app.ui.today.NIGHT_END
 import com.walkpick.app.ui.today.TodayState
 import com.walkpick.app.ui.today.weatherCall
 import com.walkpick.app.ui.walk.WalkEnding
+import java.io.File
 import java.time.format.DateTimeFormatter
 import java.util.Locale
 import kotlin.math.roundToInt
@@ -89,6 +91,8 @@ class TodayActions(
     val onAddHealth: (HealthKind) -> Unit,
     val onWalk: (String) -> Unit,
     val onProfile: () -> Unit,
+    /** The file of a photo of the last walk; null while it is not on the phone. */
+    val photo: suspend (FindEntity) -> File? = { null },
 )
 
 @Composable
@@ -155,7 +159,9 @@ private fun Cards(
             Spacer(Modifier.height(Spacing.l))
             if (lastWalk != null) {
                 val today = state.now.toLocalDate()
-                LastWalkCard(lastWalk, today, state.distanceUnit) { actions.onWalk(lastWalk.walk.id) }
+                LastWalkCard(lastWalk, today, state.distanceUnit, actions.photo) {
+                    actions.onWalk(lastWalk.walk.id)
+                }
                 Spacer(Modifier.height(Spacing.l))
             }
             val today = state.now.toLocalDate()

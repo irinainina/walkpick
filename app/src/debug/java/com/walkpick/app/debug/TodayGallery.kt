@@ -1,11 +1,18 @@
 package com.walkpick.app.debug
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import com.walkpick.app.data.local.FindEntity
 import com.walkpick.app.data.local.HealthEntryEntity
 import com.walkpick.app.data.local.HealthKind
 import com.walkpick.app.data.local.WalkEntity
+import com.walkpick.app.data.settings.DistanceUnit
 import com.walkpick.app.data.steps.StepsAccess
 import com.walkpick.app.data.walk.WalkWeather
 import com.walkpick.app.ui.components.Bar
@@ -13,10 +20,14 @@ import com.walkpick.app.ui.components.BarKind
 import com.walkpick.app.ui.health.HealthCurrent
 import com.walkpick.app.ui.health.HealthTile
 import com.walkpick.app.ui.map.DiaryWalk
+import com.walkpick.app.ui.screens.LastWalkCard
 import com.walkpick.app.ui.screens.TodayActions
 import com.walkpick.app.ui.screens.TodayScreen
+import com.walkpick.app.ui.theme.AppTheme
+import com.walkpick.app.ui.theme.Spacing
 import com.walkpick.app.ui.today.TodayState
 import com.walkpick.app.ui.walk.WalkEnding
+import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.ZoneId
 import java.time.temporal.ChronoUnit
@@ -63,7 +74,21 @@ private val route = listOf(
     0.00f to 0.73f, 0.07f to 0.24f, 0.60f to 0.14f, 0.62f to 0.00f, 0.92f to 0.00f, 0.98f to 0.30f,
     1.00f to 0.60f, 0.86f to 0.92f, 0.44f to 1.00f, 0.00f to 0.73f,
 )
-private val lastWalk = DiaryWalk(
+
+// The same ring laid on Lebedyn, as the walks table keeps a route: "longitude latitude, ...".
+private val ring = route.joinToString(",") { (x, y) -> "${34.475 + x * 0.01} ${50.585 - y * 0.006}" }
+private val finds = List(7) { index ->
+    FindEntity(
+        id = "find$index",
+        walkId = "walk",
+        takenAt = evening.plusSeconds(300L * index),
+        latitude = 50.58,
+        longitude = 34.48,
+        photoPath = "none",
+        updatedAt = evening,
+    )
+}
+internal val lastWalk = DiaryWalk(
     walk = WalkEntity(
         id = "walk",
         number = 312,
@@ -73,10 +98,14 @@ private val lastWalk = DiaryWalk(
         steps = 5230,
         distanceM = 3900,
         name = "Misty Evening",
+        route = ring,
+        moodBefore = 3,
+        moodAfter = 5,
         updatedAt = evening,
     ),
     photos = 7,
     sketch = route,
+    finds = finds,
 )
 
 /** Today with the data of the Figma frames, for the comparison with the design. */
@@ -112,4 +141,18 @@ fun TodayGallery(access: StepsAccess, walkSeconds: Long? = null) {
         onStopWalk = {},
         modifier = Modifier.navigationBarsPadding(),
     )
+}
+
+/** The Last walk card alone at the top of the screen, for the comparison with its Figma node. */
+@Composable
+fun LastWalkGallery() {
+    Box(
+        Modifier
+            .fillMaxSize()
+            .background(AppTheme.colors.canvas)
+            .statusBarsPadding()
+            .padding(Spacing.ml),
+    ) {
+        LastWalkCard(lastWalk, LocalDate.of(2026, 9, 30), DistanceUnit.KM, photo = { null }, onOpen = {})
+    }
 }

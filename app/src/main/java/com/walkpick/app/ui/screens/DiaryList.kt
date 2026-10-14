@@ -1,14 +1,11 @@
 package com.walkpick.app.ui.screens
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
@@ -20,7 +17,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -29,9 +25,10 @@ import com.walkpick.app.data.local.FindEntity
 import com.walkpick.app.data.walk.title
 import com.walkpick.app.ui.components.AppCard
 import com.walkpick.app.ui.components.EmptyState
-import com.walkpick.app.ui.components.FindPhoto
+import com.walkpick.app.ui.components.PhotoStrip
 import com.walkpick.app.ui.components.RouteSketch
 import com.walkpick.app.ui.components.RowChevron
+import com.walkpick.app.ui.components.StripLook
 import com.walkpick.app.ui.components.look
 import com.walkpick.app.ui.distanceText
 import com.walkpick.app.ui.grouped
@@ -89,27 +86,6 @@ internal fun DiaryList(
                 val first = walk == day.walks.first()
                 Spacer(Modifier.height(if (first) Spacing.sm else Spacing.m))
                 WalkCard(walk, state, onWalk, photo)
-            }
-        }
-    }
-}
-
-// The first photos of a walk; when there are more than fit, the last tile says how many more.
-@Composable
-private fun Thumbnails(finds: List<FindEntity>, photo: suspend (FindEntity) -> File?) {
-    val colors = AppTheme.colors
-    val shape = MaterialTheme.shapes.extraSmall
-    val hidden = (finds.size - THUMBS).coerceAtLeast(0)
-    Row(horizontalArrangement = Arrangement.spacedBy(Spacing.xs)) {
-        finds.take(THUMBS).forEachIndexed { index, find ->
-            Box(Modifier.size(ThumbSize).clip(shape), contentAlignment = Alignment.Center) {
-                FindPhoto(find, photo, Modifier.fillMaxSize(), THUMB_SAMPLE)
-                if (hidden > 0 && index == THUMBS - 1) {
-                    Box(Modifier.fillMaxSize().background(colors.scrim))
-                    // The tile itself is one of those it counts.
-                    val more = stringResource(R.string.diary_more, hidden + 1)
-                    Text(more, style = MaterialTheme.typography.labelSmall, color = colors.onAccent)
-                }
             }
         }
     }
@@ -176,7 +152,15 @@ private fun WalkCard(
                     val none = stringResource(R.string.diary_no_photos)
                     Text(none, style = type.bodyMedium, color = colors.textSecondary)
                 } else {
-                    Thumbnails(item.finds, photo)
+                    val look = StripLook(
+                        ThumbSize,
+                        THUMBS,
+                        Spacing.xs,
+                        MaterialTheme.shapes.extraSmall,
+                        MaterialTheme.typography.labelSmall,
+                        THUMB_SAMPLE,
+                    )
+                    PhotoStrip(item.finds, photo, look)
                 }
             }
             RowChevron()

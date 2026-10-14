@@ -121,7 +121,7 @@
     <string name="health_new_entry">New entry</string>
     <string name="today_back_to_walk">Back to walk · %s</string>
     <string name="today_stop_walk">Stop walk</string>
-    <string name="today_last_walk">Last walk</string>
+    <string name="today_last_walk_when">Last walk · %1$s</string>
     <string name="today_add_mood">Add mood</string>
     <string name="today_for_today">for today</string>
     <string name="today_update">Update</string>
