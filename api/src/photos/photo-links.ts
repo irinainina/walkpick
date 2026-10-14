@@ -18,15 +18,22 @@ export class PhotoLinks {
   /** Gives each row the address of its file in place of the path; null when the file is not there. */
   async attach<T extends { photo_path: string }>(
     rows: T[],
+    seconds = LINK_SECONDS,
   ): Promise<(Omit<T, 'photo_path'> & { url: string | null })[]> {
-    const links = await this.sign(rows.map((row) => row.photo_path));
+    const links = await this.sign(
+      rows.map((row) => row.photo_path),
+      seconds,
+    );
     return rows.map(({ photo_path, ...row }) => ({
       ...row,
       url: links.get(photo_path) ?? null,
     }));
   }
 
-  private async sign(paths: string[]): Promise<Map<string, string>> {
+  private async sign(
+    paths: string[],
+    seconds: number,
+  ): Promise<Map<string, string>> {
     if (paths.length === 0) return new Map();
     const storage = `${this.settings.supabaseUrl}/storage/v1`;
     const key = this.settings.supabaseKey;
@@ -37,7 +44,7 @@ export class PhotoLinks {
         Authorization: `Bearer ${key}`,
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ expiresIn: LINK_SECONDS, paths }),
+      body: JSON.stringify({ expiresIn: seconds, paths }),
     });
     if (!answer.ok)
       throw new Error(

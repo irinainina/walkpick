@@ -1,0 +1,34 @@
+name: backup
+
+# The free Supabase plan keeps no copies of the database; this one does, every Monday.
+on:
+  schedule:
+    - cron: '0 3 * * 1'
+  workflow_dispatch:
+
+jobs:
+  dump:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Postgres 17 client
+        run: |
+          sudo /usr/share/postgresql-common/pgdg/apt.postgresql.org.sh -y
+          sudo apt-get install -y postgresql-client-17
+
+      # pg_dump needs a session of its own: the pooler gives one on 5432, not on 6543.
+      - name: Dump
+        run: |
+          /usr/lib/postgresql/17/bin/pg_dump "${DATABASE_URL/:6543\//:5432/}" \
+            --schema=public --schema=auth --format=custom --no-owner --no-privileges \
+            --file=walkpick-$(date +%F).dump
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: database
+          path: walkpick-*.dump
+          retention-days: 90
+          if-no-files-found: error

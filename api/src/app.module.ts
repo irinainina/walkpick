@@ -7,6 +7,7 @@ import { SigningKeys } from './auth/signing-keys';
 import { readSettings, Settings } from './config';
 import { Database } from './db/database';
 import { ErrorShape } from './errors';
+import { Export } from './export';
 import { HealthEntries } from './health/health-entries';
 import { HealthController } from './health/health.controller';
 import { MeController } from './me.controller';
@@ -29,6 +30,7 @@ import { WalksController } from './walks/walks.controller';
     SigningKeys,
     Database,
     Accounts,
+    Export,
     PhotoLinks,
     Walks,
     Photos,

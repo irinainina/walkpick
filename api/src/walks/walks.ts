@@ -51,7 +51,7 @@ export const photoCard = {
 
 const total = (column: PgColumn) =>
   sql<number>`coalesce(sum(${column}), 0)::int`;
-const geoJson = (route: string | null): unknown =>
+export const geoJson = (route: string | null): unknown =>
   route ? JSON.parse(route) : null;
 
 export interface Bar {
