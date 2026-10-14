@@ -39,6 +39,57 @@ describe('the service', () => {
       .expect(401);
   });
 
+  it('answers what Nest and Express refuse in the one error body', async () => {
+    const server = request(it_.app.getHttpServer());
+    await it_
+      .get('/v1/nowhere', USER)
+      .expect(404)
+      .expect({
+        error: { code: 'not_found', message: 'there is no such address' },
+      });
+    await server
+      .post('/v1/health')
+      .set('Content-Type', 'application/json')
+      .send('{bad')
+      .expect(400)
+      .expect({
+        error: {
+          code: 'validation_failed',
+          message: 'body is not_json',
+          fields: [{ field: 'body', problem: 'not_json' }],
+        },
+      });
+    await server
+      .post('/v1/health')
+      .set('Content-Type', 'application/json')
+      .send(JSON.stringify({ note: 'x'.repeat(200_000) }))
+      .expect(413)
+      .expect({
+        error: { code: 'too_large', message: 'the body is too large' },
+      });
+  });
+
+  it('describes itself without a token, bodies from the same checks the requests use', async () => {
+    const { body } = await it_.get('/docs-json').expect(200);
+    const patch = body.paths['/v1/walks/{id}'].patch;
+    expect(patch.security).toEqual([{ bearer: [] }]);
+    expect(patch.requestBody.content['application/json'].schema).toEqual({
+      type: 'object',
+      properties: {
+        name: { type: 'string', maxLength: 80, nullable: true },
+        note: { type: 'string', maxLength: 2000, nullable: true },
+      },
+      required: [],
+      additionalProperties: false,
+    });
+    expect(
+      body.paths['/v1/health/summary'].get.parameters.map(
+        ({ name, required }: { name: string; required: boolean }) =>
+          `${name}${required ? '!' : ''}`,
+      ),
+    ).toEqual(['kind!', 'period!', 'at!', 'tz']);
+  });
+
   it('gives the profile and the settings of the user of the token', async () => {
     const { body } = await it_.get('/v1/me', USER).expect(200);
     expect(body).toMatchObject({

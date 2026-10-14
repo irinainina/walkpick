@@ -11,6 +11,7 @@ import {
 } from '@nestjs/common';
 import { UserId } from '../auth/auth.guard';
 import { amount, change, choice, fields, moment, orNull, uuid } from '../body';
+import { Asks, Guarded, Takes } from '../docs';
 import { PERIODS } from '../period';
 import {
   day,
@@ -30,14 +31,29 @@ type Asked = Record<string, string | undefined>;
 const VALUE = amount(9999.9);
 const DIASTOLIC = orNull(amount(999));
 
+const ADD = {
+  id: uuid,
+  kind: choice(HEALTH_KINDS),
+  measured_at: moment,
+  value: VALUE,
+  diastolic: DIASTOLIC,
+};
+const CHANGE = { measured_at: moment, value: VALUE, diastolic: DIASTOLIC };
+const KIND: [string, { type: 'string'; enum: string[] }] = [
+  'kind',
+  { type: 'string', enum: [...HEALTH_KINDS] },
+];
+
 const kindOf = (asked: Asked) =>
   required('kind', oneOf('kind', asked.kind, HEALTH_KINDS));
 
+@Guarded('health')
 @Controller('v1/health')
 export class HealthController {
   constructor(private readonly entries: HealthEntries) {}
 
   @Get()
+  @Asks([KIND, 'from', 'to', 'limit', 'cursor'], ['kind'])
   list(@UserId() userId: string, @Query() asked: Asked) {
     return this.entries.list(
       userId,
@@ -50,6 +66,7 @@ export class HealthController {
   }
 
   @Get('summary')
+  @Asks([KIND, 'period', 'at', 'tz'], ['kind', 'period', 'at'])
   summary(@UserId() userId: string, @Query() asked: Asked) {
     const period = required('period', oneOf('period', asked.period, PERIODS));
     return this.entries.summary(
@@ -62,14 +79,9 @@ export class HealthController {
   }
 
   @Post()
+  @Takes(ADD, ['id', 'kind', 'measured_at', 'value'])
   add(@UserId() userId: string, @Body() body: unknown) {
-    const added = fields(body, {
-      id: uuid,
-      kind: choice(HEALTH_KINDS),
-      measured_at: moment,
-      value: VALUE,
-      diastolic: DIASTOLIC,
-    });
+    const added = fields(body, ADD);
     return this.entries.add(userId, {
       id: required('id', added.id),
       kind: required('kind', added.kind),
@@ -80,14 +92,13 @@ export class HealthController {
   }
 
   @Patch(':id')
+  @Takes(CHANGE)
   async change(
     @UserId() userId: string,
     @Param('id') entryId: string,
     @Body() body: unknown,
   ) {
-    const patch = change(
-      fields(body, { measured_at: moment, value: VALUE, diastolic: DIASTOLIC }),
-    );
+    const patch = change(fields(body, CHANGE));
     return (
       (await this.entries.change(userId, id('id', entryId), patch)) ??
       notFound()

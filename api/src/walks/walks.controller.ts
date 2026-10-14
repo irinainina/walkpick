@@ -10,6 +10,7 @@ import {
 } from '@nestjs/common';
 import { UserId } from '../auth/auth.guard';
 import { change, fields, text } from '../body';
+import { Asks, Guarded, Takes } from '../docs';
 import { PERIODS } from '../period';
 import {
   day,
@@ -27,12 +28,15 @@ type Asked = Record<string, string | undefined>;
 
 const NAME_LENGTH = 80;
 const NOTE_LENGTH = 2000;
+const CHANGE = { name: text(NAME_LENGTH), note: text(NOTE_LENGTH) };
 
+@Guarded('walks')
 @Controller('v1/walks')
 export class WalksController {
   constructor(private readonly walks: Walks) {}
 
   @Get()
+  @Asks(['from', 'to', 'limit', 'cursor'])
   list(@UserId() userId: string, @Query() asked: Asked) {
     return this.walks.list(
       userId,
@@ -44,6 +48,7 @@ export class WalksController {
   }
 
   @Get('summary')
+  @Asks(['period', 'at', 'tz'], ['period', 'at'])
   summary(@UserId() userId: string, @Query() asked: Asked) {
     const period = required('period', oneOf('period', asked.period, PERIODS));
     return this.walks.summary(
@@ -55,6 +60,7 @@ export class WalksController {
   }
 
   @Get('calendar')
+  @Asks([['to', { type: 'string', format: 'date' }], 'tz'], ['to'])
   calendar(@UserId() userId: string, @Query() asked: Asked) {
     return this.walks.calendar(
       userId,
@@ -69,14 +75,13 @@ export class WalksController {
   }
 
   @Patch(':id')
+  @Takes(CHANGE)
   async change(
     @UserId() userId: string,
     @Param('id') walkId: string,
     @Body() body: unknown,
   ) {
-    const patch = change(
-      fields(body, { name: text(NAME_LENGTH), note: text(NOTE_LENGTH) }),
-    );
+    const patch = change(fields(body, CHANGE));
     if (!(await this.walks.change(userId, id('id', walkId), patch))) notFound();
     return this.one(userId, walkId);
   }

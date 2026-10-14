@@ -7,6 +7,7 @@ import { App } from 'supertest/types';
 import { AppModule } from '../src/app.module';
 import { SigningKeys } from '../src/auth/signing-keys';
 import { Database } from '../src/db/database';
+import { describeApi } from '../src/docs';
 import * as schema from '../src/db/schema';
 import { ISSUER, publicKey, signToken } from './tokens';
 
@@ -96,6 +97,7 @@ export async function start(): Promise<Started> {
     })
     .compile();
   const app = module.createNestApplication<INestApplication<App>>();
+  describeApi(app);
   await app.init();
   const token = (sub: string) =>
     signToken({

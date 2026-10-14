@@ -1,11 +1,12 @@
 import { Module } from '@nestjs/common';
-import { APP_GUARD } from '@nestjs/core';
+import { APP_FILTER, APP_GUARD } from '@nestjs/core';
 import { Accounts } from './accounts';
 import { AliveController } from './alive.controller';
 import { AuthGuard } from './auth/auth.guard';
 import { SigningKeys } from './auth/signing-keys';
 import { readSettings, Settings } from './config';
 import { Database } from './db/database';
+import { ErrorShape } from './errors';
 import { HealthEntries } from './health/health-entries';
 import { HealthController } from './health/health.controller';
 import { MeController } from './me.controller';
@@ -33,6 +34,7 @@ import { WalksController } from './walks/walks.controller';
     Photos,
     HealthEntries,
     { provide: APP_GUARD, useClass: AuthGuard },
+    { provide: APP_FILTER, useClass: ErrorShape },
   ],
 })
 export class AppModule {}
