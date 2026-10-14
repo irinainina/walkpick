@@ -19,15 +19,20 @@ class ProfileStore @Inject constructor(
 
     override fun read(saved: Preferences): Profile {
         val defaults = Profile()
+        // Until the first save the targets are read from the keys of 0.1, where 120/80 and 5.5 were
+        // defaults nobody chose: those mean "not set" (migration 0014 on the server).
+        val (upper, lower) = saved[OLD_SYSTOLIC] to saved[OLD_DIASTOLIC]
+        val chosen = upper != null && lower != null && (upper to lower) != OLD_DEFAULT_PRESSURE
+        val pressure = if (chosen) upper to lower else null
         return Profile(
             sex = saved[SEX]?.let(Sex::valueOf),
             birthDate = saved[BIRTH_DATE]?.let(LocalDate::parse),
             heightCm = saved[HEIGHT],
             dailyGoal = saved[GOAL] ?: defaults.dailyGoal,
             ownTargetWeightKg = saved[TARGET_WEIGHT],
-            targetSystolic = saved[TARGET_SYSTOLIC],
-            targetDiastolic = saved[TARGET_DIASTOLIC],
-            targetGlucose = saved[TARGET_GLUCOSE],
+            targetSystolic = saved[TARGET_SYSTOLIC] ?: pressure?.first,
+            targetDiastolic = saved[TARGET_DIASTOLIC] ?: pressure?.second,
+            targetGlucose = saved[TARGET_GLUCOSE] ?: saved[OLD_GLUCOSE]?.takeIf { it != OLD_DEFAULT_GLUCOSE },
             healthTabs = saved[TABS]?.map(HealthKind::valueOf)?.toSet() ?: defaults.healthTabs,
         )
     }
@@ -41,6 +46,8 @@ class ProfileStore @Inject constructor(
         saved.put(TARGET_SYSTOLIC, value.targetSystolic)
         saved.put(TARGET_DIASTOLIC, value.targetDiastolic)
         saved.put(TARGET_GLUCOSE, value.targetGlucose)
+        listOf(OLD_SYSTOLIC, OLD_DIASTOLIC).forEach { saved.remove(it) }
+        saved.remove(OLD_GLUCOSE)
         saved.put(TABS, value.healthTabs.map { it.name }.toSet())
     }
 
@@ -50,9 +57,14 @@ class ProfileStore @Inject constructor(
         val HEIGHT = intPreferencesKey("profile_height_cm")
         val GOAL = intPreferencesKey("profile_daily_goal")
         val TARGET_WEIGHT = doublePreferencesKey("profile_target_weight_kg")
-        val TARGET_SYSTOLIC = intPreferencesKey("profile_target_systolic")
-        val TARGET_DIASTOLIC = intPreferencesKey("profile_target_diastolic")
-        val TARGET_GLUCOSE = doublePreferencesKey("profile_target_glucose")
+        val TARGET_SYSTOLIC = intPreferencesKey("profile_own_systolic")
+        val TARGET_DIASTOLIC = intPreferencesKey("profile_own_diastolic")
+        val TARGET_GLUCOSE = doublePreferencesKey("profile_own_glucose")
+        val OLD_SYSTOLIC = intPreferencesKey("profile_target_systolic")
+        val OLD_DIASTOLIC = intPreferencesKey("profile_target_diastolic")
+        val OLD_GLUCOSE = doublePreferencesKey("profile_target_glucose")
+        val OLD_DEFAULT_PRESSURE = 120 to 80
+        const val OLD_DEFAULT_GLUCOSE = 5.5
         val TABS = stringSetPreferencesKey("profile_health_tabs")
     }
 }

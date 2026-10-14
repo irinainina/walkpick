@@ -181,6 +181,11 @@
     <string name="gallery_all">All</string>
     <string name="gallery_best">Best</string>
     <string name="gallery_map">Map</string>
+    <string name="place_which">Which one is it?</string>
+    <string name="place_near">Places near where you took the photo</string>
+    <string name="place_none">No known places here. Enter a name</string>
+    <string name="place_other">Something else — enter a name</string>
+    <string name="place_yours">Your name</string>
     <string name="map_plants">Plants</string>
     <string name="map_birds">Birds</string>
     <string name="map_places">Places</string>

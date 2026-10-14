@@ -12,6 +12,8 @@ export class Settings {
     readonly demo: Demo | null = null,
     /** The key of Foreca, where the weather now comes from; null while it is not set up. */
     readonly forecaKey: string | null = null,
+    /** The key of Google Places, the second source of places near a photo; null without it. */
+    readonly googlePlacesKey: string | null = null,
   ) {}
 }
 
@@ -63,5 +65,6 @@ export function readSettings(
     supabaseKey,
     demo,
     env.FORECA_KEY || null,
+    env.GOOGLE_PLACES_KEY || null,
   );
 }

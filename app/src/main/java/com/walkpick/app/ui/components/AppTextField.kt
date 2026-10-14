@@ -67,6 +67,8 @@ fun AppTextField(
     error: String? = null,
     container: Color = AppTheme.colors.canvas,
     autoFocus: Boolean = true,
+    // A number is typed large; a name in a list of names is of the size of the list.
+    textStyle: TextStyle = MaterialTheme.typography.titleLarge,
 ) {
     val colors = AppTheme.colors
     val type = MaterialTheme.typography
@@ -83,7 +85,7 @@ fun AppTextField(
                 .focusRequester(focus)
                 .onFocusChanged { focused = it.isFocused },
             singleLine = true,
-            textStyle = type.titleLarge.copy(color = colors.textPrimary),
+            textStyle = textStyle.copy(color = colors.textPrimary),
             cursorBrush = SolidColor(colors.accent),
             keyboardOptions = KeyboardOptions(keyboardType = keyboardType, imeAction = ImeAction.Done),
             keyboardActions = KeyboardActions(onDone = { onDone() }),
@@ -96,7 +98,7 @@ fun AppTextField(
                 FieldFrame(container, border, if (focused) Sizes.focusBorder else Sizes.hairline) {
                     Box(Modifier.weight(1f)) {
                         if (value.isEmpty()) {
-                            Text(placeholder, style = type.titleLarge, color = colors.textSecondary)
+                            Text(placeholder, style = textStyle, color = colors.textSecondary)
                         }
                         field()
                     }

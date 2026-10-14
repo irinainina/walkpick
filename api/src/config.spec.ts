@@ -15,6 +15,7 @@ describe('readSettings', () => {
       supabaseKey: 'key',
       demo: null,
       forecaKey: null,
+      googlePlacesKey: null,
     });
   });
 

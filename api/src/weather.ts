@@ -1,7 +1,7 @@
 import { Controller, Get, Injectable, Query } from '@nestjs/common';
 import { Settings } from './config';
 import { Asks, Guarded } from './docs';
-import { invalid, notFound, required } from './query';
+import { coordinate, notFound } from './query';
 
 const FORECA = 'https://weatherapi.foreca.net/api/v1/current';
 // One answer serves a place about 5 km across for a quarter of an hour: the free plan allows
@@ -43,13 +43,6 @@ export function wmoCode(symbol: string, precipMmH: number): number {
     return rate === 2 ? 82 : 65;
   return FALLING[kind]?.[rate - 1] ?? 63;
 }
-
-const coordinate = (field: string, value: string | undefined, max: number) => {
-  const number = Number(required(field, value));
-  return Number.isFinite(number) && Math.abs(number) <= max
-    ? number
-    : invalid(field, 'out_of_range');
-};
 
 @Injectable()
 export class Weather {

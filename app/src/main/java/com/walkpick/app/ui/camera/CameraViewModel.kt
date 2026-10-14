@@ -6,9 +6,15 @@ import androidx.lifecycle.viewModelScope
 import com.walkpick.app.data.find.FindRepository
 import com.walkpick.app.data.find.FindStore
 import com.walkpick.app.data.local.FindKind
+import com.walkpick.app.data.places.NearPlace
+import com.walkpick.app.data.settings.DistanceUnit
+import com.walkpick.app.data.settings.SettingsStore
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withTimeoutOrNull
@@ -37,13 +43,20 @@ data class CameraState(
     val noPlace: Boolean = false,
     /** The find just named, until its card is opened. */
     val found: String? = null,
+    /** A photo of a place asks which one it is: the places to offer; null while it does not ask. */
+    val places: List<NearPlace>? = null,
 )
 
 @HiltViewModel
 class CameraViewModel @Inject constructor(
     private val finds: FindRepository,
     private val store: FindStore,
+    settings: SettingsStore,
 ) : ViewModel() {
+
+    /** The unit the distances to places are written in. */
+    val distanceUnit: StateFlow<DistanceUnit> = settings.value.map { it.distance }
+        .stateIn(viewModelScope, SharingStarted.Eagerly, DistanceUnit.KM)
 
     private val current = MutableStateFlow(CameraState())
 
@@ -78,6 +91,11 @@ class CameraViewModel @Inject constructor(
         if (kind == FindKind.PHOTO) return leave()
         current.update { it.copy(identifying = true) }
         viewModelScope.launch {
+            if (kind == FindKind.PLACE) {
+                val places = withTimeoutOrNull(NAMING_WAIT_MS) { store.placesFor(shot.find) }.orEmpty()
+                current.update { it.copy(identifying = false, places = places) }
+                return@launch
+            }
             store.change(shot.find) { it.copy(kind = kind) }
             // Without an answer in time the find keeps its kind and gets its name with a later sync.
             withTimeoutOrNull(NAMING_WAIT_MS) { store.identify(shot.find) }
@@ -85,8 +103,21 @@ class CameraViewModel @Inject constructor(
         }
     }
 
+    /** The walker said which place it is, one of [offered] or a name of their own. */
+    fun place(chosen: NearPlace, offered: List<NearPlace>) {
+        val shot = current.value.shot ?: return
+        current.update { it.copy(places = null, identifying = true) }
+        viewModelScope.launch {
+            withTimeoutOrNull(NAMING_WAIT_MS) { store.place(shot.find, chosen, offered) }
+            current.update { it.copy(identifying = false, shot = null, found = shot.find) }
+        }
+    }
+
+    /** The sheet of places is closed without a choice: the walker is asked what the photo shows again. */
+    fun closePlaces() = current.update { it.copy(places = null) }
+
     /** Back to the viewfinder; the photo stays a plain photo. */
-    fun leave() = current.update { it.copy(shot = null) }
+    fun leave() = current.update { it.copy(shot = null, places = null) }
 
     fun shown() = current.update { it.copy(found = null) }
 }

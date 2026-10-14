@@ -58,6 +58,7 @@ private fun Page(page: String) {
         "walk-summary" -> WalkSummaryGallery()
         "gallery", "gallery-best", "gallery-select", "gallery-map" -> GalleryGallery(page)
         "find-card", "find-unknown" -> FindCardGallery(unknown = page == "find-unknown")
+        "camera-place" -> CameraGallery(identifying = false, placing = true)
         "camera", "camera-what", "camera-identifying" ->
             CameraGallery(identifying = page == "camera-identifying", asking = page == "camera-what")
         "profile" -> ProfileGallery()

@@ -27,6 +27,18 @@ export function required<T>(field: string, value: T | undefined): T {
   return value === undefined ? invalid(field, 'required') : value;
 }
 
+/** A latitude or a longitude: a number no further from zero than [max] degrees. */
+export function coordinate(
+  field: string,
+  value: string | undefined,
+  max: number,
+): number {
+  const number = Number(required(field, value));
+  return Number.isFinite(number) && Math.abs(number) <= max
+    ? number
+    : invalid(field, 'out_of_range');
+}
+
 /** A moment in ISO 8601. */
 export function instant(field: string, value?: string): Date | undefined {
   if (value === undefined) return undefined;

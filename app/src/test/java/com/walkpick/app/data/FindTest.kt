@@ -9,7 +9,7 @@ import com.walkpick.app.data.find.placed
 import com.walkpick.app.data.find.trusted
 import com.walkpick.app.data.local.FindAlternative
 import com.walkpick.app.data.local.FindKind
-import com.walkpick.app.data.places.Place
+import com.walkpick.app.data.places.NearPlace
 import com.walkpick.app.data.places.parseSummary
 import com.walkpick.app.data.walk.TrackPoint
 import com.walkpick.app.data.walk.WalkDraft
@@ -97,7 +97,10 @@ class FindTest {
     @Test
     fun aPlaceIsTheNearestArticleAndABirdTakesTheTitleOfItsArticle() {
         val place = newFind("find-1", "user-1", "walk-1", here, noon, FindKind.PLACE)
-            .placed(listOf(Place(1, "Golden Gate", 50.45, 30.52), Place(2, "Opera", 50.45, 30.51)), noon)
+            .placed(
+                listOf(NearPlace("Golden Gate", "Monument", 40), NearPlace("Opera", "Theatre", 120)),
+                noon,
+            )
         assertEquals("Golden Gate", place.name)
         assertNull(place.match)
         assertEquals(listOf("Opera"), place.alternatives.map { it.name })

@@ -4,12 +4,14 @@ import com.walkpick.app.data.local.FindDao
 import com.walkpick.app.data.local.FindEntity
 import com.walkpick.app.data.local.PendingDeleteDao
 import com.walkpick.app.data.local.PendingDeleteEntity
+import com.walkpick.app.data.places.NearPlace
 import com.walkpick.app.data.sync.PHOTO_BUCKET
 import com.walkpick.app.data.sync.RemoteTables
 import com.walkpick.app.data.sync.SyncScheduler
 import com.walkpick.app.data.walk.WalkRecorder
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.first
 import java.io.File
 import java.time.Instant
 import javax.inject.Inject
@@ -61,6 +63,20 @@ class FindStore @Inject constructor(
         val find = drafted(id) ?: finds.get(id) ?: return
         val better = identifier.identified(find)
         if (better != find) change(id) { better }
+    }
+
+    /** The places to offer for a photo of a place: the walker's own names nearby, then those around. */
+    suspend fun placesFor(id: String): List<NearPlace> {
+        val find = drafted(id) ?: finds.get(id) ?: return emptyList()
+        val earlier = finds.watchAll().first() + recorder.track.value?.finds.orEmpty()
+        return identifier.placesFor(find, earlier)
+    }
+
+    /** Names the find after the place the walker chose; the other [offered] ones go under "Not this?". */
+    suspend fun place(id: String, chosen: NearPlace, offered: List<NearPlace>) {
+        val find = drafted(id) ?: finds.get(id) ?: return
+        val placed = identifier.placed(find, chosen, offered)
+        change(id) { placed }
     }
 
     /** Removes the find and its photo from the phone at once, from the server with the next sync. */

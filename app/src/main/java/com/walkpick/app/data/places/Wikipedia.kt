@@ -7,7 +7,6 @@ import com.walkpick.app.data.remote.webClient
 import dagger.hilt.android.qualifiers.ApplicationContext
 import io.ktor.client.request.get
 import io.ktor.client.request.header
-import io.ktor.client.request.parameter
 import io.ktor.client.statement.bodyAsBytes
 import io.ktor.client.statement.bodyAsText
 import io.ktor.http.HttpHeaders
@@ -23,9 +22,6 @@ import java.io.File
 import java.io.IOException
 import javax.inject.Inject
 import javax.inject.Singleton
-
-private const val SEARCH_URL = "https://en.wikipedia.org/w/api.php"
-private const val SUMMARY_URL = "https://en.wikipedia.org/api/rest_v1/page/summary/"
 
 // Wikipedia refuses requests that do not say who is asking.
 private const val ASKED_BY = "WalkPick/${BuildConfig.VERSION_NAME} (Android; ${BuildConfig.APPLICATION_ID})"
@@ -75,24 +71,10 @@ class Wikipedia(private val pictures: File) {
     @Inject
     constructor(@ApplicationContext context: Context) : this(File(context.cacheDir, "wikipedia"))
 
-    /** The answer of GeoSearch for the articles about places around a point, the nearest first. */
-    suspend fun near(latitude: Double, longitude: Double, radiusM: Int, limit: Int): String {
-        val answer = webClient.get(SEARCH_URL) {
-            header(HttpHeaders.UserAgent, ASKED_BY)
-            parameter("action", "query")
-            parameter("list", "geosearch")
-            parameter("gscoord", "$latitude|$longitude")
-            parameter("gsradius", radiusM)
-            parameter("gslimit", limit)
-            parameter("format", "json")
-        }
-        if (!answer.status.isSuccess()) throw IOException("Wikipedia answered ${answer.status}")
-        return answer.bodyAsText()
-    }
-
-    /** The article called [title], a Latin name included; null when there is none. */
-    suspend fun summary(title: String): WikiSummary? {
-        val answer = webClient.get(SUMMARY_URL + title.replace(' ', '_').encodeURLPathPart()) {
+    /** The article [title], a Latin name too, in the Wikipedia of [language]; null when there is none. */
+    suspend fun summary(title: String, language: String = "en"): WikiSummary? {
+        val page = title.replace(' ', '_').encodeURLPathPart()
+        val answer = webClient.get("https://$language.wikipedia.org/api/rest_v1/page/summary/$page") {
             header(HttpHeaders.UserAgent, ASKED_BY)
         }
         if (answer.status == HttpStatusCode.NotFound) return null

@@ -4,10 +4,11 @@ import com.walkpick.app.data.local.FindAlternative
 import com.walkpick.app.data.local.FindDao
 import com.walkpick.app.data.local.FindEntity
 import com.walkpick.app.data.local.FindKind
-import com.walkpick.app.data.places.Place
+import com.walkpick.app.data.places.NearPlace
+import com.walkpick.app.data.places.NearPlaces
 import com.walkpick.app.data.places.WikiSummary
 import com.walkpick.app.data.places.Wikipedia
-import com.walkpick.app.data.places.parsePlaces
+import com.walkpick.app.data.places.ownPlaces
 import com.walkpick.app.data.sync.RemoteTables
 import com.walkpick.app.data.sync.SyncedPart
 import kotlinx.serialization.SerialName
@@ -15,10 +16,6 @@ import kotlinx.serialization.Serializable
 import java.io.IOException
 import java.time.Instant
 import javax.inject.Inject
-
-// A photo of a place is taken from close by; the best article and three more for "Not this?".
-private const val PLACE_RADIUS_M = 300
-private const val PLACES = 4
 
 // Old finds without a description are caught up with a few at a sync, not all at once.
 private const val DESCRIBED_AT_ONCE = 20
@@ -57,11 +54,11 @@ internal fun List<Guess>.trusted(): List<Guess> =
     if (firstOrNull()?.let { it.match >= LEAST_PLANT_MATCH } == true) this else emptyList()
 
 /**
- * The find as the nearest article of Wikipedia about a place; the articles further off wait under
+ * The find as the first of [places], the one the walker chose or the nearest; the others wait under
  * "Not this?". With no place around it becomes an unknown find.
  */
-internal fun FindEntity.placed(places: List<Place>, at: Instant): FindEntity =
-    named(places.map { Guess(name = it.title, match = 0f) }, at).copy(match = null)
+internal fun FindEntity.placed(places: List<NearPlace>, at: Instant): FindEntity =
+    named(places.map { Guess(name = it.name, match = 0f) }, at).copy(match = null)
 
 /**
  * The find with what Wikipedia says about it. A bird is known by its Latin name until now and takes
@@ -85,8 +82,25 @@ class FindIdentifier @Inject constructor(
     private val photos: PhotoStore,
     private val birds: BirdClassifier,
     private val wikipedia: Wikipedia,
+    private val near: NearPlaces,
     private val remote: RemoteTables,
 ) : SyncedPart {
+
+    /** The places to offer for a photo of a place: the walker's own names close by first. */
+    suspend fun placesFor(find: FindEntity, earlier: List<FindEntity>): List<NearPlace> =
+        ownPlaces(find, earlier) + near.around(find.latitude, find.longitude).orEmpty()
+
+    /** [find] named after [chosen], the other [offered] places under "Not this?", with its article. */
+    suspend fun placed(find: FindEntity, chosen: NearPlace, offered: List<NearPlace>): FindEntity {
+        val places = listOf(chosen) + (offered - chosen)
+        val named = find.copy(kind = FindKind.PLACE).placed(places, Instant.now())
+        val article = try {
+            chosen.article?.let { wikipedia.summary(it.title, it.language) }
+        } catch (_: IOException) {
+            null
+        }
+        return named.described(article, Instant.now())
+    }
 
     /** [find] with whatever could be found out now; the same find when nothing could, as offline. */
     suspend fun identified(find: FindEntity): FindEntity = try {
@@ -106,10 +120,8 @@ class FindIdentifier @Inject constructor(
             remote.identify(find.photoPath)?.let { find.named(it.trusted(), Instant.now()) }
         }
         FindKind.BIRD -> birds.guesses(photos.file(find.photoPath))?.let { find.named(it, Instant.now()) }
-        FindKind.PLACE -> {
-            val near = wikipedia.near(find.latitude, find.longitude, PLACE_RADIUS_M, PLACES)
-            find.placed(parsePlaces(near), Instant.now())
-        }
+        // Asked without the sheet, as at a sync: the nearest place, the others under "Not this?".
+        FindKind.PLACE -> near.around(find.latitude, find.longitude)?.let { find.placed(it, Instant.now()) }
         FindKind.PHOTO, FindKind.UNKNOWN -> null
     }
 

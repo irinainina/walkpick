@@ -28,6 +28,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.composable
 import com.walkpick.app.ui.camera.CameraViewModel
 import com.walkpick.app.ui.screens.CameraScreen
+import com.walkpick.app.ui.screens.PlaceSheet
 import kotlinx.coroutines.flow.first
 
 private const val CAMERA = Manifest.permission.CAMERA
@@ -95,6 +96,10 @@ internal fun NavGraphBuilder.cameraRoute(navController: NavHostController) {
             if (allowed) {
                 AndroidView({ PreviewView(it).apply { controller = camera } }, Modifier.fillMaxSize())
             }
+        }
+        state.places?.let { places ->
+            val unit by model.distanceUnit.collectAsStateWithLifecycle()
+            PlaceSheet(places, unit, onSave = model::place, onDismiss = model::closePlaces)
         }
     }
 }
