@@ -4,7 +4,6 @@ import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import com.walkpick.app.data.local.HealthKind
-import com.walkpick.app.data.steps.PeriodStats
 import com.walkpick.app.data.steps.monthOf
 import com.walkpick.app.data.steps.weekOf
 import com.walkpick.app.ui.components.Bar
@@ -26,6 +25,7 @@ import com.walkpick.app.ui.screens.TodayScreen
 import com.walkpick.app.ui.stats.CalendarDay
 import com.walkpick.app.ui.stats.StatsState
 import com.walkpick.app.ui.stats.StatsTab
+import com.walkpick.app.ui.stats.WalkTotals
 import com.walkpick.app.ui.today.TodayState
 import com.walkpick.app.ui.walk.WalkEnding
 import java.time.LocalDate
@@ -44,7 +44,7 @@ private val stats = StatsState(
     range = weekOf(today),
     canGoBack = false,
     canGoForward = false,
-    stats = PeriodStats(0, 0, 0, null),
+    totals = WalkTotals(),
     bars = week,
 )
 

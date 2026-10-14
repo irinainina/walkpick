@@ -31,7 +31,8 @@ import com.walkpick.app.ui.theme.AppTheme
 import com.walkpick.app.ui.theme.PillShape
 import com.walkpick.app.ui.theme.Spacing
 
-enum class BarKind { Past, Today }
+/** A past bar, a day of the week that had a walk, and the bar of today. */
+enum class BarKind { Past, Walked, Today }
 
 /**
  * [fraction] is 0..1 of the track; 0 leaves the track empty. [tip] is shown when the bar is picked.
@@ -95,6 +96,7 @@ fun BarChart(
                         .fillMaxHeight(fraction)
                     when (bar.kind) {
                         BarKind.Past -> Box(fill.background(colors.barPast, PillShape))
+                        BarKind.Walked -> Box(fill.background(colors.accent, PillShape))
                         BarKind.Today -> Box(fill.background(today(colors), PillShape))
                     }
                     if (index == selected && bar.tip != null) {

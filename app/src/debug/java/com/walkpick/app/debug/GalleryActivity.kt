@@ -42,6 +42,7 @@ private fun Page(page: String) {
         "charts" -> ChartGallery()
         "nav" -> NavGallery()
         "last-walk" -> LastWalkGallery()
+        "periods-week", "periods-month", "periods-year", "periods-all" -> PeriodsGallery(page)
         "signin" -> SignInScreen(onGoogle = {}, onEmail = {})
         "signin-email" -> SignInEmailScreen("ira@example.com", {}, {}, {}, busy = false, problem = null)
         "signin-code" -> SignInCodeScreen("ira@example.com", "42", {}, {}, 48, {}, {}, problem = null)

@@ -48,6 +48,8 @@ import java.util.Locale
 private val TileHeight = 72.dp
 private const val HALF_TURN = 180f
 private const val NOTHING = "–"
+private const val SECONDS_IN_MINUTE = 60
+private const val MINUTES_IN_HOUR = 60
 
 private val MonthDay = DateTimeFormatter.ofPattern("MMM d", Locale.ENGLISH)
 private val MonthYear = DateTimeFormatter.ofPattern("MMMM yyyy", Locale.ENGLISH)
@@ -76,31 +78,46 @@ fun StatsScreen(
     ) {
         AppTopBar(stringResource(R.string.stats_title), onBack, Modifier.padding(top = Spacing.xs))
         Spacer(Modifier.height(Spacing.sm))
-        SegmentedControl(
-            options = StatsTab.entries.map { stringResource(it.titleRes()) },
-            selectedIndex = state.tab.ordinal,
-            onSelect = { onTab(StatsTab.entries[it]) },
-            modifier = Modifier.padding(horizontal = Spacing.ml),
-        )
-        Spacer(Modifier.height(Spacing.m))
-        Period(state, onMove)
-        Spacer(Modifier.height(Spacing.m))
-        StatsChartCard(state, onPickBar, onPickDay, Modifier.padding(horizontal = Spacing.ml))
-        Spacer(Modifier.height(Spacing.ml))
-        Column(
-            modifier = Modifier.padding(horizontal = Spacing.ml),
-            verticalArrangement = Arrangement.spacedBy(Spacing.sm),
-        ) {
-            tiles(state).chunked(2).forEach { pair ->
-                Row(horizontalArrangement = Arrangement.spacedBy(Spacing.s)) {
-                    pair.forEach { (value, label) -> Tile(value, label) }
-                }
-            }
-        }
+        WalkPeriods(state, PeriodActions(onTab, onMove, onPickBar, onPickDay, onWalk, onCloseDay))
         Spacer(Modifier.height(Spacing.l))
     }
+}
+
+class PeriodActions(
+    val onTab: (StatsTab) -> Unit,
+    val onMove: (Long) -> Unit,
+    val onPickBar: (Int) -> Unit,
+    val onPickDay: (LocalDate) -> Unit,
+    val onWalk: (String) -> Unit,
+    val onCloseDay: () -> Unit,
+)
+
+/** The walks by Week, Month, Year and All: the period, its chart or calendar, and four totals. */
+@Composable
+fun WalkPeriods(state: StatsState, actions: PeriodActions) {
+    SegmentedControl(
+        options = StatsTab.entries.map { stringResource(it.titleRes()) },
+        selectedIndex = state.tab.ordinal,
+        onSelect = { actions.onTab(StatsTab.entries[it]) },
+        modifier = Modifier.padding(horizontal = Spacing.ml),
+    )
+    Spacer(Modifier.height(Spacing.m))
+    Period(state, actions.onMove)
+    Spacer(Modifier.height(Spacing.m))
+    StatsChartCard(state, actions.onPickBar, actions.onPickDay, Modifier.padding(horizontal = Spacing.ml))
+    Spacer(Modifier.height(Spacing.ml))
+    Column(
+        modifier = Modifier.padding(horizontal = Spacing.ml),
+        verticalArrangement = Arrangement.spacedBy(Spacing.sm),
+    ) {
+        tiles(state).chunked(2).forEach { pair ->
+            Row(horizontalArrangement = Arrangement.spacedBy(Spacing.s)) {
+                pair.forEach { (value, label) -> Tile(value, label) }
+            }
+        }
+    }
     if (state.day != null && state.dayWalks.isNotEmpty()) {
-        DayWalksSheet(state.day, state.dayWalks, onWalk, onCloseDay)
+        DayWalksSheet(state.day, state.dayWalks, actions.onWalk, actions.onCloseDay)
     }
 }
 
@@ -173,38 +190,47 @@ private fun RowScope.Tile(value: String, label: String) {
 // Four per tab, in the order of the design: left to right, top to bottom.
 @Composable
 private fun tiles(state: StatsState): List<Pair<String, String>> {
-    val stats = state.stats
-    val total = grouped(stats.steps) to stringResource(R.string.stats_total)
-    val average = grouped(stats.averageSteps) to stringResource(R.string.stats_average)
-    val distance = distanceText(stats.distanceM, state.distanceUnit) to
+    val totals = state.totals
+    val long = state.tab == StatsTab.Year || state.tab == StatsTab.All
+    val distance = distanceText(totals.distanceM, state.distanceUnit) to
         stringResource(R.string.today_distance)
-    val walkDays = stringResource(R.string.stats_walk_days)
-    val best = stats.bestDay?.takeIf { it.steps > 0 }
-    val bestDay = (best?.let { grouped(it.steps) } ?: NOTHING) to when {
+    val time = durationText(totals.durationS, hoursOnly = long) to stringResource(R.string.stats_time)
+    val steps = grouped(totals.steps) to stringResource(R.string.stats_steps)
+    val best = totals.bestDay?.takeIf { totals.bestDaySteps > 0 }
+    val bestDay = (best?.let { grouped(totals.bestDaySteps) } ?: NOTHING) to when {
         best == null -> stringResource(R.string.stats_best_day)
-        state.tab == StatsTab.Week -> stringResource(R.string.stats_best_day_on, best.day.format(Weekday))
-        else -> stringResource(R.string.stats_best_day_on, best.day.format(MonthDay))
+        state.tab == StatsTab.Week -> stringResource(R.string.stats_best_day_on, best.format(Weekday))
+        else -> stringResource(R.string.stats_best_day_on, best.format(MonthDay))
     }
     return when (state.tab) {
-        StatsTab.Week -> listOf(total, average, distance, bestDay)
-        StatsTab.Month -> listOf(
-            total,
-            average,
-            stringResource(R.string.stats_days_of, state.walkDays, state.calendar.size) to walkDays,
-            bestDay,
-        )
+        StatsTab.Week, StatsTab.Month -> listOf(distance, time, steps, bestDay)
         StatsTab.Year -> listOf(
-            average,
             distance,
-            state.walkDays.toString() to walkDays,
+            time,
+            steps,
             (state.bestMonth?.format(MonthName) ?: NOTHING) to stringResource(R.string.stats_best_month),
         )
         StatsTab.All -> listOf(
             distance,
-            grouped(state.walks) to stringResource(R.string.stats_walks),
+            time,
             counted(state.longestStreak, R.string.stats_day_one, R.string.stats_day_many) to
                 stringResource(R.string.stats_longest_streak),
             bestDay,
         )
+    }
+}
+
+// "48 min", "2 h 25 min"; a year or all the time in whole hours: "96 h".
+@Composable
+private fun durationText(seconds: Int, hoursOnly: Boolean): String {
+    val minutes = (seconds + SECONDS_IN_MINUTE / 2) / SECONDS_IN_MINUTE
+    val hours = minutes / MINUTES_IN_HOUR
+    return when {
+        hoursOnly && hours > 0 -> {
+            val rounded = (minutes + MINUTES_IN_HOUR / 2) / MINUTES_IN_HOUR
+            stringResource(R.string.stats_hours, rounded)
+        }
+        hours > 0 -> stringResource(R.string.stats_hours_minutes, hours, minutes % MINUTES_IN_HOUR)
+        else -> stringResource(R.string.walk_minutes, minutes)
     }
 }

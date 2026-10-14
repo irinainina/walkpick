@@ -14,24 +14,26 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.walkpick.app.R
-import com.walkpick.app.ui.compact
 import com.walkpick.app.ui.components.AppCard
 import com.walkpick.app.ui.components.BarChart
-import com.walkpick.app.ui.grouped
+import com.walkpick.app.ui.counted
 import com.walkpick.app.ui.stats.CalendarDay
 import com.walkpick.app.ui.stats.StatsState
 import com.walkpick.app.ui.stats.StatsTab
 import com.walkpick.app.ui.theme.AppTheme
+import com.walkpick.app.ui.theme.Sizes
 import com.walkpick.app.ui.theme.Spacing
 import java.time.DayOfWeek
 import java.time.LocalDate
@@ -68,28 +70,18 @@ internal fun StatsChartCard(
         Row(Modifier.padding(start = Spacing.ml, top = Spacing.m, end = Spacing.ml)) {
             Column(Modifier.weight(1f)) {
                 Text(
-                    text = if (state.tab == StatsTab.Week || state.tab == StatsTab.Month) {
-                        grouped(state.stats.steps)
-                    } else {
-                        compact(state.stats.steps)
-                    },
+                    text = counted(state.totals.walks, R.string.stats_walks_one, R.string.stats_walks_many),
                     style = MaterialTheme.typography.headlineLarge,
                     color = colors.textPrimary,
                 )
                 Text(
-                    text = stringResource(
-                        when {
-                            state.tab == StatsTab.All -> R.string.stats_steps_total
-                            !current -> R.string.stats_steps
-                            state.tab == StatsTab.Week -> R.string.stats_steps_week
-                            state.tab == StatsTab.Month -> R.string.stats_steps_month
-                            else -> R.string.stats_steps_year
-                        },
-                    ),
+                    text = stringResource(periodWord(state.tab, current)),
                     style = MaterialTheme.typography.bodyMedium,
                     color = colors.textSecondary,
                 )
             }
+            // The streak runs up to today: the week that holds today shows it.
+            if (state.tab == StatsTab.Week && current && state.streak > 0) Streak(state.streak)
         }
         when (state.tab) {
             StatsTab.Month -> Calendar(state.calendar, state.today, onPickDay)
@@ -190,4 +182,35 @@ private fun Day(day: CalendarDay, today: LocalDate, onPick: (LocalDate) -> Unit)
             },
         )
     }
+}
+
+// Beside the number of walks, a little lower, as in the frame.
+@Composable
+private fun Streak(days: Int) {
+    val color = AppTheme.colors.streak
+    Row(
+        modifier = Modifier.padding(top = Spacing.s),
+        horizontalArrangement = Arrangement.spacedBy(Spacing.xs),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Icon(
+            painter = painterResource(R.drawable.ic_flame),
+            contentDescription = null,
+            modifier = Modifier.size(Sizes.iconSmall),
+            tint = color,
+        )
+        Text(
+            text = counted(days, R.string.today_streak_one, R.string.today_streak_many),
+            style = MaterialTheme.typography.labelMedium,
+            color = color,
+        )
+    }
+}
+
+// "this week" while the period holds today, "that week" for an earlier one.
+private fun periodWord(tab: StatsTab, current: Boolean) = when (tab) {
+    StatsTab.All -> R.string.stats_in_total
+    StatsTab.Week -> if (current) R.string.stats_this_week else R.string.stats_that_week
+    StatsTab.Month -> if (current) R.string.stats_this_month else R.string.stats_that_month
+    StatsTab.Year -> if (current) R.string.stats_this_year else R.string.stats_that_year
 }

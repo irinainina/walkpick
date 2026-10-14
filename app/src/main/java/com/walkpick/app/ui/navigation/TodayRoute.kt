@@ -17,8 +17,11 @@ import androidx.navigation.compose.composable
 import com.walkpick.app.data.local.HealthKind
 import com.walkpick.app.ui.health.HealthViewModel
 import com.walkpick.app.ui.screens.NewEntrySheet
+import com.walkpick.app.ui.screens.PeriodActions
 import com.walkpick.app.ui.screens.TodayActions
 import com.walkpick.app.ui.screens.TodayScreen
+import com.walkpick.app.ui.screens.WalkPeriods
+import com.walkpick.app.ui.stats.StatsViewModel
 import com.walkpick.app.ui.today.LastWalkViewModel
 import com.walkpick.app.ui.today.TodayViewModel
 import com.walkpick.app.ui.today.WeatherViewModel
@@ -48,6 +51,8 @@ internal fun NavGraphBuilder.todayRoute(navController: NavHostController, onShow
         val health: HealthViewModel = hiltViewModel()
         val healthState by health.state.collectAsStateWithLifecycle()
         var adding by rememberSaveable { mutableStateOf<HealthKind?>(null) }
+        val periods: StatsViewModel = hiltViewModel()
+        val periodState by periods.state.collectAsStateWithLifecycle()
         val shown = state ?: return@composable
         SideEffect(onShown)
         TodayScreen(
@@ -68,6 +73,26 @@ internal fun NavGraphBuilder.todayRoute(navController: NavHostController, onShow
             onStartWalk = { navController.navigate(Screen.ActiveWalk.route) },
             onStopWalk = { mood ->
                 walk.stop(mood) { saved -> saved?.let { navController.navigate(walkSummaryRoute(it)) } }
+            },
+            periods = {
+                periodState?.let {
+                    WalkPeriods(
+                        state = it,
+                        actions = PeriodActions(
+                            onTab = periods::open,
+                            onMove = periods::move,
+                            onPickBar = periods::pick,
+                            onPickDay = { day ->
+                                periods.pickDay(day) { id -> navController.navigate(walkSummaryRoute(id)) }
+                            },
+                            onWalk = { id ->
+                                periods.closeDay()
+                                navController.navigate(walkSummaryRoute(id))
+                            },
+                            onCloseDay = periods::closeDay,
+                        ),
+                    )
+                }
             },
         )
         val entry = adding?.let { kind -> healthState?.copy(tab = kind) }

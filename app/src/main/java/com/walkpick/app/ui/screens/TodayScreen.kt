@@ -110,6 +110,8 @@ fun TodayScreen(
     onStartWalk: () -> Unit,
     onStopWalk: (Int?) -> Unit,
     modifier: Modifier = Modifier,
+    /** The walks by Week, Month, Year and All, under the last walk. */
+    periods: @Composable () -> Unit = {},
 ) {
     val statusBar = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
     Column(
@@ -118,7 +120,7 @@ fun TodayScreen(
             .background(AppTheme.colors.canvas),
     ) {
         Box(Modifier.weight(1f)) {
-            Cards(statusBar, state, weather, walkSeconds != null, lastWalk, actions)
+            Cards(statusBar, state, weather, walkSeconds != null, lastWalk, actions, periods)
             StartBarFade(Modifier.align(Alignment.BottomCenter))
         }
         StartBar(walkSeconds, walkEnding, onStartWalk, onStopWalk)
@@ -133,40 +135,36 @@ private fun Cards(
     walking: Boolean,
     lastWalk: DiaryWalk?,
     actions: TodayActions,
+    periods: @Composable () -> Unit,
 ) {
     Box(Modifier.verticalScroll(rememberScrollState())) {
         Header(statusBar, state, weather, walking, actions.onProfile)
-        Column(
-            Modifier.padding(
-                start = Spacing.ml,
-                top = statusBar + CardsTop,
-                end = Spacing.ml,
-                bottom = Spacing.l,
-            ),
-        ) {
-            if (state.access != StepsAccess.COUNTING) {
-                NoStepsCard(sensor = state.access != StepsAccess.NO_SENSOR, onAllow = actions.onAllowSteps)
-                Spacer(Modifier.height(Spacing.ml))
-            } else if (state.newcomer) {
-                FirstWalkCard()
-                Spacer(Modifier.height(Spacing.ml))
-            }
-            StepsCard(state)
-            Spacer(Modifier.height(Spacing.ml))
-            StreakCard(state.streak)
-            Spacer(Modifier.height(Spacing.ml))
-            WeekCard(state.week, actions.onStats)
-            Spacer(Modifier.height(Spacing.l))
-            if (lastWalk != null) {
-                val today = state.now.toLocalDate()
-                LastWalkCard(lastWalk, today, state.distanceUnit, actions.photo) {
-                    actions.onWalk(lastWalk.walk.id)
+        Column(Modifier.padding(top = statusBar + CardsTop, bottom = Spacing.l)) {
+            // The cards keep the margins of the page; the periods bring their own.
+            Column(Modifier.padding(horizontal = Spacing.ml)) {
+                Notes(state, actions)
+                if (lastWalk != null) {
+                    val today = state.now.toLocalDate()
+                    LastWalkCard(lastWalk, today, state.distanceUnit, actions.photo) {
+                        actions.onWalk(lastWalk.walk.id)
+                    }
+                    Spacer(Modifier.height(Spacing.xl))
                 }
-                Spacer(Modifier.height(Spacing.l))
             }
-            val today = state.now.toLocalDate()
-            HealthCard(state.health, state.units, today, actions.onHealth, actions.onAddHealth)
+            periods()
         }
+    }
+}
+
+// A word on top when the steps are not counted or nobody has walked yet.
+@Composable
+private fun Notes(state: TodayState, actions: TodayActions) {
+    if (state.access != StepsAccess.COUNTING) {
+        NoStepsCard(sensor = state.access != StepsAccess.NO_SENSOR, onAllow = actions.onAllowSteps)
+        Spacer(Modifier.height(Spacing.ml))
+    } else if (state.newcomer) {
+        FirstWalkCard()
+        Spacer(Modifier.height(Spacing.ml))
     }
 }
 
