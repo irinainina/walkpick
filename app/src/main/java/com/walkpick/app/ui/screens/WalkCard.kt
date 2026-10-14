@@ -3,15 +3,12 @@ package com.walkpick.app.ui.screens
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -22,9 +19,9 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.walkpick.app.R
 import com.walkpick.app.data.local.FindEntity
+import com.walkpick.app.data.settings.DistanceUnit
 import com.walkpick.app.data.walk.title
 import com.walkpick.app.ui.components.AppCard
-import com.walkpick.app.ui.components.EmptyState
 import com.walkpick.app.ui.components.PhotoStrip
 import com.walkpick.app.ui.components.RouteSketch
 import com.walkpick.app.ui.components.RowChevron
@@ -32,10 +29,9 @@ import com.walkpick.app.ui.components.StripLook
 import com.walkpick.app.ui.components.look
 import com.walkpick.app.ui.distanceText
 import com.walkpick.app.ui.grouped
-import com.walkpick.app.ui.map.DiaryWalk
-import com.walkpick.app.ui.map.MapState
 import com.walkpick.app.ui.theme.AppTheme
 import com.walkpick.app.ui.theme.Spacing
+import com.walkpick.app.ui.walk.DiaryWalk
 import java.io.File
 import java.time.LocalDate
 import java.time.ZoneId
@@ -50,67 +46,24 @@ private const val THUMBS = 4
 // A thumbnail of 32 dp needs an eighth of the pixels of the photo at most.
 private const val THUMB_SAMPLE = 8
 private const val SECONDS_IN_MINUTE = 60.0
-
+private val Clock = DateTimeFormatter.ofPattern("HH:mm", Locale.ENGLISH)
 private val ThisYear = DateTimeFormatter.ofPattern("EEE, MMM d", Locale.ENGLISH)
 private val AnotherYear = DateTimeFormatter.ofPattern("EEE, MMM d, yyyy", Locale.ENGLISH)
-private val Clock = DateTimeFormatter.ofPattern("HH:mm", Locale.ENGLISH)
 
-/** Every walk by days, the latest first; the list draws only what is in sight, however long it is. */
+/** A walk in a list: its route, name, time and numbers, and its first photos; a tap opens it. */
 @Composable
-internal fun DiaryList(
-    state: MapState,
-    onWalk: (String) -> Unit,
-    photo: suspend (FindEntity) -> File?,
-    content: PaddingValues,
-    modifier: Modifier = Modifier,
-) {
-    if (state.days.isEmpty()) {
-        if (!state.loaded) return
-        val title = stringResource(R.string.diary_empty_title)
-        val under = modifier.padding(top = content.calculateTopPadding())
-        EmptyState(R.drawable.ic_route, title, stringResource(R.string.diary_empty_text), under)
-        return
-    }
-    LazyColumn(modifier, contentPadding = content) {
-        state.days.forEachIndexed { index, day ->
-            item(key = day.day.toEpochDay()) {
-                if (index > 0) Spacer(Modifier.height(Spacing.l))
-                Text(
-                    text = dayTitle(day.day, state.today),
-                    style = MaterialTheme.typography.titleSmall,
-                    color = AppTheme.colors.textPrimary,
-                )
-            }
-            items(day.walks, key = { it.walk.id }) { walk ->
-                // 12 under the title of the day, 16 between the walks of one day.
-                val first = walk == day.walks.first()
-                Spacer(Modifier.height(if (first) Spacing.sm else Spacing.m))
-                WalkCard(walk, state, onWalk, photo)
-            }
-        }
-    }
-}
-
-/** A day as the diary calls it: Today, Yesterday, or its date. */
-@Composable
-internal fun dayTitle(day: LocalDate, today: LocalDate): String = when {
-    day == today -> stringResource(R.string.diary_today)
-    day == today.minusDays(1) -> stringResource(R.string.diary_yesterday)
-    day.year == today.year -> ThisYear.format(day)
-    else -> AnotherYear.format(day)
-}
-
-@Composable
-private fun WalkCard(
+internal fun WalkCard(
     item: DiaryWalk,
-    state: MapState,
+    unit: DistanceUnit,
     onWalk: (String) -> Unit,
     photo: suspend (FindEntity) -> File?,
+    // Inside a sheet the card is outlined: a shadow would stand out on the white.
+    outlined: Boolean = false,
 ) {
     val type = MaterialTheme.typography
     val colors = AppTheme.colors
     val walk = item.walk
-    AppCard {
+    AppCard(outlined = outlined) {
         Row(
             modifier = Modifier
                 .clickable { onWalk(walk.id) }
@@ -127,7 +80,7 @@ private fun WalkCard(
             ) {
                 val minutes = (walk.durationS / SECONDS_IN_MINUTE).roundToInt()
                 val start = Clock.format(walk.startedAt.atZone(ZoneId.systemDefault()))
-                val distance = distanceText(walk.distanceM, state.distanceUnit)
+                val distance = distanceText(walk.distanceM, unit)
                 Text(
                     text = walk.title(),
                     style = type.labelLarge,
@@ -166,4 +119,13 @@ private fun WalkCard(
             RowChevron()
         }
     }
+}
+
+/** A day as a walk card calls it: Today, Yesterday, or its date. */
+@Composable
+internal fun dayTitle(day: LocalDate, today: LocalDate): String = when {
+    day == today -> stringResource(R.string.diary_today)
+    day == today.minusDays(1) -> stringResource(R.string.diary_yesterday)
+    day.year == today.year -> ThisYear.format(day)
+    else -> AnotherYear.format(day)
 }

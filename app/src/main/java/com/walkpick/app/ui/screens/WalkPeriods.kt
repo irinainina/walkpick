@@ -8,15 +8,10 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.statusBarsPadding
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -31,7 +26,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
 import com.walkpick.app.R
-import com.walkpick.app.ui.components.AppTopBar
+import com.walkpick.app.data.local.FindEntity
 import com.walkpick.app.ui.components.SegmentedControl
 import com.walkpick.app.ui.counted
 import com.walkpick.app.ui.distanceText
@@ -41,6 +36,7 @@ import com.walkpick.app.ui.stats.StatsTab
 import com.walkpick.app.ui.theme.AppShadows
 import com.walkpick.app.ui.theme.AppTheme
 import com.walkpick.app.ui.theme.Spacing
+import java.io.File
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.util.Locale
@@ -56,33 +52,6 @@ private val MonthYear = DateTimeFormatter.ofPattern("MMMM yyyy", Locale.ENGLISH)
 private val Weekday = DateTimeFormatter.ofPattern("EEE", Locale.ENGLISH)
 private val MonthName = DateTimeFormatter.ofPattern("MMMM", Locale.ENGLISH)
 
-@Composable
-fun StatsScreen(
-    state: StatsState,
-    onBack: () -> Unit,
-    onTab: (StatsTab) -> Unit,
-    onMove: (Long) -> Unit,
-    onPickBar: (Int) -> Unit,
-    onPickDay: (LocalDate) -> Unit,
-    onWalk: (String) -> Unit,
-    onCloseDay: () -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    Column(
-        modifier
-            .fillMaxSize()
-            .background(AppTheme.colors.canvas)
-            .statusBarsPadding()
-            .verticalScroll(rememberScrollState())
-            .navigationBarsPadding(),
-    ) {
-        AppTopBar(stringResource(R.string.stats_title), onBack, Modifier.padding(top = Spacing.xs))
-        Spacer(Modifier.height(Spacing.sm))
-        WalkPeriods(state, PeriodActions(onTab, onMove, onPickBar, onPickDay, onWalk, onCloseDay))
-        Spacer(Modifier.height(Spacing.l))
-    }
-}
-
 class PeriodActions(
     val onTab: (StatsTab) -> Unit,
     val onMove: (Long) -> Unit,
@@ -90,6 +59,7 @@ class PeriodActions(
     val onPickDay: (LocalDate) -> Unit,
     val onWalk: (String) -> Unit,
     val onCloseDay: () -> Unit,
+    val photo: suspend (FindEntity) -> File? = { null },
 )
 
 /** The walks by Week, Month, Year and All: the period, its chart or calendar, and four totals. */
@@ -117,7 +87,7 @@ fun WalkPeriods(state: StatsState, actions: PeriodActions) {
         }
     }
     if (state.day != null && state.dayWalks.isNotEmpty()) {
-        DayWalksSheet(state.day, state.dayWalks, actions.onWalk, actions.onCloseDay)
+        DayWalksSheet(state, actions)
     }
 }
 
@@ -222,7 +192,7 @@ private fun tiles(state: StatsState): List<Pair<String, String>> {
 
 // "48 min", "2 h 25 min"; a year or all the time in whole hours: "96 h".
 @Composable
-private fun durationText(seconds: Int, hoursOnly: Boolean): String {
+internal fun durationText(seconds: Int, hoursOnly: Boolean): String {
     val minutes = (seconds + SECONDS_IN_MINUTE / 2) / SECONDS_IN_MINUTE
     val hours = minutes / MINUTES_IN_HOUR
     return when {

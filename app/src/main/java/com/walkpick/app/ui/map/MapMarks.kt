@@ -2,7 +2,6 @@ package com.walkpick.app.ui.map
 
 import com.walkpick.app.data.local.FindEntity
 import com.walkpick.app.data.local.FindKind
-import com.walkpick.app.data.places.Place
 import java.io.File
 import kotlin.math.cos
 import kotlin.math.floor
@@ -34,7 +33,7 @@ data class ClusterMark(val finds: List<FindEntity>) : MapMark {
     override val longitude get() = finds.sumOf { it.longitude } / finds.size
 }
 
-/** The find or the place the walker tapped on the map, with what the card under the map shows. */
+/** The find the walker tapped on the map, with what the card under the map shows. */
 data class MapPick(
     val kind: FindKind,
     /** Null for a find that has no name yet. */
@@ -42,7 +41,6 @@ data class MapPick(
     val latitude: Double,
     val longitude: Double,
     val find: FindEntity? = null,
-    val place: Place? = null,
     val text: String? = null,
     val photo: File? = null,
 )

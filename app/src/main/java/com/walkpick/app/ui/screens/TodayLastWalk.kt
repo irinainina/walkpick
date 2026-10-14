@@ -32,9 +32,9 @@ import com.walkpick.app.ui.components.RowChevron
 import com.walkpick.app.ui.components.StripLook
 import com.walkpick.app.ui.distanceText
 import com.walkpick.app.ui.grouped
-import com.walkpick.app.ui.map.DiaryWalk
 import com.walkpick.app.ui.theme.AppTheme
 import com.walkpick.app.ui.theme.Spacing
+import com.walkpick.app.ui.walk.DiaryWalk
 import java.io.File
 import java.time.LocalDate
 import java.time.ZoneId

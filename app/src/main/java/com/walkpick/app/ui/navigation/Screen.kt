@@ -7,11 +7,9 @@ import com.walkpick.app.ui.components.NavItem
 enum class Screen(@StringRes val titleRes: Int) {
     SignIn(R.string.screen_sign_in),
     Today(R.string.tab_today),
-    Stats(R.string.screen_stats),
     Health(R.string.screen_health),
     ActiveWalk(R.string.screen_active_walk),
     WalkSummary(R.string.screen_walk_summary),
-    Map(R.string.tab_map),
     Camera(R.string.screen_camera),
     FindCard(R.string.screen_find_card),
     Gallery(R.string.tab_gallery),
@@ -33,10 +31,9 @@ enum class Screen(@StringRes val titleRes: Int) {
     val links: List<Screen>
         get() = when (this) {
             SignIn -> listOf(Today)
-            Today -> listOf(Stats, Profile, ActiveWalk)
+            Today -> listOf(Profile, ActiveWalk)
             ActiveWalk -> listOf(Camera, WalkSummary)
             Camera, PhotoViewer -> listOf(FindCard)
-            Map -> listOf(WalkSummary, FindCard)
             Gallery -> listOf(PhotoViewer)
             Settings -> listOf(SignIn)
             else -> emptyList()

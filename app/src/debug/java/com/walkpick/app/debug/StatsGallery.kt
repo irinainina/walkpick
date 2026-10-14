@@ -7,6 +7,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import com.walkpick.app.data.local.FindEntity
+import com.walkpick.app.data.local.WalkEntity
 import com.walkpick.app.data.steps.DayRange
 import com.walkpick.app.data.steps.monthOf
 import com.walkpick.app.data.steps.weekOf
@@ -14,7 +16,6 @@ import com.walkpick.app.data.steps.yearOf
 import com.walkpick.app.ui.components.Bar
 import com.walkpick.app.ui.components.BarKind
 import com.walkpick.app.ui.screens.PeriodActions
-import com.walkpick.app.ui.screens.StatsScreen
 import com.walkpick.app.ui.screens.WalkPeriods
 import com.walkpick.app.ui.stats.CalendarDay
 import com.walkpick.app.ui.stats.StatsState
@@ -22,8 +23,11 @@ import com.walkpick.app.ui.stats.StatsTab
 import com.walkpick.app.ui.stats.WalkTotals
 import com.walkpick.app.ui.theme.AppTheme
 import com.walkpick.app.ui.theme.Spacing
+import com.walkpick.app.ui.walk.DiaryWalk
 import java.time.LocalDate
+import java.time.LocalDateTime
 import java.time.YearMonth
+import java.time.ZoneId
 
 private const val TRACK = 120f
 private val today = LocalDate.of(2026, 9, 30)
@@ -90,31 +94,42 @@ private val all = week.copy(
     longestStreak = 21,
 )
 
-/** Stats with the data of the Figma frames, for the comparison with the design. */
-@Composable
-fun StatsGallery(page: String) {
-    val state = when (page) {
-        "stats-month" -> month
-        "stats-year" -> year
-        "stats-all" -> all
-        else -> week
-    }
-    StatsScreen(
-        state = state,
-        onBack = {},
-        onTab = {},
-        onMove = {},
-        onPickBar = {},
-        onPickDay = {},
-        onWalk = {},
-        onCloseDay = {},
+// The two walks of Monday in the frame of the day sheet, the latest first.
+private fun dayWalk(
+    id: String,
+    name: String,
+    at: String,
+    minutes: Int,
+    steps: Int,
+    metres: Int,
+    photos: Int,
+): DiaryWalk {
+    val start = LocalDateTime.parse(at).atZone(ZoneId.systemDefault()).toInstant()
+    val walk = WalkEntity(
+        id = id,
+        number = 1,
+        startedAt = start,
+        endedAt = start.plusSeconds(minutes * 60L),
+        durationS = minutes * 60,
+        steps = steps,
+        distanceM = metres,
+        name = name,
+        updatedAt = start,
     )
+    val finds = List(photos) { FindEntity("$id$it", id, start, 50.58, 34.48, "none", updatedAt = start) }
+    return DiaryWalk(walk, photos, ringSketch, finds)
 }
+
+private val dayWalks = listOf(
+    dayWalk("evening", "Autumn Evening", "2026-09-28T17:30", 35, 4340, 3100, 0),
+    dayWalk("morning", "Sunny Morning", "2026-09-28T09:15", 62, 7040, 5200, 3),
+)
 
 /** The periods of the Walk tab alone, as they stand under the last walk in the Figma frames. */
 @Composable
 fun PeriodsGallery(page: String) {
     val state = when (page) {
+        "periods-day" -> month.copy(day = LocalDate.of(2026, 9, 28), dayWalks = dayWalks)
         "periods-month" -> month
         "periods-year" -> year
         "periods-all" -> all

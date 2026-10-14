@@ -39,14 +39,13 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.walkpick.app.R
 import com.walkpick.app.data.local.FindEntity
-import com.walkpick.app.data.local.HealthKind
 import com.walkpick.app.data.settings.DistanceUnit
 import com.walkpick.app.data.steps.StepsAccess
 import com.walkpick.app.data.walk.WalkWeather
 import com.walkpick.app.data.walk.sky
 import com.walkpick.app.ui.components.Avatar
+import com.walkpick.app.ui.components.EmptyState
 import com.walkpick.app.ui.components.GradientHeader
-import com.walkpick.app.ui.map.DiaryWalk
 import com.walkpick.app.ui.theme.AppTheme
 import com.walkpick.app.ui.theme.AvatarLetterStyle
 import com.walkpick.app.ui.theme.ParagraphStyle
@@ -57,6 +56,7 @@ import com.walkpick.app.ui.today.DARK_FROM
 import com.walkpick.app.ui.today.NIGHT_END
 import com.walkpick.app.ui.today.TodayState
 import com.walkpick.app.ui.today.weatherCall
+import com.walkpick.app.ui.walk.DiaryWalk
 import com.walkpick.app.ui.walk.WalkEnding
 import java.io.File
 import java.time.format.DateTimeFormatter
@@ -77,6 +77,9 @@ private val PillTop = 10.dp
 private val GreetingMinSize = 16.sp
 private val PillHeight = 32.dp
 
+// Under the notice, as the frame of the first walk draws it.
+private val EmptyTop = 58.dp
+
 private const val NOON = 12
 private const val EVENING = 18
 private const val FAHRENHEIT_PER_C = 1.8
@@ -86,9 +89,6 @@ private val Date = DateTimeFormatter.ofPattern("EEEE, MMMM d", Locale.ENGLISH)
 /** What the Today tab asks of its owner. */
 class TodayActions(
     val onAllowSteps: () -> Unit,
-    val onStats: () -> Unit,
-    val onHealth: () -> Unit,
-    val onAddHealth: (HealthKind) -> Unit,
     val onWalk: (String) -> Unit,
     val onProfile: () -> Unit,
     /** The file of a photo of the last walk; null while it is not on the phone. */
@@ -100,6 +100,8 @@ fun TodayScreen(
     state: TodayState,
     /** The time of the walk being recorded, and then the button leads back to it; null without one. */
     walkSeconds: Long?,
+    /** The walk under way is paused: the link under Stop walk says when. */
+    walkPaused: Boolean,
     /** What stopping that walk now would do. */
     walkEnding: WalkEnding,
     /** The weather outside; null until it is known. */
@@ -123,7 +125,7 @@ fun TodayScreen(
             Cards(statusBar, state, weather, walkSeconds != null, lastWalk, actions, periods)
             StartBarFade(Modifier.align(Alignment.BottomCenter))
         }
-        StartBar(walkSeconds, walkEnding, onStartWalk, onStopWalk)
+        StartBar(walkSeconds, walkPaused, walkEnding, onStartWalk, onStopWalk)
     }
 }
 
@@ -151,7 +153,17 @@ private fun Cards(
                     Spacer(Modifier.height(Spacing.xl))
                 }
             }
-            periods()
+            if (lastWalk != null) {
+                periods()
+            } else if (state.newcomer) {
+                // Only the database may say there is no walk: while the last one is read, nothing shows.
+                EmptyState(
+                    iconRes = R.drawable.ic_route,
+                    title = stringResource(R.string.walks_empty_title),
+                    text = stringResource(R.string.walks_empty_text),
+                    modifier = Modifier.padding(top = EmptyTop),
+                )
+            }
         }
     }
 }

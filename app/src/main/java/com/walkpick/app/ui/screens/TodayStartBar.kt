@@ -18,10 +18,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.walkpick.app.R
 import com.walkpick.app.ui.components.AppButton
+import com.walkpick.app.ui.components.AppButtonStyle
 import com.walkpick.app.ui.theme.AppTheme
 import com.walkpick.app.ui.theme.Spacing
 import com.walkpick.app.ui.walk.WalkEnding
@@ -41,43 +43,45 @@ internal fun StartBarFade(modifier: Modifier = Modifier) {
 }
 
 /**
- * The main action of the app, always in sight above the tabs: Start walk; during a walk - the way
- * back to it with its time, and a quiet Stop walk below.
+ * The main action of the app, always in sight above the tabs: Start walk; during a walk - Stop walk,
+ * and under it the way back to the walk with its time, or the time it was paused at.
  */
 @Composable
 internal fun StartBar(
     walkSeconds: Long?,
+    walkPaused: Boolean,
     walkEnding: WalkEnding,
     onStartWalk: () -> Unit,
     onStopWalk: (Int?) -> Unit,
 ) {
     var stopping by remember { mutableStateOf(false) }
-    val text = when (walkSeconds) {
-        null -> stringResource(R.string.today_start_walk)
-        else -> stringResource(R.string.today_back_to_walk, clockText(walkSeconds))
-    }
-    val walking = walkSeconds != null
     Column(
         Modifier
             .fillMaxWidth()
             .background(AppTheme.colors.canvas)
-            // The link carries its own space below; together it is the same gap as without it.
-            .padding(Spacing.ml, Spacing.sm, Spacing.ml, if (walking) Spacing.xs else Spacing.sm),
+            .padding(horizontal = Spacing.ml, vertical = Spacing.sm),
     ) {
-        AppButton(text, onClick = onStartWalk, iconRes = R.drawable.ic_play)
-        if (walking) {
-            Text(
-                text = stringResource(R.string.today_stop_walk),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = Spacing.xs)
-                    .clickable { stopping = true }
-                    .padding(vertical = Spacing.s),
-                style = MaterialTheme.typography.labelLarge,
-                color = AppTheme.colors.streak,
-                textAlign = TextAlign.Center,
-            )
+        if (walkSeconds == null) {
+            AppButton(stringResource(R.string.today_start_walk), onStartWalk, iconRes = R.drawable.ic_play)
+            return@Column
         }
+        AppButton(
+            text = stringResource(R.string.today_stop_walk),
+            onClick = { stopping = true },
+            style = AppButtonStyle.Stop,
+            iconRes = R.drawable.ic_stop_square,
+        )
+        val back = if (walkPaused) R.string.today_back_to_walk_paused else R.string.today_back_to_walk
+        Text(
+            text = stringResource(back, clockText(walkSeconds)),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = Spacing.sm)
+                .clickable(role = Role.Button, onClick = onStartWalk),
+            style = MaterialTheme.typography.labelLarge,
+            color = AppTheme.colors.accent,
+            textAlign = TextAlign.Center,
+        )
     }
     if (stopping) {
         FinishWalkSheet(

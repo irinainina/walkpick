@@ -160,19 +160,6 @@ fun RouteLine(route: List<LatLng>, width: Dp, look: RouteLook = RouteLook()) {
     }
 }
 
-/** An older route: one colour, paler the older it is. */
-@Composable
-fun PaleRouteLine(route: List<LatLng>, width: Dp, alpha: Float, look: RouteLook = RouteLook()) {
-    if (route.size < 2) return
-    val color = AppTheme.colors.accent.copy(alpha = alpha)
-    val line = with(LocalDensity.current) { width.toPx() }
-    val legs = look.legs(route)
-    legs.forEachIndexed { index, leg ->
-        if (leg.size > 1) Polyline(points = leg, color = color, width = line, jointType = JointType.ROUND)
-        legs.getOrNull(index + 1)?.let { next -> PausedWay(leg.last(), next.first(), color, line) }
-    }
-}
-
 // From where a walk was paused to where it went on: ridden or carried, not walked.
 @Composable
 @GoogleMapComposable
@@ -197,21 +184,6 @@ fun MeDot() {
                 .background(colors.accent, CircleShape)
                 .border(StartBorder, colors.surface, CircleShape),
         )
-    }
-}
-
-/** A place from Wikipedia not visited yet: pale beside the finds; the content of a map marker. */
-@Composable
-fun UnvisitedPlacePin(size: Dp = PlacePin) {
-    val colors = AppTheme.colors
-    Box(
-        Modifier
-            .size(size)
-            .background(colors.surface, CircleShape)
-            .border(StartBorder, colors.unvisitedRing, CircleShape),
-        contentAlignment = Alignment.Center,
-    ) {
-        Icon(painterResource(R.drawable.ic_globe), null, Modifier.size(PlaceIcon), colors.unvisited)
     }
 }
 

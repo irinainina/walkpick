@@ -30,8 +30,11 @@ import com.walkpick.app.ui.theme.PillShape
 import com.walkpick.app.ui.theme.Sizes
 import com.walkpick.app.ui.theme.Spacing
 
-/** Danger is a Secondary button whose label warns: what it does cannot be undone. */
-enum class AppButtonStyle { Primary, Secondary, Danger }
+/**
+ * Danger is a Secondary button whose label warns: what it does cannot be undone. Stop is a Primary
+ * one in orange: it ends the walk under way.
+ */
+enum class AppButtonStyle { Primary, Secondary, Danger, Stop }
 
 private const val PRESSED_SCALE = 0.96f
 
@@ -45,8 +48,12 @@ fun AppButton(
     @DrawableRes iconRes: Int? = null,
 ) {
     val colors = AppTheme.colors
-    val primary = style == AppButtonStyle.Primary
-    val ground = if (primary) {
+    val primary = style == AppButtonStyle.Primary || style == AppButtonStyle.Stop
+    val ground = if (style == AppButtonStyle.Stop) {
+        Modifier
+            .dropShadow(PillShape, AppShadows.stopButton)
+            .background(colors.stopGradient, PillShape)
+    } else if (primary) {
         Modifier
             .dropShadow(PillShape, AppShadows.accentButton)
             .background(colors.accentGradient, PillShape)
@@ -84,7 +91,7 @@ fun AppButton(
             text = text,
             style = MaterialTheme.typography.titleMedium,
             color = when (style) {
-                AppButtonStyle.Primary -> colors.onAccent
+                AppButtonStyle.Primary, AppButtonStyle.Stop -> colors.onAccent
                 AppButtonStyle.Secondary -> colors.textPrimary
                 AppButtonStyle.Danger -> colors.danger
             },

@@ -2,6 +2,8 @@ package com.walkpick.app.ui.stats
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.walkpick.app.data.find.FindStore
+import com.walkpick.app.data.local.FindEntity
 import com.walkpick.app.data.local.WalkEntity
 import com.walkpick.app.data.settings.DistanceUnit
 import com.walkpick.app.data.settings.SettingsStore
@@ -12,10 +14,13 @@ import com.walkpick.app.data.steps.monthOf
 import com.walkpick.app.data.steps.weekOf
 import com.walkpick.app.data.steps.yearOf
 import com.walkpick.app.data.walk.WalkRepository
+import com.walkpick.app.data.walk.routePlaces
 import com.walkpick.app.ui.components.Bar
 import com.walkpick.app.ui.components.BarKind
 import com.walkpick.app.ui.grouped
 import com.walkpick.app.ui.localDay
+import com.walkpick.app.ui.walk.DiaryWalk
+import com.walkpick.app.ui.walk.routeSketch
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -23,6 +28,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
+import java.io.File
 import java.time.LocalDate
 import java.time.YearMonth
 import java.time.format.TextStyle
@@ -65,7 +71,7 @@ data class StatsState(
     val longestStreak: Int = 0,
     /** The day of the calendar tapped last and its walks, when it has several: a sheet offers them. */
     val day: LocalDate? = null,
-    val dayWalks: List<WalkEntity> = emptyList(),
+    val dayWalks: List<DiaryWalk> = emptyList(),
 )
 
 /** What the user chose: the tab, a day inside the period shown and the bar picked by hand. */
@@ -80,6 +86,7 @@ data class StatsChoice(
 class StatsViewModel @Inject constructor(
     settings: SettingsStore,
     walks: WalkRepository,
+    private val store: FindStore,
 ) : ViewModel() {
 
     private val choice = MutableStateFlow(StatsChoice())
@@ -87,11 +94,17 @@ class StatsViewModel @Inject constructor(
     private val all = walks.watchAll().stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
 
     val state: StateFlow<StatsState?> =
-        combine(all, choice, settings.value) { walks, choice, units ->
+        combine(all, choice, settings.value, store.watchAll()) { walks, choice, units, finds ->
+            val ofDay = walks
+                .filter { it.startedAt.localDay() == choice.day }
+                .sortedByDescending { it.startedAt }
             statsState(walks, choice, LocalDate.now()).copy(
                 distanceUnit = units.distance,
                 day = choice.day,
-                dayWalks = walks.filter { it.startedAt.localDay() == choice.day },
+                dayWalks = ofDay.map { walk ->
+                    val taken = finds.filter { it.walkId == walk.id }.sortedBy { it.takenAt }
+                    DiaryWalk(walk, taken.size, routeSketch(routePlaces(walk.route)), taken)
+                },
             )
         }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(KEEP_AFTER_LEAVING_MS), null)
 
@@ -121,6 +134,8 @@ class StatsViewModel @Inject constructor(
     }
 
     fun closeDay() = choice.update { it.copy(day = null) }
+
+    suspend fun photo(find: FindEntity): File? = store.photo(find)
 }
 
 // Year shows the months of its year, All the months from the first walk on.

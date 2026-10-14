@@ -45,29 +45,24 @@ fun WalkPickApp(signedIn: Boolean, walkAsked: Int, onStartShown: () -> Unit) {
         NavHost(navController, startDestination = start.route, modifier = Modifier.weight(1f)) {
             signInRoutes(navController, auth, onStartShown)
             todayRoute(navController, onStartShown)
-            statsRoute(navController)
             healthRoute()
             activeWalkRoute(navController)
             walkSummaryRoute(navController)
             cameraRoute(navController)
             findCardRoute(navController)
-            placeCardRoute(navController)
             photoViewerRoute(navController)
             galleryRoute(navController, onSelecting = { selecting = it })
-            mapRoute(navController)
             profileRoute(navController)
             settingsRoute(navController)
             val laidOut = setOf(
                 Screen.SignIn,
                 Screen.Today,
-                Screen.Stats,
                 Screen.Health,
                 Screen.ActiveWalk,
                 Screen.Camera,
                 Screen.FindCard,
                 Screen.Gallery,
                 Screen.PhotoViewer,
-                Screen.Map,
                 Screen.Profile,
                 Screen.Settings,
             )

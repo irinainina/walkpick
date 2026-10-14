@@ -5,7 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.walkpick.app.data.find.FindStore
 import com.walkpick.app.data.local.FindEntity
 import com.walkpick.app.data.walk.WalkRepository
-import com.walkpick.app.ui.map.DiaryWalk
+import com.walkpick.app.ui.walk.DiaryWalk
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.SharingStarted

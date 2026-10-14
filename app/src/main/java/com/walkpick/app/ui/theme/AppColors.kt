@@ -29,6 +29,8 @@ data class AppColors(
     val onAccentOverlay: Color,
     /** The header and the main buttons. */
     val accentGradient: Brush,
+    /** Stop walk: white on its dark part keeps a contrast of 3 (author, 2026-10-11). */
+    val stopGradient: Brush,
     /** The same gradient turned 45 degrees: the steps ring. */
     val accentDiagonal: Brush,
     val canvas: Color,
@@ -106,6 +108,7 @@ private fun appColors(deep: Color, accent: Color, light: Color) = AppColors(
         end = Offset(Float.POSITIVE_INFINITY, 0f),
     ),
     accentDiagonal = DiagonalGradient(listOf(accent, light)),
+    stopGradient = Brush.horizontalGradient(ACCENT_STOP to Flame, 1f to Orange),
     canvas = Canvas,
     mapGround = Fog,
     surface = White,

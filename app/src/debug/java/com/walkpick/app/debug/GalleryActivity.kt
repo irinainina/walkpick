@@ -42,16 +42,16 @@ private fun Page(page: String) {
         "charts" -> ChartGallery()
         "nav" -> NavGallery()
         "last-walk" -> LastWalkGallery()
-        "periods-week", "periods-month", "periods-year", "periods-all" -> PeriodsGallery(page)
+        "periods-week", "periods-month", "periods-year", "periods-all", "periods-day" -> PeriodsGallery(page)
         "signin" -> SignInScreen(onGoogle = {}, onEmail = {})
         "signin-email" -> SignInEmailScreen("ira@example.com", {}, {}, {}, busy = false, problem = null)
         "signin-code" -> SignInCodeScreen("ira@example.com", "42", {}, {}, 48, {}, {}, problem = null)
         "today" -> TodayGallery(StepsAccess.COUNTING)
         "today-off" -> TodayGallery(StepsAccess.NOT_ALLOWED)
         "today-walking" -> TodayGallery(StepsAccess.COUNTING, walkSeconds = 1935)
+        "today-paused" -> TodayGallery(StepsAccess.COUNTING, walkSeconds = 1935, paused = true)
         "health-mood", "health-weight", "health-pressure", "health-glucose", "health-empty" ->
             HealthGallery(page)
-        "map" -> MapGallery()
         "walk" -> WalkCheck()
         "active-walk" -> ActiveWalkGallery()
         "active-walk-mood" -> ActiveWalkGallery(asked = true)
@@ -63,7 +63,6 @@ private fun Page(page: String) {
         "profile" -> ProfileGallery()
         "settings" -> SettingsGallery(StepsAccess.COUNTING)
         "settings-off" -> SettingsGallery(StepsAccess.NOT_ALLOWED)
-        "stats-week", "stats-month", "stats-year", "stats-all" -> StatsGallery(page)
         else -> ComponentGallery()
     }
 }
