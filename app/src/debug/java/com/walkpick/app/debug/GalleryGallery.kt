@@ -1,13 +1,25 @@
 package com.walkpick.app.debug
 
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import com.walkpick.app.data.local.FindEntity
+import com.walkpick.app.data.local.FindKind
 import com.walkpick.app.data.local.WalkEntity
+import com.walkpick.app.ui.components.AppNavBar
 import com.walkpick.app.ui.gallery.GalleryGroup
 import com.walkpick.app.ui.gallery.GalleryState
 import com.walkpick.app.ui.gallery.GalleryTab
+import com.walkpick.app.ui.map.MapPick
+import com.walkpick.app.ui.map.PhotoMapState
+import com.walkpick.app.ui.navigation.Screen
+import com.walkpick.app.ui.navigation.bottomTabs
 import com.walkpick.app.ui.screens.GalleryActions
 import com.walkpick.app.ui.screens.GalleryScreen
+import com.walkpick.app.ui.screens.PhotoMap
+import com.walkpick.app.ui.screens.PhotoMapActions
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.ZoneId
@@ -34,16 +46,42 @@ private val groups = listOf(
     GalleryGroup(morning, finds(morning, 3, setOf(1))),
 )
 
+// Finds of every kind around the centre of Kyiv; the church is the one picked, as in the frame.
+private val church = FindEntity(
+    "church", "morning", at(27, 9), 50.4510, 30.5235, "", kind = FindKind.PLACE,
+    name = "St. Nicholas Church", updatedAt = at(27, 9),
+)
+private val pins = listOf(church) + listOf(
+    FindKind.PLANT to (50.4560 to 30.5130), FindKind.PLANT to (50.4530 to 30.5260),
+    FindKind.BIRD to (50.4440 to 30.5190), FindKind.BIRD to (50.4590 to 30.5200),
+    FindKind.UNKNOWN to (50.4545 to 30.5180), FindKind.UNKNOWN to (50.4470 to 30.5250),
+).mapIndexed { index, (kind, place) ->
+    val taken = at(27, 9)
+    FindEntity("pin$index", "morning", taken, place.first, place.second, "", kind = kind, updatedAt = taken)
+}
+
 /** The gallery with the photos of the Figma frames, for the comparison with the design. */
 @Composable
 fun GalleryGallery(page: String) {
     val all = groups.flatMap { it.finds }
     val state = GalleryState(
-        tab = if (page == "gallery-best") GalleryTab.Best else GalleryTab.All,
+        tab = when (page) {
+            "gallery-best" -> GalleryTab.Best
+            "gallery-map" -> GalleryTab.Map
+            else -> GalleryTab.All
+        },
         today = today,
         groups = groups,
         best = all.take(6).map { it.copy(isBest = true) },
         selected = setOf("evening-1", "evening-2", "evening-5").takeIf { page == "gallery-select" },
     )
-    GalleryScreen(state, GalleryActions({ null }, {}, {}, {}, {}, {}, {}))
+    val photo = gradientPhoto(LocalContext.current.cacheDir, 2)
+    val map = PhotoMapState(today, pins, pins, pick = MapPick(church, morning, photo))
+    Column(Modifier.fillMaxSize()) {
+        val actions = GalleryActions({ null }, {}, {}, {}, {}, {}, {})
+        GalleryScreen(state, actions, Modifier.weight(1f)) { top ->
+            PhotoMap(map, PhotoMapActions({}, {}, {}, {}), top)
+        }
+        AppNavBar(bottomTabs, selectedRoute = Screen.Gallery.route, onSelect = {})
+    }
 }

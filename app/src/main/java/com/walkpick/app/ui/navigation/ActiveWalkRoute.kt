@@ -15,7 +15,9 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
+import androidx.navigation.NavType
 import androidx.navigation.compose.composable
+import androidx.navigation.navArgument
 import com.google.android.gms.common.api.ResolvableApiException
 import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.location.LocationServices
@@ -27,9 +29,18 @@ import com.walkpick.app.ui.screens.BatterySheet
 import com.walkpick.app.ui.walk.ActiveWalkViewModel
 
 private const val LOCATION = Manifest.permission.ACCESS_FINE_LOCATION
+private const val MOOD = "mood"
+private const val NO_MOOD = 0
+
+/** The walk screen that starts a walk, with the [mood] the walker sets off in, if one was said. */
+internal fun activeWalkRoute(mood: Int?) = Screen.ActiveWalk.route + (mood?.let { "?$MOOD=$it" } ?: "")
 
 internal fun NavGraphBuilder.activeWalkRoute(navController: NavHostController) {
-    composable(Screen.ActiveWalk.route) {
+    val mood = navArgument(MOOD) {
+        type = NavType.IntType
+        defaultValue = NO_MOOD
+    }
+    composable("${Screen.ActiveWalk.route}?$MOOD={$MOOD}", listOf(mood)) { entry ->
         val model: ActiveWalkViewModel = hiltViewModel()
         val state by model.state.collectAsStateWithLifecycle()
         val activity = LocalActivity.current
@@ -40,7 +51,7 @@ internal fun NavGraphBuilder.activeWalkRoute(navController: NavHostController) {
         val permissions = ActivityResultContracts.RequestMultiplePermissions()
         val ask = rememberLauncherForActivityResult(permissions) { answers ->
             if (answers[LOCATION] == true) {
-                model.start()
+                model.start(entry.arguments?.getInt(MOOD)?.takeIf { it != NO_MOOD })
                 activity?.askToTurnLocationOn { turnOn.launch(it) }
             } else {
                 activity?.openSettingsIfRefusedForGood(LOCATION)
@@ -73,7 +84,6 @@ internal fun NavGraphBuilder.activeWalkRoute(navController: NavHostController) {
             onMinimize = { navController.popBackStack() },
             onPause = model::togglePause,
             onCamera = { navController.navigate(Screen.Camera.route) },
-            onMood = model::feel,
             onStop = { mood ->
                 model.stop(mood) { saved ->
                     // The summary takes the place of the walk screen; a walk not worth keeping just ends.

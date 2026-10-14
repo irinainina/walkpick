@@ -1,5 +1,6 @@
 package com.walkpick.app.ui.navigation
 
+import android.Manifest
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -9,8 +10,11 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.composable
 import com.walkpick.app.ui.gallery.GalleryViewModel
+import com.walkpick.app.ui.map.PhotoMapViewModel
 import com.walkpick.app.ui.screens.GalleryActions
 import com.walkpick.app.ui.screens.GalleryScreen
+import com.walkpick.app.ui.screens.PhotoMap
+import com.walkpick.app.ui.screens.PhotoMapActions
 
 /** [onSelecting] tells the app when photos are being picked: the tabs give way to the two actions. */
 internal fun NavGraphBuilder.galleryRoute(navController: NavHostController, onSelecting: (Boolean) -> Unit) {
@@ -30,6 +34,20 @@ internal fun NavGraphBuilder.galleryRoute(navController: NavHostController, onSe
                 onDelete = model::deleteSelected,
             )
         }
-        GalleryScreen(shown, actions)
+        val map: PhotoMapViewModel = hiltViewModel()
+        val mapState by map.state.collectAsStateWithLifecycle()
+        // The location is asked for by the button that needs it, not on opening the map.
+        val locate = rememberPermissionRequest(Manifest.permission.ACCESS_FINE_LOCATION) { granted ->
+            if (granted) map.locate()
+        }
+        val mapActions = remember(map, locate) {
+            PhotoMapActions(
+                onFilter = map::filter,
+                onPick = map::pick,
+                onOpen = { navController.navigate(findCardRoute(it.id)) },
+                onLocate = { if (map.canLocate) map.locate() else locate() },
+            )
+        }
+        GalleryScreen(shown, actions) { top -> PhotoMap(mapState, mapActions, top) }
     }
 }

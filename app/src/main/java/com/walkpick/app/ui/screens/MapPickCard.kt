@@ -17,32 +17,29 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.walkpick.app.R
-import com.walkpick.app.data.settings.DistanceUnit
-import com.walkpick.app.data.walk.TrackPoint
-import com.walkpick.app.data.walk.distanceM
+import com.walkpick.app.data.walk.title
 import com.walkpick.app.ui.components.AppCard
 import com.walkpick.app.ui.components.PhotoBox
-import com.walkpick.app.ui.distanceText
 import com.walkpick.app.ui.find.look
+import com.walkpick.app.ui.localDay
 import com.walkpick.app.ui.map.MapPick
 import com.walkpick.app.ui.theme.AppTheme
 import com.walkpick.app.ui.theme.Spacing
-import java.time.Instant
+import java.time.LocalDate
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
+import java.util.Locale
 
 private val PhotoSize = 88.dp
 private const val THUMB_SAMPLE = 4
+private val Clock = DateTimeFormatter.ofPattern("HH:mm", Locale.ENGLISH)
 
-/** The find or the place tapped on the map: its photo, its name, how far it is; a tap opens its card. */
+/** The find tapped on the map: its photo, name, kind and day, the walk it was taken on; a tap opens it. */
 @Composable
-internal fun MapPickCard(
-    pick: MapPick,
-    me: TrackPoint?,
-    unit: DistanceUnit,
-    onOpen: () -> Unit,
-    modifier: Modifier = Modifier,
-) {
+internal fun MapPickCard(pick: MapPick, today: LocalDate, onOpen: () -> Unit, modifier: Modifier = Modifier) {
     val type = MaterialTheme.typography
     val colors = AppTheme.colors
+    val find = pick.find
     AppCard(modifier) {
         Row(
             Modifier
@@ -55,19 +52,16 @@ internal fun MapPickCard(
             PhotoBox(pick.photo, photo, THUMB_SAMPLE)
             Spacer(Modifier.width(Spacing.sm))
             Column(Modifier.padding(top = Spacing.xs / 2)) {
-                val title = pick.title ?: pick.find?.let { findTitle(it) }.orEmpty()
-                Text(title, style = type.labelLarge, color = colors.textPrimary, maxLines = 1)
+                Text(findTitle(find), style = type.labelLarge, color = colors.textPrimary, maxLines = 1)
                 Spacer(Modifier.height(Spacing.xs / 2))
-                // A place of Wikipedia is a landmark; a find is what its kind says.
-                val kind = if (pick.find == null) R.string.place_landmark else pick.kind.look().label
-                val here = TrackPoint(pick.latitude, pick.longitude, Instant.EPOCH, 0f)
-                val away = me?.let { distanceText(distanceM(it, here).toInt(), unit) }
-                val line = listOfNotNull(stringResource(kind), away).joinToString(" · ")
-                Text(line, style = type.labelSmall, color = colors.accent, maxLines = 1)
-                if (!pick.text.isNullOrBlank()) {
+                val day = dayTitle(find.takenAt.localDay(), today)
+                val kind = "${stringResource(find.kind.look().label)} · $day"
+                Text(kind, style = type.labelSmall, color = colors.accent, maxLines = 1)
+                pick.walk?.let { walk ->
                     Spacer(Modifier.height(Spacing.xs))
+                    val time = Clock.format(find.takenAt.atZone(ZoneId.systemDefault()))
                     Text(
-                        text = pick.text,
+                        text = stringResource(R.string.map_walk_time, walk.title(), time),
                         style = type.bodySmall,
                         color = colors.textSecondary,
                         maxLines = 2,

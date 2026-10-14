@@ -27,6 +27,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.stateIn
@@ -37,7 +38,6 @@ import javax.inject.Inject
 
 private const val TICK_MS = 1_000L
 private const val KEEP_AFTER_LEAVING_MS = 5_000L
-private const val ASK_MOOD_S = 60
 
 data class ActiveWalkState(
     /** False before the walk is started and after it is stopped. */
@@ -55,8 +55,6 @@ data class ActiveWalkState(
     /** Where in [route] a leg begins after a pause. */
     val breaks: Set<Int> = emptySet(),
     val moodBefore: Int? = null,
-    /** The first minute of a walk asks how the walker feels, until an answer is given. */
-    val askMood: Boolean = false,
     /** Settings: whether walks ask about the mood at all. */
     val moods: Boolean = true,
     /** Straight back to the first point; null until the walk has left it. */
@@ -105,8 +103,7 @@ class ActiveWalkViewModel @Inject constructor(
         combine(recorder.track, clock, weight, settings.value, profiles.value) { track, now, kg, units, me ->
             val stride = strideM(me.sex, me.heightCm)
             val walk = activeWalkState(track, now, kg, stride)
-            val asks = units.walkMood
-            walk.copy(distanceUnit = units.distance, moods = asks, askMood = walk.askMood && asks)
+            walk.copy(distanceUnit = units.distance, moods = units.walkMood)
         }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(KEEP_AFTER_LEAVING_MS), ActiveWalkState())
 
     /** Where the map waits for the first signal: the start of the latest walk. */
@@ -118,9 +115,16 @@ class ActiveWalkViewModel @Inject constructor(
     /** The phone's battery page to offer; null when there is nothing to ask. */
     val batteryPage: StateFlow<Intent?> = battery
 
-    /** The location permission must be granted already. */
-    fun start() {
+    /** The location permission must be granted already; [mood] is how the walker set off, if said. */
+    fun start(mood: Int?) {
         control.start()
+        // The service begins the walk a moment later; the mood waits for it.
+        if (mood != null) {
+            viewModelScope.launch {
+                recorder.track.filterNotNull().first()
+                recorder.feel(mood)
+            }
+        }
         viewModelScope.launch { battery.value = limits.pageToOffer() }
     }
 
@@ -133,8 +137,6 @@ class ActiveWalkViewModel @Inject constructor(
         val now = Instant.now()
         if (recorder.track.value?.paused == true) recorder.resume(now) else recorder.pause(now)
     }
-
-    fun feel(mood: Int) = recorder.feel(mood)
 
     /**
      * Ends the recording and keeps the walk with the [mood] it ended in, if one was said; [onDone]
@@ -175,7 +177,6 @@ internal fun activeWalkState(
         kept = points.size > 1,
         breaks = routeBreaks(breaksText(track.legs)),
         moodBefore = track.moodBefore,
-        askMood = track.moodBefore == null && seconds < ASK_MOOD_S,
         toStartM = if (points.size > 1) distanceM(points.last(), points.first()) else null,
     )
 }

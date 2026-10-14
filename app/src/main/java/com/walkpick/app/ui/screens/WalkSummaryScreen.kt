@@ -11,7 +11,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -20,6 +19,7 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.verticalScroll
@@ -58,13 +58,19 @@ import java.time.format.DateTimeFormatter
 import java.util.Locale
 import kotlin.math.roundToInt
 
-private val MapHeight = 320.dp
+private val MapHeight = 480.dp
 
 // The card lies over the bottom of the map; the route keeps clear of it and of the round buttons.
-private val CardTop = 268.dp
+private val CardTop = 428.dp
 private val MapCoveredTop = 56.dp
 private val RouteEdge = 32.dp
+private val RouteLine = 6.dp
+private val StartPin = 32.dp
 private val CardBottom = 28.dp
+
+// The number stands 4 above its badge, as drawn.
+private val StatIconTop = 4.dp
+private val StatColumn = 144.dp
 private const val SECONDS_IN_MINUTE = 60.0
 
 private val Day = DateTimeFormatter.ofPattern("EEE, MMM d", Locale.ENGLISH)
@@ -104,6 +110,9 @@ fun WalkSummaryScreen(
                 .fillMaxWidth()
                 .height(MapHeight),
             covered = PaddingValues(top = MapCoveredTop, bottom = MapHeight - CardTop),
+            line = RouteLine,
+            startPin = StartPin,
+            photos = state.photos,
         )
         Row(
             modifier = Modifier
@@ -176,39 +185,42 @@ private fun SummaryCard(state: WalkSummaryState, onRename: () -> Unit) {
                 style = type.bodyMedium,
                 color = colors.textSecondary,
             )
-            Spacer(Modifier.height(Spacing.l))
+            Spacer(Modifier.height(Spacing.ml))
             val unit = state.distanceUnit
             val minutes = (walk.durationS / SECONDS_IN_MINUTE).roundToInt()
             val pace = paceSecondsPerKm(walk.distanceM.toDouble(), walk.durationS.toLong())
                 ?.let { clockText((it / unit.perMetric).roundToInt().toLong()) }
             Row {
-                Stat(R.drawable.ic_shoe, grouped(walk.steps), R.string.walk_steps)
+                Stat(R.drawable.ic_shoe, grouped(walk.steps), R.string.walk_steps, Modifier.width(StatColumn))
                 Stat(R.drawable.ic_route, distanceText(walk.distanceM, unit), R.string.walk_distance)
             }
-            Spacer(Modifier.height(Spacing.l))
+            Spacer(Modifier.height(Spacing.ml))
             Row {
-                Stat(R.drawable.ic_clock, stringResource(R.string.walk_minutes, minutes), R.string.walk_time)
-                Stat(R.drawable.ic_flame, pace ?: "–", R.string.walk_pace, unit.symbol)
+                val time = stringResource(R.string.walk_minutes, minutes)
+                Stat(R.drawable.ic_clock, time, R.string.walk_time, Modifier.width(StatColumn))
+                Stat(R.drawable.ic_flame, pace ?: "–", R.string.walk_pace, labelUnit = unit.symbol)
             }
         }
     }
 }
 
 @Composable
-private fun RowScope.Stat(
+private fun Stat(
     @DrawableRes iconRes: Int,
     value: String,
     @StringRes labelRes: Int,
+    modifier: Modifier = Modifier,
     labelUnit: String = "",
 ) {
     val type = MaterialTheme.typography
     val colors = AppTheme.colors
     Row(
-        modifier = Modifier.weight(1f),
+        modifier = modifier,
         horizontalArrangement = Arrangement.spacedBy(Spacing.sm),
-        verticalAlignment = Alignment.CenterVertically,
     ) {
-        IconBadge(iconRes, colors.surfaceTint, colors.accent, Sizes.iconSmall)
+        Box(Modifier.padding(top = StatIconTop)) {
+            IconBadge(iconRes, colors.surfaceTint, colors.accent, Sizes.iconSmall)
+        }
         Column {
             Text(value, style = type.titleMedium, color = colors.textPrimary, maxLines = 1)
             Text(stringResource(labelRes, labelUnit), style = type.bodySmall, color = colors.textSecondary)

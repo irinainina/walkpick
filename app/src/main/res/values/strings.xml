@@ -171,10 +171,14 @@
     <string name="find_delete_title">Delete this find?</string>
     <string name="find_delete_text">The photo and what is known about it will be removed. This can\'t be undone.</string>
     <string name="find_delete">Delete find</string>
-    <string name="place_landmark">Landmark</string>
     <string name="gallery_select">Select</string>
     <string name="gallery_all">All</string>
     <string name="gallery_best">Best</string>
+    <string name="gallery_map">Map</string>
+    <string name="map_plants">Plants</string>
+    <string name="map_birds">Birds</string>
+    <string name="map_places">Places</string>
+    <string name="map_walk_time">%1$s, %2$s</string>
     <string name="gallery_selected">%1$d selected</string>
     <string name="gallery_day_photos">%1$s · %2$s</string>
     <string name="gallery_best_one">%1$d best photo</string>

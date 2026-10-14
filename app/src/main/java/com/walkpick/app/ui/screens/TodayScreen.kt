@@ -104,12 +104,15 @@ fun TodayScreen(
     walkPaused: Boolean,
     /** What stopping that walk now would do. */
     walkEnding: WalkEnding,
+    /** Settings: whether a walk is started with the question how the walker feels. */
+    walkMoods: Boolean,
     /** The weather outside; null until it is known. */
     weather: WalkWeather?,
     /** The latest walk; null before the first one. */
     lastWalk: DiaryWalk?,
     actions: TodayActions,
-    onStartWalk: () -> Unit,
+    /** Starts a walk with the mood it begins in, or leads back to the walk under way. */
+    onStartWalk: (Int?) -> Unit,
     onStopWalk: (Int?) -> Unit,
     modifier: Modifier = Modifier,
     /** The walks by Week, Month, Year and All, under the last walk. */
@@ -125,7 +128,7 @@ fun TodayScreen(
             Cards(statusBar, state, weather, walkSeconds != null, lastWalk, actions, periods)
             StartBarFade(Modifier.align(Alignment.BottomCenter))
         }
-        StartBar(walkSeconds, walkPaused, walkEnding, onStartWalk, onStopWalk)
+        StartBar(walkSeconds, walkPaused, walkEnding, walkMoods, onStartWalk, onStopWalk)
     }
 }
 

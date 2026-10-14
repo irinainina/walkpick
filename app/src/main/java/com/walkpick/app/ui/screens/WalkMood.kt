@@ -1,21 +1,17 @@
 package com.walkpick.app.ui.screens
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.dropShadow
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
@@ -25,9 +21,7 @@ import com.walkpick.app.ui.components.AppButtonStyle
 import com.walkpick.app.ui.components.AppSheet
 import com.walkpick.app.ui.components.Mood
 import com.walkpick.app.ui.components.MoodFace
-import com.walkpick.app.ui.theme.AppShadows
 import com.walkpick.app.ui.theme.AppTheme
-import com.walkpick.app.ui.theme.CardShape
 import com.walkpick.app.ui.theme.Spacing
 import com.walkpick.app.ui.walk.WalkEnding
 
@@ -51,24 +45,17 @@ private fun MoodRow(onMood: (Int) -> Unit, modifier: Modifier = Modifier) {
     }
 }
 
-/** Asked over the map while a walk is young: an answer is one tap, no answer is no trouble. */
+/** Start walk asks first, as Stop does: a face starts the walk in that mood, the button without one. */
 @Composable
-internal fun MoodAsk(onMood: (Int) -> Unit, modifier: Modifier = Modifier) {
-    val colors = AppTheme.colors
-    Column(
-        modifier
-            .fillMaxWidth()
-            .dropShadow(CardShape, AppShadows.card)
-            .background(colors.surface, CardShape)
-            .padding(horizontal = Spacing.ml, vertical = Spacing.m),
-    ) {
-        Text(
-            text = stringResource(R.string.walk_mood_before),
-            style = MaterialTheme.typography.labelLarge,
-            color = colors.textPrimary,
-        )
+internal fun StartWalkSheet(onStart: (Int?) -> Unit, onDismiss: () -> Unit) {
+    AppSheet(stringResource(R.string.walk_mood_before), onDismiss) {
+        Spacer(Modifier.height(Spacing.l))
+        MoodRow(onMood = { onStart(it) })
+        Spacer(Modifier.height(Spacing.l))
+        val start = stringResource(R.string.today_start_walk)
+        AppButton(start, onClick = { onStart(null) }, iconRes = R.drawable.ic_play)
         Spacer(Modifier.height(Spacing.sm))
-        MoodRow(onMood)
+        AppButton(stringResource(R.string.settings_cancel), onDismiss, style = AppButtonStyle.Secondary)
     }
 }
 

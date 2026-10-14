@@ -42,12 +42,19 @@ fun PhotoBox(
     scale: ContentScale = ContentScale.Crop,
     ground: Color = AppTheme.colors.surfaceTint,
 ) {
+    val picture = rememberPhoto(file, sample)
+    val box = modifier.background(ground)
+    picture?.let { Image(it, null, box, contentScale = scale) } ?: Box(box)
+}
+
+/** The picture of [file], read off the main thread; null while it is read and without a file. */
+@Composable
+fun rememberPhoto(file: File?, sample: Int = 1): ImageBitmap? {
     val picture by produceState<ImageBitmap?>(null, file) {
         value = withContext(Dispatchers.IO) {
             val options = BitmapFactory.Options().apply { inSampleSize = sample }
             file?.let { BitmapFactory.decodeFile(it.path, options) }?.asImageBitmap()
         }
     }
-    val box = modifier.background(ground)
-    picture?.let { Image(it, null, box, contentScale = scale) } ?: Box(box)
+    return picture
 }

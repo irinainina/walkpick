@@ -34,12 +34,10 @@ fun ActiveWalkGallery(asked: Boolean = false) {
             // The asked page shows a walk begun in a bad mood, with a ride in the middle of it.
             breaks = if (asked) setOf(4) else emptySet(),
             moodBefore = if (asked) 2 else null,
-            askMood = asked,
         ),
         onMinimize = {},
         onPause = {},
         onCamera = {},
-        onMood = {},
         onStop = {},
     )
 }

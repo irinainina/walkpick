@@ -4,6 +4,7 @@ import android.Manifest
 import android.content.pm.PackageManager
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageCapture
+import androidx.camera.core.ImageCaptureException
 import androidx.camera.core.ImageProxy
 import androidx.camera.view.CameraController
 import androidx.camera.view.LifecycleCameraController
@@ -19,6 +20,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.asFlow
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavGraphBuilder
@@ -26,6 +28,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.composable
 import com.walkpick.app.ui.camera.CameraViewModel
 import com.walkpick.app.ui.screens.CameraScreen
+import kotlinx.coroutines.flow.first
 
 private const val CAMERA = Manifest.permission.CAMERA
 
@@ -51,9 +54,10 @@ internal fun NavGraphBuilder.cameraRoute(navController: NavHostController) {
             camera.imageCaptureFlashMode =
                 if (state.flash) ImageCapture.FLASH_MODE_ON else ImageCapture.FLASH_MODE_OFF
         }
+        // The controller is made anew after the find card, so the zoom waits for its camera to open.
         // A lens that cannot come as close as asked comes as close as it can.
-        LaunchedEffect(state.zoom) {
-            val closest = camera.zoomState.value?.maxZoomRatio ?: return@LaunchedEffect
+        LaunchedEffect(camera, state.zoom) {
+            val closest = camera.zoomState.asFlow().first().maxZoomRatio
             camera.setZoomRatio(state.zoom.toFloat().coerceAtMost(closest))
         }
         // The card of the new find opens over the camera: back leads to the next shot.
@@ -68,6 +72,8 @@ internal fun NavGraphBuilder.cameraRoute(navController: NavHostController) {
                 model.keep(image.toBitmap(), image.imageInfo.rotationDegrees)
                 image.close()
             }
+
+            override fun onError(exception: ImageCaptureException) = model.failed()
         }
         CameraScreen(
             state = state,
@@ -82,7 +88,9 @@ internal fun NavGraphBuilder.cameraRoute(navController: NavHostController) {
                 camera.cameraSelector =
                     if (back) CameraSelector.DEFAULT_FRONT_CAMERA else CameraSelector.DEFAULT_BACK_CAMERA
             },
-            onShutter = { camera.takePicture(ContextCompat.getMainExecutor(context), taken) },
+            onShutter = {
+                if (model.shoot()) camera.takePicture(ContextCompat.getMainExecutor(context), taken)
+            },
         ) {
             if (allowed) {
                 AndroidView({ PreviewView(it).apply { controller = camera } }, Modifier.fillMaxSize())

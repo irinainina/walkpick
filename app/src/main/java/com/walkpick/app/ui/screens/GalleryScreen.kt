@@ -9,12 +9,15 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
@@ -37,6 +40,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.walkpick.app.R
 import com.walkpick.app.data.local.FindEntity
@@ -55,6 +59,7 @@ import com.walkpick.app.ui.localDay
 import com.walkpick.app.ui.theme.AppShadows
 import com.walkpick.app.ui.theme.AppTheme
 import com.walkpick.app.ui.theme.ParagraphStyle
+import com.walkpick.app.ui.theme.PillShape
 import com.walkpick.app.ui.theme.Spacing
 import java.io.File
 
@@ -62,6 +67,7 @@ private const val ALL_COLUMNS = 3
 private const val BEST_COLUMNS = 2
 private val BestBadge = 36.dp
 private val ActionsHeight = 72.dp
+private val SwitchHeight = 40.dp
 
 /** What the gallery asks of its owner. */
 class GalleryActions(
@@ -75,8 +81,14 @@ class GalleryActions(
     val onDelete: () -> Unit,
 )
 
+/** [map] is the Map mode under the switch; it takes where the switch ends. */
 @Composable
-fun GalleryScreen(state: GalleryState, actions: GalleryActions, modifier: Modifier = Modifier) {
+fun GalleryScreen(
+    state: GalleryState,
+    actions: GalleryActions,
+    modifier: Modifier = Modifier,
+    map: @Composable (Dp) -> Unit = {},
+) {
     val selected = state.selected
     val all = state.tab == GalleryTab.All
     val empty = if (all) state.groups.isEmpty() else state.best.isEmpty()
@@ -86,16 +98,28 @@ fun GalleryScreen(state: GalleryState, actions: GalleryActions, modifier: Modifi
             .fillMaxSize()
             .background(AppTheme.colors.canvas),
     ) {
+        if (state.tab == GalleryTab.Map) {
+            val statusBar = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
+            map(statusBar + Spacing.sm + SwitchHeight)
+        }
         Column(Modifier.statusBarsPadding()) {
-            Heading(selected, actions, canSelect = !empty)
-            Spacer(Modifier.height(Spacing.sm))
+            // Over the map the switch stands alone at the top, the title gives it the room.
+            val tabs = if (state.tab == GalleryTab.Map) {
+                Modifier.padding(start = Spacing.ml, top = Spacing.sm, end = Spacing.ml)
+                    .dropShadow(PillShape, AppShadows.chip)
+            } else {
+                Heading(selected, actions, canSelect = !empty)
+                Modifier.padding(start = Spacing.ml, top = Spacing.sm, end = Spacing.ml)
+            }
             SegmentedControl(
-                options = listOf(stringResource(R.string.gallery_all), stringResource(R.string.gallery_best)),
+                options = listOf(R.string.gallery_all, R.string.gallery_best, R.string.gallery_map)
+                    .map { stringResource(it) },
                 selectedIndex = state.tab.ordinal,
                 onSelect = { actions.onTab(GalleryTab.entries[it]) },
-                modifier = Modifier.padding(horizontal = Spacing.ml),
+                modifier = tabs,
             )
             when {
+                state.tab == GalleryTab.Map -> Unit
                 !empty -> Photos(state, actions)
                 all -> EmptyState(
                     iconRes = R.drawable.ic_camera,
@@ -137,11 +161,11 @@ fun GalleryScreen(state: GalleryState, actions: GalleryActions, modifier: Modifi
     }
 }
 
-// "Gallery" and Select, or the number picked and Cancel.
+// "Photo" and Select, or the number picked and Cancel.
 @Composable
 private fun Heading(selected: Set<String>?, actions: GalleryActions, canSelect: Boolean) {
     val title = selected?.let { stringResource(R.string.gallery_selected, it.size) }
-        ?: stringResource(R.string.tab_gallery)
+        ?: stringResource(R.string.tab_photo)
     TabTitle(title) {
         val picking = selected != null
         // Nothing to pick from: the word would lead nowhere.

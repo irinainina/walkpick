@@ -27,7 +27,7 @@ data class CameraState(
     val flash: Boolean = false,
     /** How many times closer than the lens sees: a bird across the road is a dot without it. */
     val zoom: Int = 1,
-    /** A photo was taken and is being kept. */
+    /** The shutter was pressed: the photo is being taken and kept. */
     val saving: Boolean = false,
     /** The kept photo, shown until the walker says what it is. */
     val shot: Shot? = null,
@@ -54,10 +54,17 @@ class CameraViewModel @Inject constructor(
     /** One, two and four times, round and round. */
     fun nextZoom() = current.update { it.copy(zoom = if (it.zoom >= MAX_ZOOM) 1 else it.zoom * 2) }
 
+    /** Whether the shutter may take a photo: one at a time. */
+    fun shoot(): Boolean {
+        if (current.value.saving) return false
+        current.update { it.copy(saving = true, noPlace = false) }
+        return true
+    }
+
+    fun failed() = current.update { it.copy(saving = false) }
+
     /** Keeps the photo the camera gave [turned] degrees off. */
     fun keep(photo: Bitmap, turned: Int) {
-        if (current.value.saving) return
-        current.update { it.copy(saving = true, noPlace = false) }
         viewModelScope.launch {
             val kept = finds.add(photo, turned)
             val shot = kept?.let { Shot(it.id, store.photo(it)) }

@@ -51,9 +51,11 @@ internal fun StartBar(
     walkSeconds: Long?,
     walkPaused: Boolean,
     walkEnding: WalkEnding,
-    onStartWalk: () -> Unit,
+    walkMoods: Boolean,
+    onStartWalk: (Int?) -> Unit,
     onStopWalk: (Int?) -> Unit,
 ) {
+    var starting by remember { mutableStateOf(false) }
     var stopping by remember { mutableStateOf(false) }
     Column(
         Modifier
@@ -62,7 +64,8 @@ internal fun StartBar(
             .padding(horizontal = Spacing.ml, vertical = Spacing.sm),
     ) {
         if (walkSeconds == null) {
-            AppButton(stringResource(R.string.today_start_walk), onStartWalk, iconRes = R.drawable.ic_play)
+            val start = { if (walkMoods) starting = true else onStartWalk(null) }
+            AppButton(stringResource(R.string.today_start_walk), start, iconRes = R.drawable.ic_play)
             return@Column
         }
         AppButton(
@@ -77,10 +80,19 @@ internal fun StartBar(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(top = Spacing.sm)
-                .clickable(role = Role.Button, onClick = onStartWalk),
+                .clickable(role = Role.Button) { onStartWalk(null) },
             style = MaterialTheme.typography.labelLarge,
             color = AppTheme.colors.accent,
             textAlign = TextAlign.Center,
+        )
+    }
+    if (starting) {
+        StartWalkSheet(
+            onStart = { mood ->
+                starting = false
+                onStartWalk(mood)
+            },
+            onDismiss = { starting = false },
         )
     }
     if (stopping) {

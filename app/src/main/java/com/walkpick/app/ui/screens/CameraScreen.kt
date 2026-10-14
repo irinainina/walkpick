@@ -2,6 +2,7 @@ package com.walkpick.app.ui.screens
 
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
@@ -9,6 +10,8 @@ import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -27,9 +30,11 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Path
@@ -70,6 +75,7 @@ private val SpinnerLine = 4.dp
 private const val SPINNER_ARC = 90f
 private const val TURN_MS = 900
 private const val FULL_TURN = 360f
+private const val SHUTTER_PRESSED = 0.8f
 
 /**
  * The camera of a walk; [viewfinder] is the live picture, laid under everything else. A photo just
@@ -134,7 +140,7 @@ fun CameraScreen(
                     Spacer(Modifier.height(Spacing.l))
                     Hint(if (state.noPlace) R.string.camera_no_place else R.string.camera_hint)
                     Box(Modifier.weight(1f), contentAlignment = Alignment.Center) { FocusFrame() }
-                    BottomBar(state.zoom, onZoom, onShutter, onFlip)
+                    BottomBar(state.zoom, state.saving, onZoom, onShutter, onFlip)
                 }
             }
         }
@@ -181,7 +187,13 @@ private fun FocusFrame() {
 }
 
 @Composable
-private fun BottomBar(zoom: Int, onZoom: () -> Unit, onShutter: () -> Unit, onFlip: () -> Unit) {
+private fun BottomBar(
+    zoom: Int,
+    busy: Boolean,
+    onZoom: () -> Unit,
+    onShutter: () -> Unit,
+    onFlip: () -> Unit,
+) {
     val colors = AppTheme.colors
     Box(
         modifier = Modifier
@@ -204,19 +216,29 @@ private fun BottomBar(zoom: Int, onZoom: () -> Unit, onShutter: () -> Unit, onFl
         ) {
             Text(times, style = MaterialTheme.typography.labelMedium, color = colors.onAccent)
         }
+        val press = remember { MutableInteractionSource() }
+        val pressed by press.collectIsPressedAsState()
+        val inner by animateFloatAsState(if (pressed || busy) SHUTTER_PRESSED else 1f)
         Box(
             modifier = Modifier
                 .size(Shutter)
                 .border(ShutterRing, colors.onAccent, CircleShape)
-                .clip(CircleShape)
                 .clickable(
+                    interactionSource = press,
+                    indication = null,
+                    enabled = !busy,
                     onClickLabel = stringResource(R.string.camera_shutter),
                     role = Role.Button,
                     onClick = onShutter,
                 ),
             contentAlignment = Alignment.Center,
         ) {
-            Box(Modifier.size(ShutterInner).background(colors.onAccent, CircleShape))
+            Box(
+                Modifier
+                    .size(ShutterInner)
+                    .scale(inner)
+                    .background(colors.onAccent, CircleShape),
+            )
         }
         CircleButton(
             iconRes = R.drawable.ic_flip,

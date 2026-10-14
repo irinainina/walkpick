@@ -80,7 +80,6 @@ fun ActiveWalkScreen(
     onMinimize: () -> Unit,
     onPause: () -> Unit,
     onCamera: () -> Unit,
-    onMood: (Int) -> Unit,
     /** Takes the mood the walk ended in, when one was said. */
     onStop: (Int?) -> Unit,
     modifier: Modifier = Modifier,
@@ -144,9 +143,6 @@ fun ActiveWalkScreen(
                 tint = AppTheme.colors.accent,
                 raised = true,
             )
-            if (state.askMood) {
-                MoodAsk(onMood, Modifier.padding(start = Spacing.ml, end = Spacing.ml, bottom = Spacing.ml))
-            }
             ActiveWalkPanel(state, onPause, onCamera, onStop = { stopping = true })
         }
     }

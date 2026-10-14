@@ -51,6 +51,7 @@ internal fun NavGraphBuilder.todayRoute(navController: NavHostController, onShow
             walkSeconds = walking.seconds.takeIf { walking.recording },
             walkPaused = walking.paused,
             walkEnding = walking.ending,
+            walkMoods = walking.moods,
             weather = weather,
             lastWalk = lastWalk,
             actions = TodayActions(
@@ -59,7 +60,7 @@ internal fun NavGraphBuilder.todayRoute(navController: NavHostController, onShow
                 onProfile = { navController.navigate(Screen.Profile.route) },
                 photo = last::photo,
             ),
-            onStartWalk = { navController.navigate(Screen.ActiveWalk.route) },
+            onStartWalk = { navController.navigate(activeWalkRoute(it)) },
             onStopWalk = { mood ->
                 walk.stop(mood) { saved -> saved?.let { navController.navigate(walkSummaryRoute(it)) } }
             },

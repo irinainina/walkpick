@@ -1,11 +1,15 @@
 package com.walkpick.app.ui.components
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -15,9 +19,12 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
@@ -56,6 +63,11 @@ private val ClusterSize = 40.dp
 private val PlaceIcon = 20.dp
 private val MeHalo = 48.dp
 private val MeSize = 20.dp
+private val PhotoPinSize = 40.dp
+private val PhotoPinFrame = 3.dp
+
+// The photo follows the 12 corner of its frame, 3 inside it, as drawn.
+private val PhotoPinInner = RoundedCornerShape(9.dp)
 private const val HALO_ALPHA = 0.24f
 private const val DASH_LINES = 2f
 private const val PAUSED_WIDTH = 0.5f
@@ -213,6 +225,22 @@ fun ClusterPin(count: Int) {
         contentAlignment = Alignment.Center,
     ) {
         Text(count.toString(), style = MaterialTheme.typography.labelLarge, color = colors.accent)
+    }
+}
+
+/** Where a photo was taken: the photo in a white frame; a pale ground until it is read. */
+@Composable
+fun PhotoPin(picture: ImageBitmap?) {
+    val colors = AppTheme.colors
+    Box(
+        Modifier
+            .size(PhotoPinSize)
+            .background(colors.surface, MaterialTheme.shapes.small)
+            .padding(PhotoPinFrame)
+            .clip(PhotoPinInner)
+            .background(colors.surfaceTint),
+    ) {
+        picture?.let { Image(it, null, Modifier.fillMaxSize(), contentScale = ContentScale.Crop) }
     }
 }
 

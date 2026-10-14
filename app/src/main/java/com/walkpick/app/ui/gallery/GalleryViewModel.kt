@@ -20,7 +20,7 @@ import javax.inject.Inject
 
 private const val KEEP_AFTER_LEAVING_MS = 5_000L
 
-enum class GalleryTab { All, Best }
+enum class GalleryTab { All, Best, Map }
 
 /** The photos of one walk, in the order they were taken. */
 data class GalleryGroup(val walk: WalkEntity, val finds: List<FindEntity>)

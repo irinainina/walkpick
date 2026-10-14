@@ -32,6 +32,7 @@ fun NewUserGallery(page: String) {
             walkSeconds = null,
             walkPaused = false,
             walkEnding = WalkEnding.Dropped,
+            walkMoods = true,
             // The weather of the frame; a newcomer is greeted the same way.
             weather = WalkWeather(code = 2, celsius = 13.0, windMs = 2.0),
             lastWalk = null,
