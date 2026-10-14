@@ -103,4 +103,20 @@ describe('the service', () => {
       profile: null,
       settings: null,
     }));
+
+  it('gives the weather now from Foreca, once for places close together', async () => {
+    const asked = () =>
+      (fetch as jest.Mock).mock.calls.filter(([address]) =>
+        (address as string).startsWith('https://weatherapi.foreca.net/'),
+      ).length;
+    const before = asked();
+    await it_
+      .get('/v1/weather?lat=50.58&lon=34.48', USER)
+      .expect(200)
+      .expect({ weather_code: 80, temperature_2m: 11, wind_speed_10m: 5 });
+    await it_.get('/v1/weather?lat=50.581&lon=34.479', USER).expect(200);
+    expect(asked() - before).toBe(1);
+    await it_.get('/v1/weather?lat=91&lon=34', USER).expect(400);
+    await it_.get('/v1/weather?lat=50.58&lon=34.48').expect(401);
+  });
 });

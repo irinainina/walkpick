@@ -10,6 +10,8 @@ export class Settings {
     readonly supabaseKey: string,
     /** The read-only account behind "View demo"; null while it is not set up. */
     readonly demo: Demo | null = null,
+    /** The key of Foreca, where the weather now comes from; null while it is not set up. */
+    readonly forecaKey: string | null = null,
   ) {}
 }
 
@@ -54,5 +56,12 @@ export function readSettings(
   if (given !== 0 && given !== DEMO.length)
     throw new Error(`${DEMO.join(', ')} are set all together or not at all`);
   const demo = userId && email && password ? { userId, email, password } : null;
-  return new Settings(port, supabaseUrl, databaseUrl, supabaseKey, demo);
+  return new Settings(
+    port,
+    supabaseUrl,
+    databaseUrl,
+    supabaseKey,
+    demo,
+    env.FORECA_KEY || null,
+  );
 }

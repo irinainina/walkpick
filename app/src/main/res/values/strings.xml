@@ -318,4 +318,21 @@
     <string name="settings_delete_text">Your steps, walks, photos and health entries will be removed for good. This can\'t be undone.</string>
     <string name="settings_delete_failed">The account wasn\'t deleted. Check the connection and try again.</string>
     <string name="settings_cancel">Cancel</string>
+    <string name="call_clear">A bright day for a walk</string>
+    <string name="call_partly_cloudy">Time to go for a walk</string>
+    <string name="call_overcast">Soft light, calm walk</string>
+    <string name="call_fog">A quiet walk in the mist</string>
+    <string name="call_drizzle">A light drizzle, a short walk</string>
+    <string name="call_rain">Take an umbrella and go</string>
+    <string name="call_downpour">Wait a bit, then walk</string>
+    <string name="call_storm">Better wait out the storm</string>
+    <string name="call_snow">Fresh snow is worth a walk</string>
+    <string name="call_wind">Windy — dress warm and go</string>
+    <string name="call_heat">Walk in the shade today</string>
+    <string name="call_frost">A short brisk walk will do</string>
+    <string name="call_evening">A walk before the day ends</string>
+    <string name="call_night">Tomorrow is a good day to walk</string>
+    <string name="call_no_weather">Any walk is a good walk</string>
+    <string name="call_walking">Enjoy your walk</string>
+    <string name="today_weather_line">%1$s · %2$s</string>
 </resources>

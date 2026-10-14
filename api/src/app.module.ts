@@ -16,6 +16,7 @@ import { PhotoLinks } from './photos/photo-links';
 import { Photos } from './photos/photos';
 import { PhotosController } from './photos/photos.controller';
 import { Walks } from './walks/walks';
+import { Weather, WeatherController } from './weather';
 import { WalksController } from './walks/walks.controller';
 
 @Module({
@@ -26,6 +27,7 @@ import { WalksController } from './walks/walks.controller';
     WalksController,
     PhotosController,
     HealthController,
+    WeatherController,
   ],
   providers: [
     { provide: Settings, useFactory: () => readSettings(process.env) },
@@ -37,6 +39,7 @@ import { WalksController } from './walks/walks.controller';
     Walks,
     Photos,
     HealthEntries,
+    Weather,
     { provide: APP_GUARD, useClass: AuthGuard },
     { provide: APP_FILTER, useClass: ErrorShape },
   ],

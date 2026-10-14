@@ -38,6 +38,7 @@ android {
             "GOOGLE_WEB_CLIENT_ID",
             "\"${localProperty("google.webClientId")}\"",
         )
+        buildConfigField("String", "API_URL", "\"https://walkpick-406273949742.europe-west1.run.app\"")
         // The Maps SDK reads its key from the manifest.
         manifestPlaceholders["mapsKey"] = localProperty("maps.key")
     }

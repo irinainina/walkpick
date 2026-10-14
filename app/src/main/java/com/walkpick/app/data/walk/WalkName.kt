@@ -1,12 +1,18 @@
 package com.walkpick.app.data.walk
 
+import com.walkpick.app.BuildConfig
 import com.walkpick.app.data.local.SyncJson
 import com.walkpick.app.data.local.WalkEntity
+import com.walkpick.app.data.remote.SupabaseProvider
+import com.walkpick.app.data.remote.signedInSession
 import com.walkpick.app.data.remote.webClient
+import io.ktor.client.request.bearerAuth
 import io.ktor.client.request.get
 import io.ktor.client.request.parameter
 import io.ktor.client.statement.bodyAsText
 import io.ktor.http.isSuccess
+import kotlinx.coroutines.async
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.withTimeoutOrNull
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -30,7 +36,7 @@ private const val WEEK_DAYS = 7
 
 private const val MORNING_FROM = 5
 private const val AFTERNOON_FROM = 12
-private const val EVENING_FROM = 17
+internal const val EVENING_FROM = 17
 private const val NIGHT_FROM = 22
 private const val MONTHS = 12
 internal const val HALF_YEAR = 6
@@ -39,15 +45,15 @@ private const val SEASON_MONTHS = 3
 private const val COLD_C = 8.0
 private const val WARM_C = 18.0
 private const val HOT_C = 25.0
-private const val WINDY_MS = 10.0
+internal const val WINDY_MS = 10.0
 
 // The weather codes of the World Meteorological Organization, as Open-Meteo gives them.
 private val Clear = 0..1
 private val Clouds = 2..3
-private val Fog = setOf(45, 48)
-private val Rain = (51..67) + (80..82)
-private val Snow = (71..77) + (85..86)
-private val Storm = 95..99
+internal val Fog = setOf(45, 48)
+internal val Rain = (51..67) + (80..82)
+internal val Snow = (71..77) + (85..86)
+internal val Storm = 95..99
 
 /** The weather at the place and the time of a walk. */
 @Serializable
@@ -154,11 +160,40 @@ fun WalkWeather.sky(): String = when (code) {
     else -> ""
 }
 
-/** The weather now at a place, from Open-Meteo: free and without a key. */
-class Weather @Inject constructor() {
+/**
+ * The weather now at a place. The sky, the temperature and the wind come from Foreca through the
+ * service, which holds the key; the week and the snow behind the season come from Open-Meteo,
+ * which also stands in when the service cannot be reached.
+ */
+class Weather @Inject constructor(private val supabase: SupabaseProvider) {
 
-    /** Null when the service cannot be asked or does not answer. */
-    suspend fun at(latitude: Double, longitude: Double): WalkWeather? = try {
+    /** Null when neither answers. */
+    suspend fun at(latitude: Double, longitude: Double): WalkWeather? = coroutineScope {
+        val now = async { fromService(latitude, longitude) }
+        val model = openMeteo(latitude, longitude)
+        val sky = now.await() ?: return@coroutineScope model
+        model?.copy(code = sky.code, celsius = sky.celsius, windMs = sky.windMs) ?: sky
+    }
+
+    private suspend fun fromService(latitude: Double, longitude: Double): WalkWeather? = try {
+        val token = if (supabase.isConfigured) supabase.client.signedInSession()?.accessToken else null
+        val answer = token?.let {
+            webClient.get("${BuildConfig.API_URL}/v1/weather") {
+                parameter("lat", latitude)
+                parameter("lon", longitude)
+                bearerAuth(it)
+            }
+        }
+        answer
+            ?.takeIf { it.status.isSuccess() }
+            ?.let { SyncJson.decodeFromString<WalkWeather>(it.bodyAsText()) }
+    } catch (_: IOException) {
+        null
+    } catch (_: SerializationException) {
+        null
+    }
+
+    private suspend fun openMeteo(latitude: Double, longitude: Double): WalkWeather? = try {
         val answer = webClient.get(WEATHER_URL) {
             parameter("latitude", latitude)
             parameter("longitude", longitude)

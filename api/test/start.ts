@@ -14,9 +14,18 @@ import * as schema from '../src/db/schema';
 import { SNAPSHOT } from './database';
 import { DEMO, ISSUER, publicKey, signToken } from './tokens';
 
-// Supabase as the service calls it. Auth signs the demo in; Storage gives every asked path a link,
+// Supabase and Foreca as the service calls them. Foreca has showers everywhere; Auth signs the demo in; Storage gives every asked path a link,
 // except a file named "lost".
 const supabase: typeof fetch = (address, asked) => {
+  if ((address as string).startsWith('https://weatherapi.foreca.net/')) {
+    const current = {
+      symbol: 'd420',
+      temperature: 11,
+      windSpeed: 5,
+      precipRate: 0.35,
+    };
+    return Promise.resolve(new Response(JSON.stringify({ current })));
+  }
   if ((address as string).endsWith('/auth/v1/token?grant_type=password')) {
     const session = {
       access_token: `demo.${Date.now()}`,
@@ -57,6 +66,7 @@ export async function start(): Promise<Started> {
   process.env.SUPABASE_URL = 'https://project.supabase.co';
   process.env.DATABASE_URL = 'postgresql://nobody@localhost:1/none';
   process.env.SUPABASE_SECRET_KEY = 'secret';
+  process.env.FORECA_KEY = 'foreca';
   process.env.DEMO_USER_ID = DEMO;
   process.env.DEMO_EMAIL = 'demo@walkpick.app';
   process.env.DEMO_PASSWORD = 'demo';

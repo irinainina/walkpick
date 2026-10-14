@@ -98,7 +98,7 @@ fun TodayGallery(access: StepsAccess, walkSeconds: Long? = null) {
         ),
         walkSeconds = walkSeconds,
         walkEnding = WalkEnding.KeptWithMood,
-        weather = WalkWeather(code = 3, celsius = 13.0, windMs = 2.0),
+        weather = WalkWeather(code = 2, celsius = 13.0, windMs = 2.0),
         lastWalk = lastWalk,
         actions = TodayActions(
             onAllowSteps = {},

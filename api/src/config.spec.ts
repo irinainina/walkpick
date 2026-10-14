@@ -14,6 +14,7 @@ describe('readSettings', () => {
       databaseUrl: env.DATABASE_URL,
       supabaseKey: 'key',
       demo: null,
+      forecaKey: null,
     });
   });
 

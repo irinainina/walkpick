@@ -33,6 +33,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -51,26 +52,31 @@ import com.walkpick.app.ui.theme.ParagraphStyle
 import com.walkpick.app.ui.theme.PillShape
 import com.walkpick.app.ui.theme.Sizes
 import com.walkpick.app.ui.theme.Spacing
+import com.walkpick.app.ui.today.DARK_FROM
+import com.walkpick.app.ui.today.NIGHT_END
 import com.walkpick.app.ui.today.TodayState
+import com.walkpick.app.ui.today.weatherCall
 import com.walkpick.app.ui.walk.WalkEnding
 import java.time.format.DateTimeFormatter
 import java.util.Locale
 import kotlin.math.roundToInt
 
-// Below the status bar: the frame draws 248 with a status bar of 24.
-private val HeaderHeight = 224.dp
+// Below the status bar: the frame draws 272 with a status bar of 24.
+private val HeaderHeight = 248.dp
 
 // The first card starts on the header, this far below the status bar.
-private val CardsTop = 168.dp
+private val CardsTop = 192.dp
 private val LogoSize = 32.dp
-private val GreetingTop = 20.dp
+
+// The author keeps the header as drawn (2026-10-14), odd steps included.
+private val GreetingTop = 6.dp
+private val DateTop = 2.dp
+private val PillTop = 10.dp
 private val GreetingMinSize = 16.sp
 private val PillHeight = 32.dp
 
 private const val NOON = 12
 private const val EVENING = 18
-private const val NIGHT_END = 5
-private const val DARK_FROM = 21
 private const val FAHRENHEIT_PER_C = 1.8
 private const val FREEZING_F = 32
 private val Date = DateTimeFormatter.ofPattern("EEEE, MMMM d", Locale.ENGLISH)
@@ -108,7 +114,7 @@ fun TodayScreen(
             .background(AppTheme.colors.canvas),
     ) {
         Box(Modifier.weight(1f)) {
-            Cards(statusBar, state, weather, lastWalk, actions)
+            Cards(statusBar, state, weather, walkSeconds != null, lastWalk, actions)
             StartBarFade(Modifier.align(Alignment.BottomCenter))
         }
         StartBar(walkSeconds, walkEnding, onStartWalk, onStopWalk)
@@ -120,11 +126,12 @@ private fun Cards(
     statusBar: Dp,
     state: TodayState,
     weather: WalkWeather?,
+    walking: Boolean,
     lastWalk: DiaryWalk?,
     actions: TodayActions,
 ) {
     Box(Modifier.verticalScroll(rememberScrollState())) {
-        Header(statusBar, state, weather, actions.onProfile)
+        Header(statusBar, state, weather, walking, actions.onProfile)
         Column(
             Modifier.padding(
                 start = Spacing.ml,
@@ -158,7 +165,13 @@ private fun Cards(
 }
 
 @Composable
-private fun Header(statusBar: Dp, state: TodayState, weather: WalkWeather?, onProfile: () -> Unit) {
+private fun Header(
+    statusBar: Dp,
+    state: TodayState,
+    weather: WalkWeather?,
+    walking: Boolean,
+    onProfile: () -> Unit,
+) {
     val colors = AppTheme.colors
     val now = state.now
     GradientHeader(statusBar + HeaderHeight) {
@@ -182,10 +195,6 @@ private fun Header(statusBar: Dp, state: TodayState, weather: WalkWeather?, onPr
                     style = MaterialTheme.typography.titleLarge,
                     color = colors.onAccent,
                 )
-                if (weather != null) {
-                    WeatherPill(weather, state.distanceUnit, now.hour)
-                    Spacer(Modifier.width(Spacing.s))
-                }
                 val profile = stringResource(R.string.tab_profile)
                 Avatar(
                     name = state.name.orEmpty(),
@@ -209,35 +218,49 @@ private fun Header(statusBar: Dp, state: TodayState, weather: WalkWeather?, onPr
                 // A long name or a phone set to large text: the line shrinks instead of losing the name.
                 autoSize = TextAutoSize.StepBased(GreetingMinSize, heading.fontSize),
             )
-            Spacer(Modifier.height(Spacing.xs))
+            Spacer(Modifier.height(DateTop))
             Text(
                 text = now.format(Date),
                 modifier = Modifier.padding(horizontal = Spacing.ml),
                 style = ParagraphStyle,
                 color = colors.onAccent,
             )
+            Spacer(Modifier.height(PillTop))
+            WeatherPill(weather, state.distanceUnit, now.hour, walking)
         }
     }
 }
 
 @Composable
-private fun WeatherPill(weather: WalkWeather, unit: DistanceUnit, hour: Int) {
+private fun WeatherPill(weather: WalkWeather?, unit: DistanceUnit, hour: Int, walking: Boolean) {
     val colors = AppTheme.colors
+    val call = stringResource(weatherCall(weather, hour, walking))
     Row(
         modifier = Modifier
+            .padding(horizontal = Spacing.ml)
             .height(PillHeight)
             .background(colors.onAccentOverlay, PillShape)
             .padding(horizontal = Spacing.sm),
         horizontalArrangement = Arrangement.spacedBy(Spacing.s),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Icon(
-            painter = painterResource(weather.iconRes(dark = hour !in NIGHT_END until DARK_FROM)),
-            contentDescription = weather.sky(),
-            modifier = Modifier.size(Sizes.iconSmall),
-            tint = colors.onAccent,
+        if (weather != null) {
+            Icon(
+                painter = painterResource(weather.iconRes(dark = hour !in NIGHT_END until DARK_FROM)),
+                contentDescription = weather.sky(),
+                modifier = Modifier.size(Sizes.iconSmall),
+                tint = colors.onAccent,
+            )
+        }
+        Text(
+            text = weather
+                ?.let { stringResource(R.string.today_weather_line, degreesText(it, unit), call) }
+                ?: call,
+            style = MaterialTheme.typography.labelMedium,
+            color = colors.onAccent,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
         )
-        Text(degreesText(weather, unit), style = MaterialTheme.typography.titleSmall, color = colors.onAccent)
     }
 }
 
