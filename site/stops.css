@@ -152,3 +152,47 @@
 .phone img {
   width: 100%;
 }
+
+.faq {
+  border-top: 1px solid var(--line);
+}
+
+.faq-item {
+  border-bottom: 1px solid var(--line);
+}
+
+.faq-item summary {
+  display: flex;
+  justify-content: space-between;
+  gap: 48px;
+  padding-block: 24px;
+  font: 800 24px/32px var(--display);
+  color: var(--ink);
+  list-style: none;
+  cursor: pointer;
+}
+
+.faq-item summary::-webkit-details-marker {
+  display: none;
+}
+
+.faq-item summary::after {
+  content: "";
+  flex: none;
+  width: 20px;
+  height: 20px;
+  margin-top: 6px;
+  background:
+    linear-gradient(currentColor, currentColor) center / 20px 2px no-repeat,
+    linear-gradient(currentColor, currentColor) center / 2px 20px no-repeat;
+  transition: transform 0.2s;
+}
+
+.faq-item[open] summary::after {
+  transform: rotate(45deg);
+}
+
+/* The answer stays clear of the icon column: its 20px plus the 48px gap. */
+.faq-item p {
+  padding: 0 68px 24px 0;
+}

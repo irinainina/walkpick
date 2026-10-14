@@ -15,11 +15,13 @@ import androidx.compose.runtime.produceState
 import androidx.compose.runtime.setValue
 import androidx.core.view.ViewCompat
 import com.walkpick.app.data.account.AccountStore
+import com.walkpick.app.data.settings.SettingsStore
 import com.walkpick.app.data.walk.Season
 import com.walkpick.app.data.walk.SeasonStore
 import com.walkpick.app.ui.navigation.WalkPickApp
 import com.walkpick.app.ui.theme.WalkPickTheme
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.flow.combine
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -30,6 +32,9 @@ class MainActivity : ComponentActivity() {
 
     @Inject
     lateinit var seasons: SeasonStore
+
+    @Inject
+    lateinit var settings: SettingsStore
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -47,7 +52,10 @@ class MainActivity : ComponentActivity() {
         addOnNewIntentListener { if (it.asksForWalk()) walkAsked++ }
         setContent {
             // Nothing is drawn until the phone knows the season and whether somebody is signed in.
-            val season by produceState<Season?>(null) { seasons.now.collect { value = it } }
+            val season by produceState<Season?>(null) {
+                combine(seasons.now, settings.value) { seen, chosen -> chosen.theme ?: seen }
+                    .collect { value = it }
+            }
             val signedIn by produceState<Boolean?>(null) { value = account.isSignedIn() }
             season?.let {
                 WalkPickTheme(it) {

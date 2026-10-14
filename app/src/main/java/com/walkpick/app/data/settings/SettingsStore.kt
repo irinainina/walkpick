@@ -10,6 +10,7 @@ import com.walkpick.app.data.account.AccountStore
 import com.walkpick.app.data.sync.RemoteTables
 import com.walkpick.app.data.sync.SyncedPart
 import com.walkpick.app.data.sync.SyncedPreferences
+import com.walkpick.app.data.walk.Season
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
@@ -37,6 +38,7 @@ class SettingsStore @Inject constructor(
             weight = saved[WEIGHT]?.let(WeightUnit::valueOf) ?: defaults.weight,
             glucose = saved[GLUCOSE]?.let(GlucoseUnit::valueOf) ?: defaults.glucose,
             walkMood = saved[WALK_MOOD] ?: defaults.walkMood,
+            theme = saved[THEME]?.let(Season::valueOf),
         )
     }
 
@@ -48,6 +50,7 @@ class SettingsStore @Inject constructor(
         saved[WEIGHT] = value.weight.name
         saved[GLUCOSE] = value.glucose.name
         saved[WALK_MOOD] = value.walkMood
+        saved.put(THEME, value.theme?.name)
     }
 
     private companion object {
@@ -58,6 +61,7 @@ class SettingsStore @Inject constructor(
         val WEIGHT = stringPreferencesKey("settings_weight_unit")
         val GLUCOSE = stringPreferencesKey("settings_glucose_unit")
         val WALK_MOOD = booleanPreferencesKey("settings_walk_mood")
+        val THEME = stringPreferencesKey("settings_theme")
     }
 }
 

@@ -25,6 +25,7 @@ import androidx.compose.ui.unit.dp
 import com.walkpick.app.R
 import com.walkpick.app.data.settings.AppSettings
 import com.walkpick.app.data.steps.StepsAccess
+import com.walkpick.app.data.walk.Season
 import com.walkpick.app.ui.PRIVACY_URL
 import com.walkpick.app.ui.TERMS_URL
 import com.walkpick.app.ui.components.AppButton
@@ -33,6 +34,7 @@ import com.walkpick.app.ui.components.AppSwitch
 import com.walkpick.app.ui.components.AppTopBar
 import com.walkpick.app.ui.components.IconBadge
 import com.walkpick.app.ui.components.ListRow
+import com.walkpick.app.ui.components.SegmentedControl
 import com.walkpick.app.ui.grouped
 import com.walkpick.app.ui.settings.SettingsState
 import com.walkpick.app.ui.theme.AppTheme
@@ -88,6 +90,13 @@ fun SettingsScreen(state: SettingsState, actions: SettingsActions, modifier: Mod
                 value = daysLabel(settings.reminderDays),
                 divider = false,
                 onClick = { sheet = SettingsSheet.Days },
+            )
+        }
+        Section(R.string.settings_theme, inCard = false) {
+            SegmentedControl(
+                options = Season.entries.map { stringResource(it.title) },
+                selectedIndex = AppTheme.season.ordinal,
+                onSelect = { index -> actions.onChange { it.copy(theme = Season.entries[index]) } },
             )
         }
         Section(R.string.settings_units) {
@@ -154,7 +163,7 @@ private fun Badge(iconRes: Int, ground: Color, tint: Color) =
     IconBadge(iconRes, ground, tint, Sizes.iconSmall)
 
 @Composable
-private fun Section(titleRes: Int, rows: @Composable () -> Unit) {
+private fun Section(titleRes: Int, inCard: Boolean = true, rows: @Composable () -> Unit) {
     Column(Modifier.padding(start = Spacing.ml, top = Spacing.sm, end = Spacing.ml, bottom = Spacing.sm)) {
         Text(
             text = stringResource(titleRes).uppercase(),
@@ -162,7 +171,7 @@ private fun Section(titleRes: Int, rows: @Composable () -> Unit) {
             color = AppTheme.colors.textSecondary,
         )
         Spacer(Modifier.height(Spacing.s))
-        AppCard { rows() }
+        if (inCard) AppCard { rows() } else rows()
     }
 }
 
@@ -190,6 +199,14 @@ private fun StepCounting(access: StepsAccess, onAllow: () -> Unit) {
         }
     }
 }
+
+private val Season.title: Int
+    get() = when (this) {
+        Season.SPRING -> R.string.settings_theme_spring
+        Season.SUMMER -> R.string.settings_theme_summer
+        Season.AUTUMN -> R.string.settings_theme_autumn
+        Season.WINTER -> R.string.settings_theme_winter
+    }
 
 /** "Every day", "Mon – Fri" for days in a row, otherwise the days by name. */
 @Composable

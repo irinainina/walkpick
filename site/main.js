@@ -111,6 +111,24 @@ for (let month = 0; new Date(2026, month, 1) < new Date(2026, 0, days); month++)
   months.append(label);
 }
 
+// The questions live in faq.json, so their text is edited without touching the page
+const attr = text => text.replaceAll('"', '&quot;');
+fetch('faq.json').then(answer => answer.json()).then(items => {
+  document.querySelector('.faq').innerHTML = items.map(({ en, ru }, index) => `<details class="faq-item" name="faq"${index ? '' : ' open'}>
+  <summary data-ru="${attr(ru.question)}">${en.question}</summary>
+  <p data-ru="${attr(ru.answer)}">${en.answer}</p>
+</details>`).join('');
+  translate();
+  const schema = document.createElement('script');
+  schema.type = 'application/ld+json';
+  schema.textContent = JSON.stringify({
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: items.map(item => ({ '@type': 'Question', name: item[lang].question, acceptedAnswer: { '@type': 'Answer', text: item[lang].answer } })),
+  });
+  document.head.append(schema);
+});
+
 // The language changes in place, so nothing that is moving on the page starts over
 onLanguage = () => {
   [...months.children].forEach((label, month) => {

@@ -10,6 +10,8 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -46,6 +48,7 @@ import com.walkpick.app.ui.theme.AppTheme
 // Closer than this a street is a blank sheet; a route of a few metres would zoom that far.
 private const val CLOSEST_ZOOM = 17f
 private const val ONE_POINT_ZOOM = 16f
+private val Nowhere = LatLng(0.0, 0.0)
 private val StartBorder = 3.dp
 private val FlagSize = 16.dp
 private val PlacePin = 36.dp
@@ -94,16 +97,21 @@ fun WalkMap(
 ) {
     val context = LocalContext.current
     val style = remember { MapStyleOptions.loadRawResourceStyle(context, R.raw.map_style) }
-    GoogleMap(
-        modifier = modifier,
-        cameraPositionState = camera,
-        properties = MapProperties(mapStyleOptions = style, maxZoomPreference = CLOSEST_ZOOM),
-        uiSettings = if (still) StillMap else BareMap,
-        contentPadding = covered,
-        onMapLoaded = onLoaded,
-        onMapClick = { onTap() },
-        content = content,
-    )
+    // Google Maps opens over Africa at (0, 0); the map is covered until the screen moves it somewhere.
+    val placed by remember { derivedStateOf { camera.position.target != Nowhere } }
+    Box(modifier) {
+        GoogleMap(
+            modifier = Modifier.matchParentSize(),
+            cameraPositionState = camera,
+            properties = MapProperties(mapStyleOptions = style, maxZoomPreference = CLOSEST_ZOOM),
+            uiSettings = if (still) StillMap else BareMap,
+            contentPadding = covered,
+            onMapLoaded = onLoaded,
+            onMapClick = { onTap() },
+            content = content,
+        )
+        if (!placed) Box(Modifier.matchParentSize().background(AppTheme.colors.canvas))
+    }
 }
 
 /**

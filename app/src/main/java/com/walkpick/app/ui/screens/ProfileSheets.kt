@@ -10,6 +10,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusDirection
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import com.walkpick.app.R
@@ -187,6 +189,12 @@ private fun BirthDateSheet(current: LocalDate?, onDismiss: () -> Unit, onSave: (
     val date = birthDate(day, month, year, LocalDate.now())
     val submit = { date?.let(onSave) ?: Unit }
     val filled = day.isNotBlank() && month.isNotBlank() && year.isNotBlank()
+    val focus = LocalFocusManager.current
+    // Two digits fill a day or a month: the cursor goes on by itself.
+    val typed = { text: String, keep: (String) -> Unit ->
+        keep(text)
+        if (text.trim().length == 2) focus.moveFocus(FocusDirection.Next)
+    }
     AppSheet(stringResource(R.string.profile_birth_date), onDismiss) {
         Spacer(Modifier.height(Spacing.m))
         Row(horizontalArrangement = Arrangement.spacedBy(Spacing.m)) {
@@ -194,14 +202,14 @@ private fun BirthDateSheet(current: LocalDate?, onDismiss: () -> Unit, onSave: (
             val number = KeyboardType.Number
             AppTextField(
                 value = day,
-                onValueChange = { day = it },
+                onValueChange = { typed(it) { day = it } },
                 modifier = part,
                 label = stringResource(R.string.profile_day),
                 keyboardType = number,
             )
             AppTextField(
                 value = month,
-                onValueChange = { month = it },
+                onValueChange = { typed(it) { month = it } },
                 modifier = part,
                 label = stringResource(R.string.profile_month),
                 keyboardType = number,

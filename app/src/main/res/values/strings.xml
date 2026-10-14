@@ -292,6 +292,11 @@
     <string name="settings_days">Days</string>
     <string name="settings_every_day">Every day</string>
     <string name="settings_units">Units</string>
+    <string name="settings_theme">Theme</string>
+    <string name="settings_theme_spring">Spring</string>
+    <string name="settings_theme_summer">Summer</string>
+    <string name="settings_theme_autumn">Autumn</string>
+    <string name="settings_theme_winter">Winter</string>
     <string name="settings_data">Data</string>
     <string name="settings_step_counting">Step counting</string>
     <string name="settings_daily_steps">Daily steps</string>

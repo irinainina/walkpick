@@ -1,5 +1,6 @@
 package com.walkpick.app.data.settings
 
+import com.walkpick.app.data.walk.Season
 import java.time.DayOfWeek
 import java.time.LocalDateTime
 import java.time.LocalTime
@@ -30,6 +31,8 @@ data class AppSettings(
     val glucose: GlucoseUnit = GlucoseUnit.MMOL,
     /** A walk asks how the walker feels when it begins and when it ends. Kept on this phone only. */
     val walkMood: Boolean = true,
+    /** The season of the colours; the weather picks it until one is chosen. Kept on this phone only. */
+    val theme: Season? = null,
 ) {
     /** The last day left on stays on. */
     fun withDay(day: DayOfWeek, on: Boolean): AppSettings {
