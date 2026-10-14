@@ -13,7 +13,24 @@ describe('readSettings', () => {
       supabaseUrl: 'https://project.supabase.co',
       databaseUrl: env.DATABASE_URL,
       supabaseKey: 'key',
+      demo: null,
     });
+  });
+
+  it('takes the demo account only whole', () => {
+    const demo = {
+      DEMO_USER_ID: '00000000-0000-4000-8000-00000000000d',
+      DEMO_EMAIL: 'demo@walkpick.app',
+      DEMO_PASSWORD: 'p',
+    };
+    expect(readSettings({ ...env, ...demo }).demo).toEqual({
+      userId: demo.DEMO_USER_ID,
+      email: demo.DEMO_EMAIL,
+      password: 'p',
+    });
+    expect(() =>
+      readSettings({ ...env, ...demo, DEMO_PASSWORD: undefined }),
+    ).toThrow('all together');
   });
 
   it('falls back to the port Cloud Run expects', () => {

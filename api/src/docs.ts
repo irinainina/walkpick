@@ -24,6 +24,7 @@ const ERROR: SchemaObject = {
           enum: [
             'validation_failed',
             'unauthorized',
+            'demo_read_only',
             'not_found',
             'too_large',
             'internal',

@@ -12,10 +12,18 @@ import { Database } from '../src/db/database';
 import { describeApi } from '../src/docs';
 import * as schema from '../src/db/schema';
 import { SNAPSHOT } from './database';
-import { ISSUER, publicKey, signToken } from './tokens';
+import { DEMO, ISSUER, publicKey, signToken } from './tokens';
 
-// Supabase Storage as the service calls it: every asked path gets a link, except a file named "lost".
-const storage: typeof fetch = (address, asked) => {
+// Supabase as the service calls it. Auth signs the demo in; Storage gives every asked path a link,
+// except a file named "lost".
+const supabase: typeof fetch = (address, asked) => {
+  if ((address as string).endsWith('/auth/v1/token?grant_type=password')) {
+    const session = {
+      access_token: `demo.${Date.now()}`,
+      expires_at: Math.floor(Date.now() / 1000) + 3600,
+    };
+    return Promise.resolve(new Response(JSON.stringify(session)));
+  }
   const { paths } = JSON.parse(asked?.body as string) as { paths: string[] };
   const links = paths.map((path) =>
     path.includes('lost')
@@ -49,7 +57,10 @@ export async function start(): Promise<Started> {
   process.env.SUPABASE_URL = 'https://project.supabase.co';
   process.env.DATABASE_URL = 'postgresql://nobody@localhost:1/none';
   process.env.SUPABASE_SECRET_KEY = 'secret';
-  jest.spyOn(global, 'fetch').mockImplementation(storage);
+  process.env.DEMO_USER_ID = DEMO;
+  process.env.DEMO_EMAIL = 'demo@walkpick.app';
+  process.env.DEMO_PASSWORD = 'demo';
+  jest.spyOn(global, 'fetch').mockImplementation(supabase);
   const sql = new PGlite({
     extensions: { postgis },
     loadDataDir: new Blob([readFileSync(SNAPSHOT)]),

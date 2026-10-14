@@ -6,6 +6,7 @@ import { AuthGuard } from './auth/auth.guard';
 import { SigningKeys } from './auth/signing-keys';
 import { readSettings, Settings } from './config';
 import { Database } from './db/database';
+import { DemoController } from './demo.controller';
 import { ErrorShape } from './errors';
 import { Export } from './export';
 import { HealthEntries } from './health/health-entries';
@@ -21,6 +22,7 @@ import { WalksController } from './walks/walks.controller';
   controllers: [
     AliveController,
     MeController,
+    DemoController,
     WalksController,
     PhotosController,
     HealthController,

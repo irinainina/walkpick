@@ -5,6 +5,8 @@ export const A = '00000000-0000-4000-8000-00000000000a';
 export const B = '00000000-0000-4000-8000-00000000000b';
 /** A user who has signed in and written nothing yet. */
 export const C = '00000000-0000-4000-8000-00000000000c';
+/** The read-only account behind "View demo". */
+export const DEMO = '00000000-0000-4000-8000-00000000000d';
 
 export const ISSUER = 'https://project.supabase.co/auth/v1';
 

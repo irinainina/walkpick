@@ -2,6 +2,7 @@ import {
   CanActivate,
   createParamDecorator,
   ExecutionContext,
+  ForbiddenException,
   Injectable,
   Logger,
   SetMetadata,
@@ -9,13 +10,18 @@ import {
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { Request } from 'express';
+import { Settings } from '../config';
 import { SigningKeys } from './signing-keys';
 import { keyIdOf, TokenError, userOf } from './token';
 
 const PUBLIC = 'public';
+const READS = 'reads';
 
 /** Marks a request that is answered without a token. */
 export const Public = () => SetMetadata(PUBLIC, true);
+
+/** Marks a request that is not a GET and still changes nothing: the demo account may make it. */
+export const Reads = () => SetMetadata(READS, true);
 
 type SignedRequest = Request & { userId?: string };
 
@@ -37,24 +43,22 @@ export class AuthGuard implements CanActivate {
   constructor(
     private readonly reflector: Reflector,
     private readonly keys: SigningKeys,
+    private readonly settings: Settings,
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    if (
-      this.reflector.getAllAndOverride(PUBLIC, [
+    const marked = (key: string): boolean =>
+      this.reflector.getAllAndOverride(key, [
         context.getHandler(),
         context.getClass(),
-      ])
-    ) {
-      return true;
-    }
+      ]) === true;
+    if (marked(PUBLIC)) return true;
     const request = context.switchToHttp().getRequest<SignedRequest>();
     const [scheme, token] = (request.headers.authorization ?? '').split(' ');
     try {
       if (scheme !== 'Bearer' || !token) throw new TokenError('no token');
       const key = await this.keys.find(keyIdOf(token));
       request.userId = userOf(token, key, this.keys.issuer, new Date());
-      return true;
     } catch (problem) {
       if (!(problem instanceof TokenError)) throw problem;
       this.log.warn(problem.message);
@@ -62,5 +66,18 @@ export class AuthGuard implements CanActivate {
         error: { code: 'unauthorized', message: 'a valid token is required' },
       });
     }
+    const demo = this.settings.demo;
+    if (
+      request.userId === demo?.userId &&
+      request.method !== 'GET' &&
+      !marked(READS)
+    )
+      throw new ForbiddenException({
+        error: {
+          code: 'demo_read_only',
+          message: 'the demo account is read-only',
+        },
+      });
+    return true;
   }
 }

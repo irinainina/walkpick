@@ -10,7 +10,7 @@ import { A, B, C } from './tokens';
 const SUPABASE = `
   create role anon; create role authenticated; create role service_role;
   create schema auth; create schema storage; create schema extensions;
-  create table auth.users (id uuid primary key);
+  create table auth.users (id uuid primary key, email text);
   create function auth.uid() returns uuid language sql stable
     as $$ select nullif(current_setting('request.jwt.claim.sub', true), '')::uuid $$;
   create table storage.buckets (id text primary key, name text not null, public boolean,

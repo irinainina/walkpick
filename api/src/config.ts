@@ -8,8 +8,18 @@ export class Settings {
     readonly databaseUrl: string,
     /** The secret key of the project: the service signs the links to photo files with it. */
     readonly supabaseKey: string,
+    /** The read-only account behind "View demo"; null while it is not set up. */
+    readonly demo: Demo | null = null,
   ) {}
 }
+
+export interface Demo {
+  userId: string;
+  email: string;
+  password: string;
+}
+
+const DEMO = ['DEMO_USER_ID', 'DEMO_EMAIL', 'DEMO_PASSWORD'] as const;
 
 // Cloud Run tells the port through PORT; 8080 is what it expects when nothing is said.
 const DEFAULT_PORT = 8080;
@@ -39,5 +49,10 @@ export function readSettings(
     throw new Error(
       'SUPABASE_SECRET_KEY must be the secret key of the Supabase project',
     );
-  return new Settings(port, supabaseUrl, databaseUrl, supabaseKey);
+  const [userId, email, password] = DEMO.map((name) => env[name]);
+  const given = [userId, email, password].filter(Boolean).length;
+  if (given !== 0 && given !== DEMO.length)
+    throw new Error(`${DEMO.join(', ')} are set all together or not at all`);
+  const demo = userId && email && password ? { userId, email, password } : null;
+  return new Settings(port, supabaseUrl, databaseUrl, supabaseKey, demo);
 }
