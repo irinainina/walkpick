@@ -1,7 +1,6 @@
 import { start, Started } from './start';
+import { A, B } from './tokens';
 
-const A = '00000000-0000-4000-8000-00000000000a';
-const B = '00000000-0000-4000-8000-00000000000b';
 const walk = (n: number) => `10000000-0000-4000-8000-00000000000${n}`;
 const photo = (n: number) => `20000000-0000-4000-8000-00000000000${n}`;
 const ROUTE =
@@ -11,10 +10,10 @@ const KYIV = 'tz=Europe/Kyiv';
 // A walks three times; the late Sunday walk is already Monday in Kyiv. B has one walk of her own.
 const ROWS = `
   insert into walks (id, user_id, number, name, started_at, ended_at, duration_s, steps, distance_m, route, breaks, mood_before, mood_after) values
-    ('${walk(1)}', '${A}', 1, 'Misty Evening', '2026-10-05T16:00:00Z', '2026-10-05T16:40:00Z', 2400, 4000, 3000, '${ROUTE}', '600-900', 2, 4),
+    ('${walk(1)}', '${A}', 1, 'Misty Evening', '2026-10-05T16:00:00Z', '2026-10-05T16:40:00Z', 2400, 4000, 3000, st_geomfromgeojson('${ROUTE}'), '600-900', 2, 4),
     ('${walk(2)}', '${A}', 2, 'Sunny Morning', '2026-10-07T07:00:00Z', '2026-10-07T07:20:00Z', 1200, 2000, 1500, null, null, null, null),
     ('${walk(3)}', '${A}', 3, 'Late Walk', '2026-10-11T21:30:00Z', '2026-10-11T22:00:00Z', 1800, 2500, 2000, null, null, null, null),
-    ('${walk(9)}', '${B}', 1, 'Foreign Walk', '2026-10-06T10:00:00Z', '2026-10-06T11:00:00Z', 3600, 9000, 7000, '${ROUTE}', null, null, null);
+    ('${walk(9)}', '${B}', 1, 'Foreign Walk', '2026-10-06T10:00:00Z', '2026-10-06T11:00:00Z', 3600, 9000, 7000, st_geomfromgeojson('${ROUTE}'), null, null, null);
   insert into finds (id, user_id, walk_id, taken_at, latitude, longitude, photo_path, kind, name, is_best) values
     ('${photo(1)}', '${A}', '${walk(1)}', '2026-10-05T16:10:00Z', 50.58, 34.48, 'a/1.jpg', 'plant', 'Common yarrow', true),
     ('${photo(2)}', '${A}', '${walk(1)}', '2026-10-05T16:20:00Z', 50.59, 34.49, 'a/2.jpg', 'bird', 'Great tit', false),

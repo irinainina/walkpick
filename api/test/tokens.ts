@@ -1,6 +1,11 @@
 import { generateKeyPairSync, KeyObject, sign } from 'node:crypto';
 import { SigningKey } from '../src/auth/token';
 
+export const A = '00000000-0000-4000-8000-00000000000a';
+export const B = '00000000-0000-4000-8000-00000000000b';
+/** A user who has signed in and written nothing yet. */
+export const C = '00000000-0000-4000-8000-00000000000c';
+
 export const ISSUER = 'https://project.supabase.co/auth/v1';
 
 const pair = generateKeyPairSync('ec', { namedCurve: 'P-256' });

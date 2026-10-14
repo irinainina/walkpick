@@ -1,8 +1,6 @@
 import request from 'supertest';
 import { start, Started } from './start';
-import { ISSUER, signToken } from './tokens';
-
-const USER = '00000000-0000-4000-8000-00000000000a';
+import { A as USER, C, ISSUER, signToken } from './tokens';
 
 describe('the service', () => {
   let it_: Started;
@@ -100,12 +98,9 @@ describe('the service', () => {
   });
 
   it('gives nulls to a user the phone has written nothing of yet', () =>
-    it_
-      .get('/v1/me', '00000000-0000-4000-8000-00000000000c')
-      .expect(200)
-      .expect({
-        id: '00000000-0000-4000-8000-00000000000c',
-        profile: null,
-        settings: null,
-      }));
+    it_.get('/v1/me', C).expect(200).expect({
+      id: C,
+      profile: null,
+      settings: null,
+    }));
 });
