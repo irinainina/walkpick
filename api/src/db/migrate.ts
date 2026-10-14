@@ -2,6 +2,7 @@ import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { Client } from 'pg';
 import { pending, upTo } from './migrations';
+import { SSL } from './ssl';
 
 // npm run migrate                       applies what is not applied yet
 // npm run migrate -- --baseline 0011    marks the migrations up to 0011 as applied without running
@@ -11,7 +12,7 @@ async function migrate(): Promise<void> {
   const files = readdirSync(FOLDER);
   const client = new Client({
     connectionString: process.env.DATABASE_URL,
-    ssl: { rejectUnauthorized: false },
+    ssl: SSL,
   });
   await client.connect();
   try {

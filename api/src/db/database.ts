@@ -4,6 +4,7 @@ import { PgDatabase, PgQueryResultHKT } from 'drizzle-orm/pg-core';
 import { Pool } from 'pg';
 import { Settings } from '../config';
 import * as schema from './schema';
+import { SSL } from './ssl';
 
 // One instance of the service serves one person at a time: a few connections are plenty, and the
 // free Supabase pooler has few to give.
@@ -22,8 +23,7 @@ export class Database implements OnModuleDestroy {
     this.pool = new Pool({
       connectionString: settings.databaseUrl,
       max: MAX_CONNECTIONS,
-      // The pooler presents the certificate of Supabase's own authority, unknown to Node.
-      ssl: { rejectUnauthorized: false },
+      ssl: SSL,
     });
     this.rows = drizzle(this.pool, { schema });
   }
