@@ -7,6 +7,7 @@
     <string name="tab_profile">Profile</string>
     <string name="tab_walk">Walk</string>
     <string name="tab_photo">Photo</string>
+    <string name="tab_home">Home</string>
     <string name="screen_sign_in">Sign in</string>
     <string name="screen_health">Health</string>
     <string name="screen_active_walk">Active walk</string>
@@ -14,7 +15,6 @@
     <string name="screen_camera">Camera</string>
     <string name="screen_find_card">Find card</string>
     <string name="screen_photo_viewer">Photo viewer</string>
-    <string name="screen_settings">Settings</string>
     <string name="sign_in_tagline">Step. Snap. See.</string>
     <string name="sign_in_google">Continue with Google</string>
     <string name="sign_in_email">Continue with email</string>
@@ -79,20 +79,8 @@
     <string name="stats_day_many">%1$d days</string>
     <string name="profile_walks">walks</string>
     <string name="profile_photos">photos</string>
-    <string name="profile_body">Body</string>
-    <string name="profile_body_note">Used for calories</string>
-    <string name="profile_sex">Sex</string>
-    <string name="profile_female">Female</string>
-    <string name="profile_male">Male</string>
-    <string name="profile_age">Age</string>
-    <string name="profile_birth_date">Date of birth</string>
-    <string name="profile_day">Day</string>
-    <string name="profile_month">Month</string>
-    <string name="profile_year">Year</string>
-    <string name="profile_date_wrong">Check the date</string>
     <string name="profile_height">Height</string>
     <string name="profile_height_cm">Height, cm</string>
-    <string name="profile_weight">Weight</string>
     <string name="profile_target_weight">Target weight</string>
     <string name="profile_target_weight_in">Target weight, %1$s</string>
     <string name="profile_target_pressure">Target pressure</string>
@@ -107,6 +95,7 @@
     <string name="profile_save">Save</string>
     <string name="profile_tabs">Health tabs</string>
     <string name="profile_tabs_note">At least one tab stays on</string>
+    <string name="profile_targets">Targets</string>
     <string name="consent_title_pressure">Turn on Blood pressure?</string>
     <string name="consent_title_glucose">Turn on Glucose?</string>
     <string name="consent_text">This is health data. It is kept in your account on our server and only you can see it. You can delete any entry, or all your data, at any time.</string>

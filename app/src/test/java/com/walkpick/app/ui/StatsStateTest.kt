@@ -51,7 +51,7 @@ class StatsStateTest {
         assertEquals(listOf("M", "T", "W", "T", "F", "S", "S"), week.bars.map { it.label })
         assertEquals(listOf(BarKind.Walked, BarKind.Walked, BarKind.Today), week.bars.take(3).map { it.kind })
         assertEquals(1f, week.bars[0].fraction)
-        assertEquals(2 to "6,420", week.selectedBar to week.bars[2].tip)
+        assertEquals(2 to "6\u00A0420", week.selectedBar to week.bars[2].tip)
         assertEquals(4, week.totals.walks)
         assertEquals(22860 to 4 * 1800, week.totals.steps to week.totals.durationS)
         assertEquals(LocalDate.of(2026, 9, 28) to 10240, week.totals.bestDay to week.totals.bestDaySteps)
@@ -92,7 +92,7 @@ class StatsStateTest {
         assertEquals(12, year.bars.size)
         assertEquals("JFMAMJJASOND", year.bars.joinToString("") { it.label })
         assertEquals(null, year.selectedBar)
-        assertEquals("22,860", year.bars[8].tip)
+        assertEquals("22\u00A0860", year.bars[8].tip)
         assertEquals(YearMonth.of(2026, 9), year.bestMonth)
     }
 

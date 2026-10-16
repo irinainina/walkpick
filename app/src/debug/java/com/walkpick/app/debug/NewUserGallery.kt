@@ -12,6 +12,7 @@ import com.walkpick.app.ui.screens.GalleryScreen
 import com.walkpick.app.ui.screens.ProfileScreen
 import com.walkpick.app.ui.screens.TodayActions
 import com.walkpick.app.ui.screens.TodayScreen
+import com.walkpick.app.ui.settings.SettingsState
 import com.walkpick.app.ui.today.TodayState
 import com.walkpick.app.ui.walk.WalkEnding
 import java.time.LocalDate
@@ -49,6 +50,9 @@ fun NewUserGallery(page: String) {
             val tab = if (page == "gallery-new") GalleryTab.All else GalleryTab.Best
             GalleryScreen(GalleryState(tab, today), GalleryActions({ null }, {}, {}, {}, {}, {}, {}))
         }
-        else -> ProfileScreen(ProfileState(today, "Ira", "ira@example.com"), {}, { _, _ -> }, {})
+        else -> {
+            val state = ProfileState("Ira", "ira@example.com")
+            ProfileScreen(state, SettingsState(), NoSettingsActions, onChange = {}, onBack = {})
+        }
     }
 }

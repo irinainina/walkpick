@@ -6,6 +6,7 @@ import com.walkpick.app.ui.components.NavItem
 
 enum class Screen(@StringRes val titleRes: Int) {
     SignIn(R.string.screen_sign_in),
+    Home(R.string.tab_home),
     Today(R.string.tab_today),
     Health(R.string.screen_health),
     ActiveWalk(R.string.screen_active_walk),
@@ -15,7 +16,6 @@ enum class Screen(@StringRes val titleRes: Int) {
     Gallery(R.string.tab_gallery),
     PhotoViewer(R.string.screen_photo_viewer),
     Profile(R.string.tab_profile),
-    Settings(R.string.screen_settings),
     ;
 
     val route: String get() = name
@@ -23,7 +23,7 @@ enum class Screen(@StringRes val titleRes: Int) {
     /** The tab lit in the bottom bar; null on a screen inside a tab, which has Back and no bar. */
     val tab: Screen?
         get() = when (this) {
-            Today, Gallery, Health, Settings -> this
+            Home, Today, Gallery, Health -> this
             else -> null
         }
 
@@ -35,14 +35,13 @@ enum class Screen(@StringRes val titleRes: Int) {
             ActiveWalk -> listOf(Camera, WalkSummary)
             Camera, PhotoViewer -> listOf(FindCard)
             Gallery -> listOf(PhotoViewer)
-            Settings -> listOf(SignIn)
             else -> emptyList()
         }
 }
 
 val bottomTabs = listOf(
+    NavItem(R.string.tab_home, R.drawable.ic_home, Screen.Home.route),
     NavItem(R.string.tab_walk, R.drawable.ic_walk, Screen.Today.route),
     NavItem(R.string.tab_photo, R.drawable.ic_gallery, Screen.Gallery.route),
     NavItem(R.string.screen_health, R.drawable.ic_health, Screen.Health.route),
-    NavItem(R.string.screen_settings, R.drawable.ic_settings, Screen.Settings.route),
 )

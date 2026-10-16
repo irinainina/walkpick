@@ -23,7 +23,7 @@ enum class GlucoseUnit(val symbol: String, val perMetric: Double) {
 
 data class AppSettings(
     val remindersOn: Boolean = false,
-    val reminderTime: LocalTime = LocalTime.of(18, 0),
+    val reminderTime: LocalTime = LocalTime.of(15, 0),
     /** Never empty. */
     val reminderDays: Set<DayOfWeek> = DayOfWeek.entries.toSet(),
     val distance: DistanceUnit = DistanceUnit.KM,

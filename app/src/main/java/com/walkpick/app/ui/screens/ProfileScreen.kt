@@ -9,8 +9,8 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBars
@@ -31,20 +31,17 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.walkpick.app.R
-import com.walkpick.app.data.local.HealthKind
 import com.walkpick.app.data.profile.Profile
 import com.walkpick.app.ui.components.AppCard
 import com.walkpick.app.ui.components.Avatar
 import com.walkpick.app.ui.components.CircleButton
 import com.walkpick.app.ui.components.GradientHeader
 import com.walkpick.app.ui.grouped
-import com.walkpick.app.ui.health.HealthState
 import com.walkpick.app.ui.profile.ProfileState
-import com.walkpick.app.ui.stats.StatsTab
+import com.walkpick.app.ui.settings.SettingsState
 import com.walkpick.app.ui.theme.AppTheme
 import com.walkpick.app.ui.theme.Sizes
 import com.walkpick.app.ui.theme.Spacing
-import java.time.Instant
 import kotlin.math.roundToInt
 
 // Below the status bar: the frame draws 232 with a status bar of 24.
@@ -63,14 +60,15 @@ private val TotalDividerHeight = 40.dp
 @Composable
 fun ProfileScreen(
     state: ProfileState,
+    settings: SettingsState,
+    actions: SettingsActions,
     onChange: ((Profile) -> Profile) -> Unit,
-    onWeight: (Double, Instant) -> Unit,
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val statusBar = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
     var editing by rememberSaveable { mutableStateOf<ProfileField?>(null) }
-    var weighing by rememberSaveable { mutableStateOf(false) }
+    val edit = { field: ProfileField -> editing = field }
     Box(
         modifier
             .fillMaxSize()
@@ -78,23 +76,26 @@ fun ProfileScreen(
             .verticalScroll(rememberScrollState()),
     ) {
         Header(statusBar, state.name, state.email, onBack)
-        Column(Modifier.padding(Spacing.ml, statusBar + CardsTop, Spacing.ml, Spacing.l)) {
-            TotalsCard(state)
-            ProfileBody(state, onEdit = { editing = it }, onWeigh = { weighing = true })
-            ProfileTabs(state.profile, onChange)
+        Column(
+            Modifier
+                .navigationBarsPadding()
+                .padding(top = statusBar + CardsTop, bottom = Spacing.sm),
+        ) {
+            Box(Modifier.padding(horizontal = Spacing.ml)) { TotalsCard(state) }
+            Spacer(Modifier.height(Spacing.s))
+            SettingsSections(
+                state = settings,
+                actions = actions,
+                health = {
+                    HealthTabs(state.profile, onChange)
+                    Targets(state.profile, state.units, edit)
+                },
+                height = { HeightRow(state.profile, edit) },
+            )
         }
     }
     editing?.let { field ->
         ProfileSheet(field, state.profile, state.units, onSave = onChange, onDismiss = { editing = null })
-    }
-    if (weighing) {
-        // The New entry sheet of Health with the weight alone.
-        val weight = HealthKind.WEIGHT
-        NewEntrySheet(
-            state = HealthState(listOf(weight), weight, StatsTab.Month, state.today, units = state.units),
-            onSave = { _, kg, _, at -> onWeight(kg, at) },
-            onDismiss = { weighing = false },
-        )
     }
 }
 
@@ -178,24 +179,4 @@ private fun TotalDivider() {
             .size(Sizes.hairline, TotalDividerHeight)
             .background(AppTheme.colors.divider),
     )
-}
-
-@Composable
-internal fun SectionTitle(title: String, note: String? = null) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(top = Spacing.l, bottom = Spacing.s),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Text(
-            text = title,
-            modifier = Modifier.weight(1f),
-            style = MaterialTheme.typography.titleSmall,
-            color = AppTheme.colors.textPrimary,
-        )
-        if (note != null) {
-            Text(note, style = MaterialTheme.typography.bodySmall, color = AppTheme.colors.textSecondary)
-        }
-    }
 }

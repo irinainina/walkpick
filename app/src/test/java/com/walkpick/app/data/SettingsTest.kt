@@ -25,15 +25,15 @@ class SettingsTest {
 
     @Test
     fun theReminderComesTodayWhenItsHourIsStillAhead() {
-        assertEquals(LocalDateTime.of(2026, 9, 30, 18, 0), nextReminder(weekdays, morning))
+        assertEquals(LocalDateTime.of(2026, 9, 30, 15, 0), nextReminder(weekdays, morning))
     }
 
     @Test
     fun afterItsHourTheReminderMovesToTheNextChosenDay() {
-        val friday = LocalDateTime.of(2026, 10, 2, 18, 0)
-        assertEquals(LocalDateTime.of(2026, 10, 5, 18, 0), nextReminder(weekdays, friday))
-        val evening = morning.withHour(18).withMinute(1)
-        assertEquals(LocalDateTime.of(2026, 10, 1, 18, 0), nextReminder(weekdays, evening))
+        val friday = LocalDateTime.of(2026, 10, 2, 15, 0)
+        assertEquals(LocalDateTime.of(2026, 10, 5, 15, 0), nextReminder(weekdays, friday))
+        val evening = morning.withHour(15).withMinute(1)
+        assertEquals(LocalDateTime.of(2026, 10, 1, 15, 0), nextReminder(weekdays, evening))
     }
 
     @Test
@@ -66,7 +66,7 @@ class SettingsTest {
     fun valuesAreShownInTheChosenUnits() {
         assertEquals("4.8 km", distanceText(4800, DistanceUnit.KM))
         assertEquals("3.0 mi", distanceText(4800, DistanceUnit.MI))
-        assertEquals("1,209 km", distanceText(1_209_400, DistanceUnit.KM))
+        assertEquals("1\u00A0209 km", distanceText(1_209_400, DistanceUnit.KM))
         assertEquals("0 km", distanceText(0, DistanceUnit.KM))
         assertEquals("64.2 kg", weightText(64.2, WeightUnit.KG))
         assertEquals("141.5 lb", weightText(64.2, WeightUnit.LB))

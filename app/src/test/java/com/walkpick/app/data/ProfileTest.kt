@@ -8,7 +8,6 @@ import com.walkpick.app.data.profile.toProfileRow
 import com.walkpick.app.data.profile.toSettingsRow
 import com.walkpick.app.data.profile.withProfileRow
 import com.walkpick.app.data.profile.withSettingsRow
-import com.walkpick.app.ui.screens.birthDate
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import java.time.LocalDate
@@ -58,14 +57,5 @@ class ProfileTest {
             .withProfileRow(profile.toProfileRow("user"))
             .withSettingsRow(profile.toSettingsRow("user"))
         assertEquals(profile, back)
-    }
-
-    @Test
-    fun aDateOfBirthHasToBeARealDayInThePast() {
-        assertEquals(LocalDate.of(1992, 3, 14), birthDate("14", "3", "1992", today))
-        assertEquals(null, birthDate("31", "2", "1992", today))
-        assertEquals(null, birthDate("1", "10", "2026", today))
-        assertEquals(null, birthDate("1", "1", "1900", today))
-        assertEquals(null, birthDate("", "3", "1992", today))
     }
 }

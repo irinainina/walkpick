@@ -35,8 +35,8 @@ data class SettingsState(
     val steps: StepsAccess = StepsAccess.COUNTING,
     /** The steps of a full day: the ring of Today and the bars of Steps are measured by it. */
     val dailySteps: Int = DEFAULT_DAILY_GOAL,
-    /** The glucose unit is offered only while the Glucose tab is on. */
-    val glucoseShown: Boolean = false,
+    /** The health tabs that are on: a unit is offered only for a tab that is shown. */
+    val tabs: Set<HealthKind> = emptySet(),
     val version: String = BuildConfig.VERSION_NAME,
     /** A sign-out or a deletion is on its way to the server. */
     val busy: Boolean = false,
@@ -65,8 +65,7 @@ class SettingsViewModel @Inject constructor(
 
     val state: StateFlow<SettingsState> =
         combine(store.value, profiles.profile, access, busy, deleteFailed) { chosen, me, access, busy, bad ->
-            val glucose = HealthKind.GLUCOSE in me.healthTabs
-            SettingsState(chosen, access, me.dailyGoal, glucose, busy = busy, deleteFailed = bad)
+            SettingsState(chosen, access, me.dailyGoal, me.healthTabs, busy = busy, deleteFailed = bad)
         }
             .combine(export) { state, export -> state.copy(export = export) }
             .stateIn(viewModelScope, SharingStarted.WhileSubscribed(KEEP_AFTER_LEAVING_MS), SettingsState())

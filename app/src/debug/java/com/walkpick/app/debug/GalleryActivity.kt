@@ -5,6 +5,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.runtime.Composable
+import com.walkpick.app.data.local.HealthKind
 import com.walkpick.app.data.steps.StepsAccess
 import com.walkpick.app.data.walk.Season
 import com.walkpick.app.ui.screens.SignInCodeScreen
@@ -67,8 +68,8 @@ private fun Page(page: String) {
             CameraGallery(identifying = page == "camera-identifying", asking = page == "camera-what")
         "profile" -> ProfileGallery()
         "profile-consent" -> ProfileGallery(consent = true)
-        "settings" -> SettingsGallery(StepsAccess.COUNTING)
-        "settings-off" -> SettingsGallery(StepsAccess.NOT_ALLOWED)
+        "profile-steps-off" -> ProfileGallery(steps = StepsAccess.NOT_ALLOWED)
+        "profile-mood-only" -> ProfileGallery(tabs = setOf(HealthKind.MOOD))
         else -> ComponentGallery()
     }
 }

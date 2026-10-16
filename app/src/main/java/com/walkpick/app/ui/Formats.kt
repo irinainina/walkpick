@@ -23,10 +23,10 @@ private const val WHOLE_FROM = 100
 fun counted(count: Int, @StringRes one: Int, @StringRes many: Int): String =
     stringResource(if (count == 1) one else many, count)
 
-/** 6420 -> "6,420". */
-fun grouped(number: Int): String = String.format(Locale.ENGLISH, "%,d", number)
+/** 6420 -> "6 420" with a no-break space: a comma reads as the decimal point in Russian. */
+fun grouped(number: Int): String = String.format(Locale.ENGLISH, "%,d", number).replace(',', '\u00A0')
 
-/** "0 km", "4.8 km", "1,209 km" - or miles, when the user chose them. */
+/** "0 km", "4.8 km", "1 209 km" - or miles, when the user chose them. */
 fun distanceText(metres: Int, unit: DistanceUnit): String {
     val value = metres / METRES_IN_KM * unit.perMetric
     val number = when {

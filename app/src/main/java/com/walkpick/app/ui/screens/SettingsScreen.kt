@@ -1,14 +1,9 @@
 package com.walkpick.app.ui.screens
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.statusBarsPadding
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -22,6 +17,7 @@ import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.walkpick.app.R
+import com.walkpick.app.data.local.HealthKind
 import com.walkpick.app.data.settings.AppSettings
 import com.walkpick.app.data.steps.StepsAccess
 import com.walkpick.app.data.walk.Season
@@ -33,7 +29,6 @@ import com.walkpick.app.ui.components.AppSwitch
 import com.walkpick.app.ui.components.IconBadge
 import com.walkpick.app.ui.components.ListRow
 import com.walkpick.app.ui.components.SegmentedControl
-import com.walkpick.app.ui.components.TabTitle
 import com.walkpick.app.ui.grouped
 import com.walkpick.app.ui.settings.ExportState
 import com.walkpick.app.ui.settings.SettingsState
@@ -63,20 +58,17 @@ class SettingsActions(
     val onExport: () -> Unit,
 )
 
+/** The settings part of Profile; [health] goes above Units, [height] below Daily steps. */
 @Composable
-fun SettingsScreen(state: SettingsState, actions: SettingsActions, modifier: Modifier = Modifier) {
+internal fun SettingsSections(
+    state: SettingsState,
+    actions: SettingsActions,
+    health: @Composable () -> Unit,
+    height: @Composable () -> Unit,
+) {
     var sheet by rememberSaveable { mutableStateOf<SettingsSheet?>(null) }
     val settings = state.settings
-    Column(
-        modifier
-            .fillMaxSize()
-            .background(AppTheme.colors.canvas)
-            .statusBarsPadding()
-            .verticalScroll(rememberScrollState())
-            .padding(bottom = Spacing.l),
-    ) {
-        TabTitle(stringResource(R.string.screen_settings))
-        Spacer(Modifier.height(Spacing.s))
+    Column {
         Section(R.string.settings_reminders) {
             val reminder = stringResource(R.string.settings_walk_reminder)
             ListRow(reminder, trailing = { AppSwitch(settings.remindersOn, actions.onReminders, reminder) })
@@ -99,19 +91,25 @@ fun SettingsScreen(state: SettingsState, actions: SettingsActions, modifier: Mod
                 onSelect = { index -> actions.onChange { it.copy(theme = Season.entries[index]) } },
             )
         }
+        health()
         Section(R.string.settings_units) {
+            val weight = HealthKind.WEIGHT in state.tabs
+            val glucose = HealthKind.GLUCOSE in state.tabs
             ListRow(
                 label = stringResource(R.string.today_distance),
                 value = settings.distance.symbol,
+                divider = weight || glucose,
                 onClick = { sheet = SettingsSheet.Distance },
             )
-            ListRow(
-                label = stringResource(R.string.health_weight),
-                value = settings.weight.symbol,
-                divider = state.glucoseShown,
-                onClick = { sheet = SettingsSheet.Weight },
-            )
-            if (state.glucoseShown) {
+            if (weight) {
+                ListRow(
+                    label = stringResource(R.string.health_weight),
+                    value = settings.weight.symbol,
+                    divider = glucose,
+                    onClick = { sheet = SettingsSheet.Weight },
+                )
+            }
+            if (glucose) {
                 ListRow(
                     label = stringResource(R.string.health_glucose),
                     value = settings.glucose.symbol,
@@ -126,6 +124,7 @@ fun SettingsScreen(state: SettingsState, actions: SettingsActions, modifier: Mod
                 value = grouped(state.dailySteps),
                 onClick = { sheet = SettingsSheet.Steps },
             )
+            height()
             val mood = stringResource(R.string.settings_walk_mood)
             val setMood = { on: Boolean -> actions.onChange { it.copy(walkMood = on) } }
             ListRow(mood, trailing = { AppSwitch(settings.walkMood, setMood, mood) })
@@ -178,7 +177,12 @@ private fun Badge(iconRes: Int, ground: Color, tint: Color) =
     IconBadge(iconRes, ground, tint, Sizes.iconSmall)
 
 @Composable
-private fun Section(titleRes: Int, inCard: Boolean = true, rows: @Composable () -> Unit) {
+internal fun Section(
+    titleRes: Int,
+    inCard: Boolean = true,
+    note: String? = null,
+    rows: @Composable () -> Unit,
+) {
     Column(Modifier.padding(start = Spacing.ml, top = Spacing.sm, end = Spacing.ml, bottom = Spacing.sm)) {
         Text(
             text = stringResource(titleRes).uppercase(),
@@ -187,6 +191,10 @@ private fun Section(titleRes: Int, inCard: Boolean = true, rows: @Composable () 
         )
         Spacer(Modifier.height(Spacing.s))
         if (inCard) AppCard { rows() } else rows()
+        if (note != null) {
+            Spacer(Modifier.height(Spacing.s))
+            Text(note, style = MaterialTheme.typography.bodySmall, color = AppTheme.colors.textSecondary)
+        }
     }
 }
 

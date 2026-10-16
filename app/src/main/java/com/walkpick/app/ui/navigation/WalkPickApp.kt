@@ -53,7 +53,6 @@ fun WalkPickApp(signedIn: Boolean, walkAsked: Int, onStartShown: () -> Unit) {
             photoViewerRoute(navController)
             galleryRoute(navController, onSelecting = { selecting = it })
             profileRoute(navController)
-            settingsRoute(navController)
             val laidOut = setOf(
                 Screen.SignIn,
                 Screen.Today,
@@ -64,7 +63,6 @@ fun WalkPickApp(signedIn: Boolean, walkAsked: Int, onStartShown: () -> Unit) {
                 Screen.Gallery,
                 Screen.PhotoViewer,
                 Screen.Profile,
-                Screen.Settings,
             )
             (Screen.entries - laidOut).forEach { screen ->
                 composable(screen.route) {

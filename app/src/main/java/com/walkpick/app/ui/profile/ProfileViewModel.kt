@@ -4,8 +4,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.walkpick.app.data.account.AccountStore
 import com.walkpick.app.data.find.FindStore
-import com.walkpick.app.data.health.HealthRepository
-import com.walkpick.app.data.local.HealthKind
 import com.walkpick.app.data.profile.Profile
 import com.walkpick.app.data.profile.ProfileRepository
 import com.walkpick.app.data.settings.AppSettings
@@ -17,8 +15,6 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-import java.time.Instant
-import java.time.LocalDate
 import javax.inject.Inject
 
 private const val KEEP_AFTER_LEAVING_MS = 5_000L
@@ -27,13 +23,10 @@ private const val KEEP_AFTER_LEAVING_MS = 5_000L
 data class Totals(val walks: Int = 0, val metres: Long = 0, val photos: Int = 0)
 
 data class ProfileState(
-    val today: LocalDate,
     val name: String? = null,
     val email: String = "",
     val profile: Profile = Profile(),
     val totals: Totals = Totals(),
-    /** The latest weight saved on Health. */
-    val weightKg: Double? = null,
     val units: AppSettings = AppSettings(),
 )
 
@@ -42,7 +35,6 @@ class ProfileViewModel @Inject constructor(
     private val profiles: ProfileRepository,
     walks: WalkRepository,
     finds: FindStore,
-    private val health: HealthRepository,
     settings: SettingsStore,
     account: AccountStore,
 ) : ViewModel() {
@@ -52,17 +44,10 @@ class ProfileViewModel @Inject constructor(
             Totals(walked.size, walked.sumOf { it.distanceM.toLong() }, photos)
         }
 
-    private val weight = health.watchLatest(HealthKind.WEIGHT)
-    private val units = settings.value
-
     val state: StateFlow<ProfileState?> =
-        combine(profiles.profile, totals, weight, account.user, units) { profile, totals, kg, who, units ->
-            ProfileState(LocalDate.now(), who?.name, who?.email.orEmpty(), profile, totals, kg, units)
+        combine(profiles.profile, totals, account.user, settings.value) { profile, totals, who, units ->
+            ProfileState(who?.name, who?.email.orEmpty(), profile, totals, units)
         }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(KEEP_AFTER_LEAVING_MS), null)
-
-    fun addWeight(kg: Double, at: Instant) {
-        viewModelScope.launch { health.add(HealthKind.WEIGHT, kg, diastolic = null, measuredAt = at) }
-    }
 
     fun change(transform: (Profile) -> Profile) {
         viewModelScope.launch { profiles.change(transform) }
