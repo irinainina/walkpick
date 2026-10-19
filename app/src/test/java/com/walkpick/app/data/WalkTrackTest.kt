@@ -103,6 +103,9 @@ class WalkTrackTest {
         assertEquals(150, entry.steps)
         // The phone cut the counter off on the way: the steps are the ones 111 m take.
         assertEquals(158, standing.with(point(0.001, 60)).withCounter(10).withCounter(40).stepsWith(0.7))
+        // GPS lost the fix on the way: the distance is the one 400 steps take.
+        val lost = standing.with(point(0.001, 60)).withCounter(10).withCounter(410)
+        assertEquals(280, walkEntity(lost, 313, at(600), 64.2, 0.7)!!.distanceM)
         assertEquals("30.520000 50.450000,30.520000 50.451000", entry.route)
         assertEquals(false, entry.synced)
     }

@@ -43,6 +43,9 @@ private fun regular(size: Int, lineHeight: Int) = style(Cabin, FontWeight.Normal
 /** A line of running text, taller than the list-row bodyLarge. */
 val ParagraphStyle = regular(16, 24)
 
+/** The date under the greeting of Home. */
+val HeroDateStyle = regular(18, 24)
+
 /** The letter in the small avatar of a header. */
 val AvatarLetterStyle = heading(16, 20)
 

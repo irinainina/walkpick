@@ -39,8 +39,7 @@ private fun Page(page: String) {
     when (page) {
         "charts" -> ChartGallery()
         "nav" -> NavGallery()
-        "last-walk" -> LastWalkGallery()
-        "periods-week", "periods-month", "periods-year", "periods-all", "periods-day" -> PeriodsGallery(page)
+        "walk-week", "walk-month", "walk-year", "walk-all", "walk-day" -> PeriodsGallery(page)
         "signin" -> SignInScreen(onGoogle = {}, onEmail = {})
         "signin-email" -> SignInEmailScreen("ira@example.com", {}, {}, {}, busy = false, problem = null)
         "signin-code" -> SignInCodeScreen("ira@example.com", "42", {}, {}, 48, {}, {}, problem = null)

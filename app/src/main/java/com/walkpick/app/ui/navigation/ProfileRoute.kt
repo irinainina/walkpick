@@ -60,6 +60,7 @@ internal fun NavGraphBuilder.profileRoute(navController: NavHostController) {
                     onExport = { export.launch("walkpick-${LocalDate.now()}.json") },
                 ),
                 onChange = model::change,
+                onRename = model::rename,
                 onBack = { navController.popBackStack() },
             )
         }

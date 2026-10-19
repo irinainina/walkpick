@@ -10,10 +10,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -23,9 +20,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.zIndex
 import com.walkpick.app.ui.theme.AppColors
 import com.walkpick.app.ui.theme.AppTheme
 import com.walkpick.app.ui.theme.PillShape
@@ -35,18 +30,15 @@ import com.walkpick.app.ui.theme.Spacing
 enum class BarKind { Past, Walked, Today }
 
 /**
- * [fraction] is 0..1 of the track; 0 leaves the track empty. [tip] is shown when the bar is picked.
+ * [fraction] is 0..1 of the track; 0 leaves the track empty.
  * [accentLabel] writes the label bold and blue, the way today is marked.
  */
 data class Bar(
     val fraction: Float,
     val label: String,
     val kind: BarKind = BarKind.Past,
-    val tip: String? = null,
     val accentLabel: Boolean = kind == BarKind.Today,
 )
-
-private val TipSize = DpSize(72.dp, 28.dp)
 
 /**
  * Bars on tracks with a label under each. Each bar stands in a slot [slotWidth] wide, the slots are
@@ -60,7 +52,6 @@ fun BarChart(
     modifier: Modifier = Modifier,
     slotWidth: Dp = 32.dp,
     labelGap: Dp = Spacing.xs,
-    selected: Int? = null,
     onSelect: ((Int) -> Unit)? = null,
 ) {
     val colors = AppTheme.colors
@@ -73,13 +64,12 @@ fun BarChart(
             val pick = if (onSelect == null) {
                 Modifier
             } else {
-                // No ripple: the tip that appears is the answer to the tap.
+                // No ripple: the screen that opens is the answer to the tap.
                 Modifier.clickable(remember { MutableInteractionSource() }, null) { onSelect(index) }
             }
             Column(
                 modifier = Modifier
                     .width(slotWidth)
-                    .zIndex(if (index == selected) 1f else 0f)
                     .then(pick),
                 verticalArrangement = Arrangement.spacedBy(labelGap),
                 horizontalAlignment = Alignment.CenterHorizontally,
@@ -96,11 +86,7 @@ fun BarChart(
                         .fillMaxHeight(fraction)
                     when (bar.kind) {
                         BarKind.Past -> Box(fill.background(colors.barPast, PillShape))
-                        BarKind.Walked -> Box(fill.background(colors.accent, PillShape))
-                        BarKind.Today -> Box(fill.background(today(colors), PillShape))
-                    }
-                    if (index == selected && bar.tip != null) {
-                        Tip(bar.tip, Modifier.padding(bottom = trackHeight * fraction + Spacing.s))
+                        BarKind.Walked, BarKind.Today -> Box(fill.background(walked(colors), PillShape))
                     }
                 }
                 Text(
@@ -115,18 +101,4 @@ fun BarChart(
     }
 }
 
-// Wider than its bar, so it is laid out past the edges of the slot.
-@Composable
-private fun Tip(text: String, modifier: Modifier = Modifier) {
-    Box(
-        modifier = modifier
-            .wrapContentSize(unbounded = true)
-            .size(TipSize)
-            .background(AppTheme.colors.textPrimary, MaterialTheme.shapes.extraSmall),
-        contentAlignment = Alignment.Center,
-    ) {
-        Text(text, style = MaterialTheme.typography.labelMedium, color = AppTheme.colors.onAccent)
-    }
-}
-
-private fun today(colors: AppColors) = Brush.verticalGradient(listOf(colors.accent, colors.accentLight))
+private fun walked(colors: AppColors) = Brush.verticalGradient(listOf(colors.accentDeep, colors.accentLight))

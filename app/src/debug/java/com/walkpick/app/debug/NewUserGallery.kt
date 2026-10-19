@@ -36,12 +36,7 @@ fun NewUserGallery(page: String) {
             walkMoods = true,
             // The weather of the frame; a newcomer is greeted the same way.
             weather = WalkWeather(code = 2, celsius = 13.0, windMs = 2.0),
-            lastWalk = null,
-            actions = TodayActions(
-                onAllowSteps = {},
-                onWalk = {},
-                onProfile = {},
-            ),
+            actions = TodayActions(onAllowSteps = {}, onProfile = {}, onWeek = {}, onDay = {}),
             onStartWalk = {},
             onStopWalk = {},
             modifier = Modifier.navigationBarsPadding(),
@@ -52,7 +47,14 @@ fun NewUserGallery(page: String) {
         }
         else -> {
             val state = ProfileState("Ira", "ira@example.com")
-            ProfileScreen(state, SettingsState(), NoSettingsActions, onChange = {}, onBack = {})
+            ProfileScreen(
+                state,
+                SettingsState(),
+                NoSettingsActions,
+                onChange = {},
+                onRename = {},
+                onBack = {},
+            )
         }
     }
 }

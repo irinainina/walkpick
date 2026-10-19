@@ -17,7 +17,6 @@ import com.walkpick.app.data.walk.WalkRepository
 import com.walkpick.app.data.walk.routePlaces
 import com.walkpick.app.ui.components.Bar
 import com.walkpick.app.ui.components.BarKind
-import com.walkpick.app.ui.grouped
 import com.walkpick.app.ui.localDay
 import com.walkpick.app.ui.walk.DiaryWalk
 import com.walkpick.app.ui.walk.routeSketch
@@ -62,7 +61,6 @@ data class StatsState(
     val distanceUnit: DistanceUnit = DistanceUnit.KM,
     /** Days for Week, months for Year and All: the steps walked in each. */
     val bars: List<Bar> = emptyList(),
-    val selectedBar: Int? = null,
     /** Month only. */
     val calendar: List<CalendarDay> = emptyList(),
     val bestMonth: YearMonth? = null,
@@ -72,13 +70,14 @@ data class StatsState(
     /** The day of the calendar tapped last and its walks, when it has several: a sheet offers them. */
     val day: LocalDate? = null,
     val dayWalks: List<DiaryWalk> = emptyList(),
+    /** The photos taken in the period, the latest first. */
+    val photos: List<FindEntity> = emptyList(),
 )
 
-/** What the user chose: the tab, a day inside the period shown and the bar picked by hand. */
+/** What the user chose: the tab, a day inside the period shown and the day of the calendar tapped. */
 data class StatsChoice(
     val tab: StatsTab = StatsTab.Week,
     val anchor: LocalDate = LocalDate.now(),
-    val bar: Int? = null,
     val day: LocalDate? = null,
 )
 
@@ -98,13 +97,17 @@ class StatsViewModel @Inject constructor(
             val ofDay = walks
                 .filter { it.startedAt.localDay() == choice.day }
                 .sortedByDescending { it.startedAt }
-            statsState(walks, choice, LocalDate.now()).copy(
+            val shown = statsState(walks, choice, LocalDate.now())
+            shown.copy(
                 distanceUnit = units.distance,
                 day = choice.day,
                 dayWalks = ofDay.map { walk ->
                     val taken = finds.filter { it.walkId == walk.id }.sortedBy { it.takenAt }
                     DiaryWalk(walk, taken.size, routeSketch(routePlaces(walk.route)), taken)
                 },
+                photos = finds
+                    .filter { it.takenAt.localDay() in shown.range }
+                    .sortedByDescending { it.takenAt },
             )
         }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(KEEP_AFTER_LEAVING_MS), null)
 
@@ -120,18 +123,29 @@ class StatsViewModel @Inject constructor(
         StatsChoice(it.tab, anchor)
     }
 
-    /** A bar is tapped: in Week it is picked, in Year and All its month opens with its calendar. */
-    fun pick(bar: Int) = choice.update {
-        val state = state.value
-        val month = state?.takeIf { it.tab != StatsTab.Week }?.let { monthOfBar(it, bar) }
-        if (month == null) it.copy(bar = bar) else StatsChoice(StatsTab.Month, month.atDay(1))
+    /**
+     * A bar is tapped: in Week the walks of its day open like a day of the calendar, a day without
+     * one does nothing; in Year and All its month opens with its calendar.
+     */
+    fun pick(bar: Int, onWalk: (String) -> Unit) {
+        val state = state.value ?: return
+        if (state.tab == StatsTab.Week) {
+            val day = state.range.from.plusDays(bar.toLong())
+            if (all.value.any { it.startedAt.localDay() == day }) pickDay(day, onWalk)
+        } else {
+            val month = monthOfBar(state, bar) ?: return
+            choice.update { StatsChoice(StatsTab.Month, month.atDay(1)) }
+        }
     }
 
     /** A day of the calendar is tapped: its only walk opens at once, several are offered in a sheet. */
     fun pickDay(day: LocalDate, onWalk: (String) -> Unit) {
         val ofDay = all.value.filter { it.startedAt.localDay() == day }
-        if (ofDay.size == 1) onWalk(ofDay.first().id) else choice.update { it.copy(day = day) }
+        if (ofDay.size == 1) onWalk(ofDay.first().id) else openDay(day)
     }
+
+    /** The sheet of the walks of [day]. */
+    fun openDay(day: LocalDate) = choice.update { it.copy(day = day) }
 
     fun closeDay() = choice.update { it.copy(day = null) }
 
@@ -162,8 +176,6 @@ internal fun statsState(walks: List<WalkEntity>, choice: StatsChoice, today: Loc
         StatsTab.Month -> emptyList()
         else -> monthBars(months, years = tab == StatsTab.All, YearMonth.from(today))
     }
-    // Today is picked until the user picks another day; a month is not picked, a tap opens it.
-    val current = bars.indexOfFirst { it.kind == BarKind.Today }.takeIf { it >= 0 && tab == StatsTab.Week }
     val walked = byDay.keys
     return StatsState(
         tab = tab,
@@ -173,7 +185,6 @@ internal fun statsState(walks: List<WalkEntity>, choice: StatsChoice, today: Loc
         canGoForward = tab != StatsTab.All && range.to < today,
         totals = totals(byDay, daySteps, range),
         bars = bars,
-        selectedBar = choice.bar ?: current,
         calendar = monthDays(walked, range).takeIf { tab == StatsTab.Month }.orEmpty(),
         bestMonth = months.filter { it.second > 0 }.maxByOrNull { it.second }?.first,
         streak = currentStreak(walked, today),
@@ -210,7 +221,7 @@ private fun top(values: List<Int>) = (values.maxOrNull() ?: 0).coerceAtLeast(1).
 private fun monthDays(walked: Set<LocalDate>, month: DayRange) =
     List(month.to.dayOfMonth) { month.from.plusDays(it.toLong()) }.map { CalendarDay(it, it in walked) }
 
-private fun dayBars(daySteps: Map<LocalDate, Int>, week: DayRange, today: LocalDate): List<Bar> {
+internal fun dayBars(daySteps: Map<LocalDate, Int>, week: DayRange, today: LocalDate): List<Bar> {
     val days = List(DAYS_IN_WEEK) { week.from.plusDays(it.toLong()) }
     val top = top(days.map { daySteps[it] ?: 0 })
     return days.map { day ->
@@ -223,7 +234,6 @@ private fun dayBars(daySteps: Map<LocalDate, Int>, week: DayRange, today: LocalD
                 steps > 0 -> BarKind.Walked
                 else -> BarKind.Past
             },
-            tip = grouped(steps).takeIf { steps > 0 },
         )
     }
 }
@@ -240,7 +250,6 @@ private fun monthBars(months: List<Pair<YearMonth, Int>>, years: Boolean, thisMo
                 else -> ""
             },
             kind = if (month == thisMonth) BarKind.Today else BarKind.Past,
-            tip = grouped(steps).takeIf { steps > 0 },
             accentLabel = month == thisMonth && !years,
         )
     }

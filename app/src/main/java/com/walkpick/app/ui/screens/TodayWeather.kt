@@ -30,11 +30,11 @@ import com.walkpick.app.ui.today.NIGHT_END
 import com.walkpick.app.ui.today.weatherCall
 import kotlin.math.roundToInt
 
-private val PillHeight = 32.dp
+private val PillHeight = 40.dp
 private const val FAHRENHEIT_PER_C = 1.8
 private const val FREEZING_F = 32
 
-/** The weather now in the header of Walk: its sky, its degrees and what it calls for. */
+/** The weather now in the header of Home: its sky, its degrees and what it calls for. */
 @Composable
 internal fun WeatherPill(weather: WalkWeather?, unit: DistanceUnit, hour: Int, walking: Boolean) {
     val colors = AppTheme.colors
@@ -44,7 +44,7 @@ internal fun WeatherPill(weather: WalkWeather?, unit: DistanceUnit, hour: Int, w
             .padding(horizontal = Spacing.ml)
             .height(PillHeight)
             .background(colors.onAccentOverlay, PillShape)
-            .padding(horizontal = Spacing.sm),
+            .padding(start = Spacing.sm, end = Spacing.m),
         horizontalArrangement = Arrangement.spacedBy(Spacing.s),
         verticalAlignment = Alignment.CenterVertically,
     ) {
@@ -52,7 +52,7 @@ internal fun WeatherPill(weather: WalkWeather?, unit: DistanceUnit, hour: Int, w
             Icon(
                 painter = painterResource(weather.iconRes(dark = hour !in NIGHT_END until DARK_FROM)),
                 contentDescription = weather.sky(),
-                modifier = Modifier.size(Sizes.iconSmall),
+                modifier = Modifier.size(Sizes.icon),
                 tint = colors.onAccent,
             )
         }
@@ -60,7 +60,7 @@ internal fun WeatherPill(weather: WalkWeather?, unit: DistanceUnit, hour: Int, w
             text = weather
                 ?.let { stringResource(R.string.today_weather_line, degreesText(it, unit), call) }
                 ?: call,
-            style = MaterialTheme.typography.labelMedium,
+            style = MaterialTheme.typography.titleMedium,
             color = colors.onAccent,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,

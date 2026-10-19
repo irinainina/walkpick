@@ -22,7 +22,7 @@ internal fun NavGraphBuilder.signInRoutes(
 ) {
     // The sign-in is left behind, or the back gesture walks out of a signed-in app onto it.
     val enter = {
-        navController.navigate(Screen.Today.route) {
+        navController.navigate(Screen.Home.route) {
             popUpTo(Screen.SignIn.route) { inclusive = true }
         }
     }

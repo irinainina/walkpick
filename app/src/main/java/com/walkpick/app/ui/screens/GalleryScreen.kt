@@ -81,12 +81,13 @@ class GalleryActions(
     val onDelete: () -> Unit,
 )
 
-/** [map] is the Map mode under the switch; it takes where the switch ends. */
+/** [map] is the Map mode under the switch; it takes where the switch ends. A walk opens by its name. */
 @Composable
 fun GalleryScreen(
     state: GalleryState,
     actions: GalleryActions,
     modifier: Modifier = Modifier,
+    onWalk: (String) -> Unit = {},
     map: @Composable (Dp) -> Unit = {},
 ) {
     val selected = state.selected
@@ -120,7 +121,7 @@ fun GalleryScreen(
             )
             when {
                 state.tab == GalleryTab.Map -> Unit
-                !empty -> Photos(state, actions)
+                !empty -> Photos(state, actions, onWalk)
                 all -> EmptyState(
                     iconRes = R.drawable.ic_camera,
                     title = stringResource(R.string.gallery_empty_title),
@@ -182,7 +183,7 @@ private fun Heading(selected: Set<String>?, actions: GalleryActions, canSelect: 
 }
 
 @Composable
-private fun Photos(state: GalleryState, actions: GalleryActions) {
+private fun Photos(state: GalleryState, actions: GalleryActions, onWalk: (String) -> Unit) {
     val picking = state.selected != null
     // In the selection mode a tap picks, outside it a tap opens and a long press starts picking.
     val look = TileLook(
@@ -197,7 +198,10 @@ private fun Photos(state: GalleryState, actions: GalleryActions) {
     val bottom = if (picking) ActionsHeight + Spacing.l else Spacing.l
     LazyColumn(contentPadding = PaddingValues(Spacing.ml, Spacing.m, Spacing.ml, bottom)) {
         if (state.tab == GalleryTab.All) {
-            state.groups.forEachIndexed { index, group -> group(group, first = index == 0, state, look) }
+            val open = onWalk.takeIf { !picking }
+            state.groups.forEachIndexed { index, group ->
+                group(group, first = index == 0, state, look, open)
+            }
         } else {
             item {
                 val count = counted(state.best.size, R.string.gallery_best_one, R.string.gallery_best_many)
@@ -214,10 +218,17 @@ private fun Photos(state: GalleryState, actions: GalleryActions) {
 }
 
 // The name of a walk with its day and its number of photos, then its photos three in a row.
-private fun LazyListScope.group(group: GalleryGroup, first: Boolean, state: GalleryState, look: TileLook) {
+private fun LazyListScope.group(
+    group: GalleryGroup,
+    first: Boolean,
+    state: GalleryState,
+    look: TileLook,
+    onWalk: ((String) -> Unit)?,
+) {
     item(key = group.walk.id) {
         if (!first) Spacer(Modifier.height(Spacing.m))
-        Row(verticalAlignment = Alignment.CenterVertically) {
+        val open = onWalk?.let { Modifier.clickable(role = Role.Button) { it(group.walk.id) } } ?: Modifier
+        Row(open, verticalAlignment = Alignment.CenterVertically) {
             Text(
                 text = group.walk.title(),
                 modifier = Modifier.weight(1f),

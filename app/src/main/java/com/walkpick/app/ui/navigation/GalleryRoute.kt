@@ -48,6 +48,8 @@ internal fun NavGraphBuilder.galleryRoute(navController: NavHostController, onSe
                 onLocate = { if (map.canLocate) map.locate() else locate() },
             )
         }
-        GalleryScreen(shown, actions) { top -> PhotoMap(mapState, mapActions, top) }
+        GalleryScreen(shown, actions, onWalk = { navController.navigate(walkSummaryRoute(it)) }) { top ->
+            PhotoMap(mapState, mapActions, top)
+        }
     }
 }

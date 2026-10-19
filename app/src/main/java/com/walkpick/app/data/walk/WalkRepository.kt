@@ -33,6 +33,7 @@ fun walkEntity(
 ): WalkEntity? {
     val route = routeText(track.points) ?: return null
     val seconds = track.movingSeconds(endedAt).coerceAtLeast(0)
+    val metres = track.metresWith(strideM)
     return WalkEntity(
         id = track.id,
         number = number,
@@ -40,8 +41,8 @@ fun walkEntity(
         endedAt = endedAt,
         durationS = seconds.toInt(),
         steps = track.stepsWith(strideM),
-        distanceM = track.metres.roundToInt(),
-        calories = walkCalories(track.metres, seconds, weightKg),
+        distanceM = metres.roundToInt(),
+        calories = walkCalories(metres, seconds, weightKg),
         route = route,
         breaks = breaksText(track.legs),
         moodBefore = track.moodBefore,

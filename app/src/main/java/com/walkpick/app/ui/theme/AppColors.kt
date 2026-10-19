@@ -107,7 +107,7 @@ private fun appColors(deep: Color, accent: Color, light: Color) = AppColors(
         start = Offset(0f, Float.POSITIVE_INFINITY),
         end = Offset(Float.POSITIVE_INFINITY, 0f),
     ),
-    accentDiagonal = DiagonalGradient(listOf(accent, light)),
+    accentDiagonal = DiagonalGradient(listOf(deep, light)),
     stopGradient = Brush.horizontalGradient(ACCENT_STOP to Flame, 1f to Orange),
     canvas = Canvas,
     mapGround = Fog,

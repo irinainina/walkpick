@@ -37,6 +37,7 @@ fun ProfileGallery(
         ),
         actions = NoSettingsActions,
         onChange = {},
+        onRename = {},
         onBack = {},
     )
     if (consent) ConsentSheet(HealthKind.PRESSURE, onTurnOn = {}, onDismiss = {})

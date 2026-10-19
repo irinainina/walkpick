@@ -1,27 +1,17 @@
 package com.walkpick.app.debug
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.navigationBarsPadding
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import com.walkpick.app.data.local.FindEntity
 import com.walkpick.app.data.local.WalkEntity
-import com.walkpick.app.data.settings.DistanceUnit
 import com.walkpick.app.data.steps.StepsAccess
 import com.walkpick.app.data.walk.WalkWeather
-import com.walkpick.app.ui.screens.LastWalkCard
+import com.walkpick.app.ui.components.Bar
+import com.walkpick.app.ui.components.BarKind
 import com.walkpick.app.ui.screens.TodayActions
 import com.walkpick.app.ui.screens.TodayScreen
-import com.walkpick.app.ui.theme.AppTheme
-import com.walkpick.app.ui.theme.Spacing
 import com.walkpick.app.ui.today.TodayState
-import com.walkpick.app.ui.walk.DiaryWalk
 import com.walkpick.app.ui.walk.WalkEnding
-import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.ZoneId
 
@@ -32,40 +22,26 @@ internal val ringSketch = listOf(
     1.00f to 0.60f, 0.86f to 0.92f, 0.44f to 1.00f, 0.00f to 0.73f,
 )
 
-// The same ring laid on Lebedyn, as the walks table keeps a route: "longitude latitude, ...".
-private val ring = ringSketch.joinToString(",") { (x, y) -> "${34.475 + x * 0.01} ${50.585 - y * 0.006}" }
-private val finds = List(7) { index ->
-    FindEntity(
-        id = "find$index",
-        walkId = "walk",
-        takenAt = evening.plusSeconds(300L * index),
-        latitude = 50.58,
-        longitude = 34.48,
-        photoPath = "none",
-        updatedAt = evening,
-    )
-}
-internal val lastWalk = DiaryWalk(
-    walk = WalkEntity(
-        id = "walk",
-        number = 312,
-        startedAt = evening,
-        endedAt = evening.plusSeconds(2880),
-        durationS = 2880,
-        steps = 5230,
-        distanceM = 3900,
-        name = "Misty Evening",
-        route = ring,
-        moodBefore = 3,
-        moodAfter = 5,
-        updatedAt = evening,
-    ),
-    photos = 7,
-    sketch = ringSketch,
-    finds = finds,
+// The last walk of the Home frame.
+private val lastWalk = WalkEntity(
+    id = "walk",
+    number = 312,
+    startedAt = evening,
+    endedAt = evening.plusSeconds(3120),
+    durationS = 3120,
+    steps = 6420,
+    distanceM = 4800,
+    name = "Misty Evening",
+    updatedAt = evening,
 )
 
-/** Today with the data of the Figma frames, for the comparison with the design. */
+// The bars of the frame on their track of 48.
+private val week = listOf(39, 26, 31, 0, 0, 0, 0).mapIndexed { index, height ->
+    val kind = if (index == 2) BarKind.Today else if (height > 0) BarKind.Walked else BarKind.Past
+    Bar(height / 48f, "MTWTFSS"[index].toString(), kind)
+}
+
+/** Home with the data of the Figma frames, for the comparison with the design. */
 @Composable
 fun TodayGallery(access: StepsAccess, walkSeconds: Long? = null, paused: Boolean = false) {
     TodayScreen(
@@ -73,34 +49,19 @@ fun TodayGallery(access: StepsAccess, walkSeconds: Long? = null, paused: Boolean
             now = LocalDateTime.of(2026, 9, 30, 9, 41),
             name = "Ira",
             access = access,
+            lastWalk = lastWalk,
+            dailySteps = 10_000,
+            streak = 5,
+            week = week,
         ),
         walkSeconds = walkSeconds,
         walkPaused = paused,
         walkEnding = WalkEnding.KeptWithMood,
         walkMoods = true,
         weather = WalkWeather(code = 2, celsius = 13.0, windMs = 2.0),
-        lastWalk = lastWalk,
-        actions = TodayActions(
-            onAllowSteps = {},
-            onWalk = {},
-            onProfile = {},
-        ),
+        actions = TodayActions(onAllowSteps = {}, onProfile = {}, onWeek = {}, onDay = {}),
         onStartWalk = {},
         onStopWalk = {},
         modifier = Modifier.navigationBarsPadding(),
     )
-}
-
-/** The Last walk card alone at the top of the screen, for the comparison with its Figma node. */
-@Composable
-fun LastWalkGallery() {
-    Box(
-        Modifier
-            .fillMaxSize()
-            .background(AppTheme.colors.canvas)
-            .statusBarsPadding()
-            .padding(Spacing.ml),
-    ) {
-        LastWalkCard(lastWalk, LocalDate.of(2026, 9, 30), DistanceUnit.KM, photo = { null }, onOpen = {})
-    }
 }

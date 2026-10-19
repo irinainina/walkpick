@@ -31,8 +31,8 @@ import javax.inject.Singleton
 import kotlin.time.Duration.Companion.seconds
 import kotlin.time.TimeSource
 
-// Some phones switch the step sensor off behind a dark screen. A count below this share of the steps
-// the distance takes is such a cut, not a long stride.
+// Some phones switch the step sensor off behind a dark screen, and GPS loses the fix among houses.
+// A count or a route below this share of what the other one gives is such a cut, not a long stride.
 private const val TRUSTED_SHARE = 0.7
 
 // An app ended in the middle of a walk loses the way walked since the last writing, no more than this.
@@ -89,6 +89,12 @@ data class WalkTrack(
     fun stepsWith(strideM: Double): Int {
         val needed = (metres / strideM).toInt()
         return if (steps < needed * TRUSTED_SHARE) needed else steps
+    }
+
+    /** The length of the route, or the way the counted steps take when the route fell far behind it. */
+    fun metresWith(strideM: Double): Double {
+        val walked = steps * strideM
+        return if (metres < walked * TRUSTED_SHARE) walked else metres
     }
 
     /** Whether nothing but the way and the steps changed since [earlier]: a draft may wait for that. */

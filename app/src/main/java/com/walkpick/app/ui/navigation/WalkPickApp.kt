@@ -14,6 +14,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
@@ -30,7 +31,7 @@ fun WalkPickApp(signedIn: Boolean, walkAsked: Int, onStartShown: () -> Unit) {
     // Above the NavHost: the three sign-in screens share it.
     val auth: AuthViewModel = hiltViewModel()
     val entry by navController.currentBackStackEntryAsState()
-    val start = if (signedIn) Screen.Today else Screen.SignIn
+    val start = if (signedIn) Screen.Home else Screen.SignIn
     // Until the first destination reports itself the start screen stands in, or the bar pops in late.
     val route = entry?.destination?.route ?: start.route
     val tab = Screen.entries.firstOrNull { it.route == route }?.tab
@@ -44,7 +45,8 @@ fun WalkPickApp(signedIn: Boolean, walkAsked: Int, onStartShown: () -> Unit) {
     ) {
         NavHost(navController, startDestination = start.route, modifier = Modifier.weight(1f)) {
             signInRoutes(navController, auth, onStartShown)
-            todayRoute(navController, onStartShown)
+            homeRoute(navController, onStartShown)
+            walkRoute(navController)
             healthRoute()
             activeWalkRoute(navController)
             walkSummaryRoute(navController)
@@ -55,7 +57,8 @@ fun WalkPickApp(signedIn: Boolean, walkAsked: Int, onStartShown: () -> Unit) {
             profileRoute(navController)
             val laidOut = setOf(
                 Screen.SignIn,
-                Screen.Today,
+                Screen.Home,
+                Screen.Walk,
                 Screen.Health,
                 Screen.ActiveWalk,
                 Screen.Camera,
@@ -80,13 +83,7 @@ fun WalkPickApp(signedIn: Boolean, walkAsked: Int, onStartShown: () -> Unit) {
                     .background(AppTheme.colors.surface)
                     .navigationBarsPadding(),
             ) {
-                AppNavBar(bottomTabs, selectedRoute = tab.route, onSelect = { item ->
-                    navController.navigate(item.route) {
-                        popUpTo(Screen.Today.route) { saveState = true }
-                        launchSingleTop = true
-                        restoreState = true
-                    }
-                })
+                AppNavBar(bottomTabs, tab.route, onSelect = { navController.openTab(it.route) })
             }
         }
     }
@@ -97,4 +94,12 @@ fun WalkPickApp(signedIn: Boolean, walkAsked: Int, onStartShown: () -> Unit) {
             navController.navigate(Screen.ActiveWalk.route) { launchSingleTop = true }
         }
     }
+}
+
+/** Opens a tab of the bottom bar where it was left. */
+internal fun NavHostController.openTab(route: String) = navigate(route) {
+    popUpTo(Screen.Home.route) { saveState = true }
+    launchSingleTop = true
+    // Navigation files the state saved above Home under Home too: restoring it brings back the other tab.
+    restoreState = route != Screen.Home.route
 }

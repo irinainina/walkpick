@@ -165,14 +165,15 @@ internal fun activeWalkState(
     if (track == null) return ActiveWalkState()
     val seconds = track.movingSeconds(now).coerceAtLeast(0)
     val points = track.points
+    val metres = track.metresWith(strideM)
     return ActiveWalkState(
         recording = true,
         paused = track.paused,
         seconds = seconds,
         steps = track.stepsWith(strideM),
-        metres = track.metres,
-        paceSecondsPerKm = paceSecondsPerKm(track.metres, seconds),
-        calories = walkCalories(track.metres, seconds, weightKg),
+        metres = metres,
+        paceSecondsPerKm = paceSecondsPerKm(metres, seconds),
+        calories = walkCalories(metres, seconds, weightKg),
         route = points,
         kept = points.size > 1,
         breaks = routeBreaks(breaksText(track.legs)),

@@ -1,6 +1,8 @@
 package com.walkpick.app.ui.screens
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -17,6 +19,7 @@ import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -26,7 +29,9 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -63,19 +68,21 @@ fun ProfileScreen(
     settings: SettingsState,
     actions: SettingsActions,
     onChange: ((Profile) -> Profile) -> Unit,
+    onRename: (String) -> Unit,
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val statusBar = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
     var editing by rememberSaveable { mutableStateOf<ProfileField?>(null) }
     val edit = { field: ProfileField -> editing = field }
+    var renaming by rememberSaveable { mutableStateOf(false) }
     Box(
         modifier
             .fillMaxSize()
             .background(AppTheme.colors.canvas)
             .verticalScroll(rememberScrollState()),
     ) {
-        Header(statusBar, state.name, state.email, onBack)
+        Header(statusBar, state.name, state.email, onBack, onRename = { renaming = true })
         Column(
             Modifier
                 .navigationBarsPadding()
@@ -97,10 +104,17 @@ fun ProfileScreen(
     editing?.let { field ->
         ProfileSheet(field, state.profile, state.units, onSave = onChange, onDismiss = { editing = null })
     }
+    if (renaming) {
+        val title = stringResource(R.string.profile_name_title)
+        NameSheet(title, state.name.orEmpty(), onDismiss = { renaming = false }) {
+            onRename(it)
+            renaming = false
+        }
+    }
 }
 
 @Composable
-private fun Header(statusBar: Dp, name: String?, email: String, onBack: () -> Unit) {
+private fun Header(statusBar: Dp, name: String?, email: String, onBack: () -> Unit, onRename: () -> Unit) {
     val colors = AppTheme.colors
     GradientHeader(statusBar + HeaderHeight) {
         CircleButton(
@@ -116,16 +130,27 @@ private fun Header(statusBar: Dp, name: String?, email: String, onBack: () -> Un
             Avatar(name ?: email, AvatarSize, AvatarBorder, MaterialTheme.typography.headlineLarge)
             Spacer(Modifier.width(Spacing.m))
             Column(Modifier.padding(top = Spacing.s)) {
-                if (name != null) {
+                Row(
+                    modifier = Modifier.clickable(role = Role.Button, onClick = onRename),
+                    horizontalArrangement = Arrangement.spacedBy(Spacing.s),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
                     Text(
-                        text = name,
+                        text = name ?: stringResource(R.string.profile_add_name),
+                        modifier = Modifier.weight(1f, fill = false),
                         style = MaterialTheme.typography.headlineMedium,
                         color = colors.onAccent,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
                     )
-                    Spacer(Modifier.height(NameGap))
+                    Icon(
+                        painter = painterResource(R.drawable.ic_edit),
+                        contentDescription = stringResource(R.string.profile_name_title),
+                        modifier = Modifier.size(Sizes.iconSmall),
+                        tint = colors.onAccent,
+                    )
                 }
+                Spacer(Modifier.height(NameGap))
                 Text(
                     text = email,
                     style = MaterialTheme.typography.bodyMedium,

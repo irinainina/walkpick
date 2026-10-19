@@ -113,7 +113,6 @@ private fun Bars(state: StatsState, onPickBar: (Int) -> Unit) {
             modifier = width,
             slotWidth = if (state.tab == StatsTab.Week) DaySize else barWidth,
             labelGap = Spacing.s,
-            selected = state.selectedBar,
             onSelect = onPickBar,
         )
     }
@@ -208,7 +207,7 @@ private fun Streak(days: Int) {
 }
 
 // "this week" while the period holds today, "that week" for an earlier one.
-private fun periodWord(tab: StatsTab, current: Boolean) = when (tab) {
+internal fun periodWord(tab: StatsTab, current: Boolean) = when (tab) {
     StatsTab.All -> R.string.stats_in_total
     StatsTab.Week -> if (current) R.string.stats_this_week else R.string.stats_that_week
     StatsTab.Month -> if (current) R.string.stats_this_month else R.string.stats_that_month

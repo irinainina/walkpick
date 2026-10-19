@@ -3,6 +3,8 @@ package com.walkpick.app.ui.profile
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.walkpick.app.data.account.AccountStore
+import com.walkpick.app.data.account.AuthRefused
+import com.walkpick.app.data.account.AuthRepository
 import com.walkpick.app.data.find.FindStore
 import com.walkpick.app.data.profile.Profile
 import com.walkpick.app.data.profile.ProfileRepository
@@ -13,6 +15,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -36,7 +39,8 @@ class ProfileViewModel @Inject constructor(
     walks: WalkRepository,
     finds: FindStore,
     settings: SettingsStore,
-    account: AccountStore,
+    private val account: AccountStore,
+    private val auth: AuthRepository,
 ) : ViewModel() {
 
     private val totals =
@@ -51,5 +55,17 @@ class ProfileViewModel @Inject constructor(
 
     fun change(transform: (Profile) -> Profile) {
         viewModelScope.launch { profiles.change(transform) }
+    }
+
+    /** Saved in the account first: the phone shows what the server keeps. Offline nothing changes. */
+    fun rename(name: String) {
+        viewModelScope.launch {
+            try {
+                auth.rename(name)
+            } catch (_: AuthRefused) {
+                return@launch
+            }
+            account.user.first()?.let { account.remember(it.copy(name = name)) }
+        }
     }
 }

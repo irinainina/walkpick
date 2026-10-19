@@ -2,7 +2,6 @@
 <resources>
     <string name="app_name">WalkPick</string>
     <string name="back">Back</string>
-    <string name="tab_today">Today</string>
     <string name="tab_gallery">Gallery</string>
     <string name="tab_profile">Profile</string>
     <string name="tab_walk">Walk</string>
@@ -39,7 +38,6 @@
     <string name="today_afternoon">Good afternoon</string>
     <string name="today_evening">Good evening</string>
     <string name="today_greeting_name">%1$s, %2$s</string>
-    <string name="today_photos">photos</string>
     <string name="today_distance">Distance</string>
     <string name="today_streak_one">%1$d day in a row</string>
     <string name="today_streak_many">%1$d days in a row</string>
@@ -50,6 +48,17 @@
     <string name="today_allow">Allow</string>
     <string name="today_first_title">Steps are counted on walks</string>
     <string name="today_first_text">Press Start walk and snap what you notice on the way</string>
+    <string name="today_steps">of %1$s steps\non last walk</string>
+    <string name="today_active_time">Active time</string>
+    <string name="today_streak_none">Start a streak today</string>
+    <string name="today_streak_hint">Any walk keeps the streak going</string>
+    <string name="today_week">This week</string>
+    <string name="walk_tab_photos">Photos</string>
+    <string name="profile_name_title">Your name</string>
+    <string name="profile_add_name">Add your name</string>
+    <string name="walk_photos_count">%1$s %2$s</string>
+    <string name="walk_photos_call">Pick the moments worth a shot</string>
+    <string name="walk_photos_call_text">Snap what makes you look and want to keep</string>
     <string name="stats_week">Week</string>
     <string name="stats_month">Month</string>
     <string name="stats_year">Year</string>
@@ -111,7 +120,6 @@
     <string name="today_back_to_walk">Back to walk · %s  ›</string>
     <string name="today_back_to_walk_paused">Back to walk · paused at %s  ›</string>
     <string name="today_stop_walk">Stop walk</string>
-    <string name="today_last_walk_when">Last walk · %1$s</string>
     <string name="walk_walking">Walking</string>
     <string name="walk_paused">Paused</string>
     <string name="walk_finding">Finding GPS</string>
@@ -277,6 +285,7 @@
     <string name="settings_every_day">Every day</string>
     <string name="settings_units">Units</string>
     <string name="settings_theme">Theme</string>
+    <string name="settings_theme_auto">Auto</string>
     <string name="settings_theme_spring">Spring</string>
     <string name="settings_theme_summer">Summer</string>
     <string name="settings_theme_autumn">Autumn</string>

@@ -86,9 +86,12 @@ internal fun SettingsSections(
         }
         Section(R.string.settings_theme, inCard = false) {
             SegmentedControl(
-                options = Season.entries.map { stringResource(it.title) },
-                selectedIndex = AppTheme.season.ordinal,
-                onSelect = { index -> actions.onChange { it.copy(theme = Season.entries[index]) } },
+                options = listOf(stringResource(R.string.settings_theme_auto)) +
+                    Season.entries.map { stringResource(it.title) },
+                selectedIndex = settings.theme?.let { it.ordinal + 1 } ?: 0,
+                onSelect = { index ->
+                    actions.onChange { it.copy(theme = Season.entries.getOrNull(index - 1)) }
+                },
             )
         }
         health()

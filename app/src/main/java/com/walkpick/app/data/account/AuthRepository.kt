@@ -17,8 +17,10 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
+import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.contentOrNull
 import kotlinx.serialization.json.jsonPrimitive
+import kotlinx.serialization.json.put
 import java.io.IOException
 import java.nio.channels.UnresolvedAddressException
 import javax.inject.Inject
@@ -42,12 +44,16 @@ interface AuthRepository {
 
     suspend fun signOut()
 
+    /** The name the walker chose, kept in the account beside the one Google gave. */
+    suspend fun rename(name: String)
+
     // The server removes the photos, the user and, by cascade, every row of the account.
     suspend fun deleteAccount()
 }
 
 private const val TAG = "AuthRepository"
 private const val DELETE_ACCOUNT = "delete-account"
+private const val PREFERRED_NAME = "preferred_name"
 
 class SupabaseAuthRepository @Inject constructor(
     private val supabase: SupabaseProvider,
@@ -59,10 +65,18 @@ class SupabaseAuthRepository @Inject constructor(
         if (!supabase.isConfigured) return null
         return onServer {
             auth.currentUserOrNull()?.let { user ->
-                val name = user.userMetadata?.get("full_name")?.jsonPrimitive?.contentOrNull
-                AccountUser(user.id, user.email.orEmpty(), name?.substringBefore(' ')?.ifBlank { null })
+                val meta = user.userMetadata
+                val chosen = meta?.get(PREFERRED_NAME)?.jsonPrimitive?.contentOrNull
+                val google = meta?.get("full_name")?.jsonPrimitive?.contentOrNull?.substringBefore(' ')
+                AccountUser(user.id, user.email.orEmpty(), (chosen ?: google)?.ifBlank { null })
             }
         }
+    }
+
+    // Not "full_name": a sign-in with Google writes that one again every time.
+    override suspend fun rename(name: String) = onServer {
+        auth.updateUser { data = buildJsonObject { put(PREFERRED_NAME, name) } }
+        Unit
     }
 
     override suspend fun sendCode(email: String) = onServer {

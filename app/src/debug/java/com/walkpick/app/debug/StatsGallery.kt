@@ -1,12 +1,6 @@
 package com.walkpick.app.debug
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
 import com.walkpick.app.data.local.FindEntity
 import com.walkpick.app.data.local.WalkEntity
 import com.walkpick.app.data.steps.DayRange
@@ -16,14 +10,13 @@ import com.walkpick.app.data.steps.yearOf
 import com.walkpick.app.ui.components.Bar
 import com.walkpick.app.ui.components.BarKind
 import com.walkpick.app.ui.screens.PeriodActions
-import com.walkpick.app.ui.screens.WalkPeriods
+import com.walkpick.app.ui.screens.WalkScreen
 import com.walkpick.app.ui.stats.CalendarDay
 import com.walkpick.app.ui.stats.StatsState
 import com.walkpick.app.ui.stats.StatsTab
 import com.walkpick.app.ui.stats.WalkTotals
-import com.walkpick.app.ui.theme.AppTheme
-import com.walkpick.app.ui.theme.Spacing
 import com.walkpick.app.ui.walk.DiaryWalk
+import java.time.Instant
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.YearMonth
@@ -33,9 +26,9 @@ private const val TRACK = 120f
 private val today = LocalDate.of(2026, 9, 30)
 private val september = YearMonth.of(2026, 9)
 
-private fun bars(heights: List<Int>, labels: List<String>, kinds: Map<Int, BarKind>, tips: Map<Int, String>) =
+private fun bars(heights: List<Int>, labels: List<String>, kinds: Map<Int, BarKind>) =
     heights.mapIndexed { index, height ->
-        Bar(height / TRACK, labels[index], kinds[index] ?: BarKind.Past, tips[index])
+        Bar(height / TRACK, labels[index], kinds[index] ?: BarKind.Past)
     }
 
 private val week = StatsState(
@@ -50,9 +43,7 @@ private val week = StatsState(
         heights = listOf(104, 52, 0, 0, 0, 0, 0),
         labels = "MTWTFSS".map { it.toString() },
         kinds = mapOf(0 to BarKind.Walked, 1 to BarKind.Walked, 2 to BarKind.Today),
-        tips = emptyMap(),
     ),
-    selectedBar = 2,
 )
 
 private val month = week.copy(
@@ -72,9 +63,7 @@ private val year = week.copy(
         heights = listOf(56, 60, 68, 72, 84, 80, 76, 80, 84, 0, 0, 0),
         labels = "JFMAMJJASOND".map { it.toString() },
         kinds = mapOf(8 to BarKind.Today),
-        tips = emptyMap(),
     ),
-    selectedBar = null,
     bestMonth = september,
 )
 
@@ -88,9 +77,7 @@ private val all = week.copy(
         heights = listOf(52, 56, 64, 68, 72, 60, 60, 56, 60, 68, 72, 84, 80, 76, 80, 84),
         labels = List(16) { if (it == 0) "2025" else if (it == 7) "2026" else "" },
         kinds = mapOf(15 to BarKind.Today),
-        tips = emptyMap(),
     ),
-    selectedBar = null,
     longestStreak = 21,
 )
 
@@ -125,23 +112,20 @@ private val dayWalks = listOf(
     dayWalk("morning", "Sunny Morning", "2026-09-28T09:15", 62, 7040, 5200, 3),
 )
 
-/** The periods of the Walk tab alone, as they stand under the last walk in the Figma frames. */
+// The photos of the frame: twelve taken this week.
+private val photos = List(12) {
+    FindEntity("photo$it", "walk", Instant.EPOCH, 50.58, 34.48, "none", updatedAt = Instant.EPOCH)
+}
+
+/** The Walk tab with the data of the Figma frames. */
 @Composable
 fun PeriodsGallery(page: String) {
     val state = when (page) {
-        "periods-day" -> month.copy(day = LocalDate.of(2026, 9, 28), dayWalks = dayWalks)
-        "periods-month" -> month
-        "periods-year" -> year
-        "periods-all" -> all
+        "walk-day" -> month.copy(day = LocalDate.of(2026, 9, 28), dayWalks = dayWalks)
+        "walk-month" -> month
+        "walk-year" -> year
+        "walk-all" -> all
         else -> week
     }
-    Column(
-        Modifier
-            .fillMaxSize()
-            .background(AppTheme.colors.canvas)
-            .statusBarsPadding()
-            .padding(top = Spacing.ml),
-    ) {
-        WalkPeriods(state, PeriodActions({}, {}, {}, {}, {}, {}))
-    }
+    WalkScreen(state.copy(photos = photos), PeriodActions({}, {}, {}, {}, {}, {}), onPhotos = {})
 }

@@ -140,7 +140,7 @@ fun WalkSummaryScreen(
         }
     }
     if (renaming) {
-        WalkNameSheet(walk.title(), onDismiss = { renaming = false }) {
+        NameSheet(stringResource(R.string.walk_name_title), walk.title(), onDismiss = { renaming = false }) {
             onRename(it)
             renaming = false
         }
