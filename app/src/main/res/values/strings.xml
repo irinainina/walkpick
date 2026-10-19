@@ -298,7 +298,7 @@
     <string name="settings_export_failed">Not saved</string>
     <string name="settings_daily_steps">Daily steps</string>
     <string name="settings_walk_mood">Mood on walks</string>
-    <string name="settings_daily_steps_hint">The ring on Today is full at this many steps a day.</string>
+    <string name="settings_daily_steps_hint">The ring on Home is full at this many steps a day.</string>
     <string name="settings_daily_steps_wrong">From 100 to 100,000</string>
     <string name="settings_on">On</string>
     <string name="settings_off">Off</string>
