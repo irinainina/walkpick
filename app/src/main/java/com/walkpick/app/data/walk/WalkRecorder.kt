@@ -12,7 +12,6 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.getAndUpdate
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -150,10 +149,11 @@ class WalkRecorder @Inject constructor(draft: WalkDraft) {
 
     init {
         // Written off the main thread; of several changes in a row only the last one matters.
+        var written = current.value
+        var writtenAt = TimeSource.Monotonic.markNow()
         CoroutineScope(SupervisorJob() + Dispatchers.IO).launch {
-            var written = current.value
-            var writtenAt = TimeSource.Monotonic.markNow()
-            current.drop(1).collectLatest { track ->
+            current.collectLatest { track ->
+                if (track == written) return@collectLatest
                 // Points and steps come every second or two and the whole walk is written each time.
                 if (track?.onlyMovedSince(written) == true) delay(DRAFT_EVERY - writtenAt.elapsedNow())
                 draft.write(track)

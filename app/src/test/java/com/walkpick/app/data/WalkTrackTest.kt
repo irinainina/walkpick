@@ -135,4 +135,23 @@ class WalkTrackTest {
         assertEquals(1, recorder.finish()?.points?.size)
         assertNull(recorder.track.value)
     }
+
+    @Test
+    fun aFinishedWalkLeavesNoFile(@TempDir folder: File) {
+        val file = File(folder, "walk.json")
+        val recorder = WalkRecorder(WalkDraft(file))
+        recorder.start(start)
+        assertTrue(soon { file.exists() })
+        recorder.finish()
+        assertTrue(soon { !file.exists() })
+    }
+
+    // The recorder writes its file off the calling thread.
+    private fun soon(check: () -> Boolean): Boolean {
+        repeat(100) {
+            if (check()) return true
+            Thread.sleep(20)
+        }
+        return false
+    }
 }

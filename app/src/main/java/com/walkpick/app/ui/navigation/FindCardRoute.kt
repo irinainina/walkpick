@@ -8,6 +8,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.composable
 import com.walkpick.app.ui.find.FindCardViewModel
 import com.walkpick.app.ui.screens.FindCardScreen
+import com.walkpick.app.ui.screens.PlaceSheet
 
 /** The address of the card of one find. */
 internal fun findCardRoute(id: String) = "${Screen.FindCard.route}/$id"
@@ -29,6 +30,11 @@ internal fun NavGraphBuilder.findCardRoute(navController: NavHostController) {
                 onRename = model::rename,
                 onRetry = model::retry,
             )
+        }
+        val places by model.places.collectAsStateWithLifecycle()
+        places?.let {
+            val unit by model.distanceUnit.collectAsStateWithLifecycle()
+            PlaceSheet(it, unit, onSave = model::place, onDismiss = model::closePlaces)
         }
     }
 }

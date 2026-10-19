@@ -10,6 +10,9 @@ import com.walkpick.app.data.find.renamed
 import com.walkpick.app.data.local.FindEntity
 import com.walkpick.app.data.local.FindKind
 import com.walkpick.app.data.local.WalkEntity
+import com.walkpick.app.data.places.NearPlace
+import com.walkpick.app.data.settings.DistanceUnit
+import com.walkpick.app.data.settings.SettingsStore
 import com.walkpick.app.data.walk.WalkRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -21,6 +24,7 @@ import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import java.io.File
@@ -43,11 +47,20 @@ class FindCardViewModel @Inject constructor(
     saved: SavedStateHandle,
     private val finds: FindStore,
     walks: WalkRepository,
+    settings: SettingsStore,
 ) : ViewModel() {
 
     private val id: String = checkNotNull(saved[FIND_ID])
     private val photo = MutableStateFlow<File?>(null)
     private val identifying = MutableStateFlow(false)
+    private val offered = MutableStateFlow<List<NearPlace>?>(null)
+
+    /** A find turned into a place asks which one it is: the places to offer; null while it does not ask. */
+    val places: StateFlow<List<NearPlace>?> = offered
+
+    /** The unit the distances to places are written in. */
+    val distanceUnit: StateFlow<DistanceUnit> = settings.value.map { it.distance }
+        .stateIn(viewModelScope, SharingStarted.Eagerly, DistanceUnit.KM)
 
     /** Null before the find is read and after it is deleted. */
     @OptIn(ExperimentalCoroutinesApi::class)
@@ -76,7 +89,35 @@ class FindCardViewModel @Inject constructor(
     fun rename(name: String) = change { it.renamed(name) }
 
     /** Asks the services again, as [kind] when the walker says anew what the find is. */
-    fun retry(kind: FindKind?) = change { find -> kind?.let { find.asKind(it) } ?: find }
+    fun retry(kind: FindKind?) {
+        if (kind != FindKind.PLACE) return change { find -> kind?.let { find.asKind(it) } ?: find }
+        viewModelScope.launch {
+            identifying.value = true
+            try {
+                offered.value = finds.placesFor(id)
+            } finally {
+                identifying.value = false
+            }
+        }
+    }
+
+    /** The walker said which place it is, one of the offered ones or a name of their own. */
+    fun place(chosen: NearPlace, offered: List<NearPlace>) {
+        this.offered.value = null
+        viewModelScope.launch {
+            identifying.value = true
+            try {
+                finds.place(id, chosen, offered)
+            } finally {
+                identifying.value = false
+            }
+        }
+    }
+
+    /** The sheet of places is closed without a choice: the find stays what it was. */
+    fun closePlaces() {
+        offered.value = null
+    }
 
     // A new name wants its own description, a new kind its own service: both are asked at once.
     private fun change(transform: (FindEntity) -> FindEntity) {

@@ -84,4 +84,13 @@ class PhotoStoreTest {
         photos.push(bucket)
         assertEquals(emptyList<String>(), photos.unsent())
     }
+
+    @Test
+    fun aDeletedAccountLeavesNoPhotosOnThePhone(@TempDir folder: File) {
+        val photos = PhotoStore(File(folder, "photos"))
+        photos.keep("user-1/find-1.jpg") { it.write(ByteArray(3)) }
+
+        photos.clear()
+        assertEquals(emptyList<String>(), folder.list()?.toList())
+    }
 }
