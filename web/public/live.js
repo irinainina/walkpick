@@ -4,7 +4,7 @@
   const SUPABASE = 'https://qangmeeugxafvlfcuxyp.supabase.co';
   // The publishable key: it is meant to be seen, the rows are guarded by the token of the user
   const SUPABASE_KEY = 'sb_publishable_D-RF7XFeTEqOB6HSxo2QCQ_PZLAK3ma';
-  const SIGN_IN = 'sign-in.html';
+  const SIGN_IN = '/sign-in';
   // A token this close to its end is changed for a new one before the request
   const RENEW_MS = 60_000;
 
@@ -30,7 +30,7 @@
   const signOut = async () => {
     const session = saved();
     localStorage.removeItem('session');
-    if (session) {
+    if (session?.refresh) {
       await fetch(`${SUPABASE}/auth/v1/logout?scope=local`, {
         method: 'POST',
         headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${session.access}` },
@@ -38,24 +38,21 @@
     }
     location.replace('index.html');
   };
-  const google = () => {
-    const back = new URL('walk.html', location.href).href;
-    location.href = `${SUPABASE}/auth/v1/authorize?provider=google&redirect_to=${encodeURIComponent(back)}`;
+  // The shared demo session cannot be refreshed, the service hands out a new one
+  const demo = async () => {
+    const answer = await fetch(`${API}/demo/session`, { method: 'POST' });
+    if (!answer.ok) throw new Error(`Demo: ${answer.status}`);
+    const got = await answer.json();
+    localStorage.setItem('session', JSON.stringify({ access: got.access_token, refresh: null, until: got.expires_at * 1000 }));
   };
-
-  // Google sends the session back in the address
-  if (location.hash.includes('access_token=')) {
-    const got = new URLSearchParams(location.hash.slice(1));
-    keep({ access_token: got.get('access_token'), refresh_token: got.get('refresh_token'), expires_in: Number(got.get('expires_in')) });
-    history.replaceState(null, '', location.pathname + location.search);
-  }
 
   const token = async () => {
     const session = saved();
     if (!session) return null;
     if (session.until - Date.now() > RENEW_MS) return session.access;
     try {
-      keep(await auth('token?grant_type=refresh_token', { refresh_token: session.refresh }));
+      if (session.refresh) keep(await auth('token?grant_type=refresh_token', { refresh_token: session.refresh }));
+      else await demo();
       return saved().access;
     } catch {
       return null;
@@ -85,7 +82,7 @@
     return items;
   };
 
-  window.live = { api, auth, keep, leave, signOut, google, signedIn: () => Boolean(saved()) };
+  window.live = { api, signOut };
 
   // The page scripts were written over three lists; they are filled here and the scripts run after
   const then = document.currentScript.dataset.then;

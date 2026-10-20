@@ -126,10 +126,10 @@ const logo = '<a class="logo" href="index.html"><svg class="logo-mark"><use href
 const header = document.querySelector('.header');
 header.innerHTML = `<div class="header-inner glass">
   ${logo}
-  ${page === 'sign-in' ? '' : `<nav class="nav">${links.map(([id, en, ru]) => `<a href="${id}.html" data-ru="${ru}"${page.startsWith(id) ? ' aria-current="page"' : ''}>${en}</a>`).join('')}</nav>`}
+  <nav class="nav">${links.map(([id, en, ru]) => `<a href="${id}.html" data-ru="${ru}"${page.startsWith(id) ? ' aria-current="page"' : ''}>${en}</a>`).join('')}</nav>
   <div class="lang" role="group" aria-label="Language">${['en', 'ru'].map(code => `<button type="button" data-lang="${code}">${code.toUpperCase()}</button>`).join('')}</div>
-  ${page === 'home' ? '<a class="button button-small button-ghost" href="sign-in.html" data-ru="Войти">Sign in</a>' : ''}
-  ${page === 'home' || page === 'sign-in' ? '' : `<a class="avatar" href="account.html" aria-label="${t('Account', 'Аккаунт')}">I</a>`}
+  ${page === 'home' ? '<a class="button button-small button-ghost" href="/sign-in" data-ru="Войти">Sign in</a>' : ''}
+  ${page === 'home' ? '' : `<a class="avatar" href="account.html" aria-label="${t('Account', 'Аккаунт')}">I</a>`}
 </div>`;
 
 const footer = document.querySelector('.footer');

@@ -16,7 +16,7 @@ const feeling = { before: 'neutral', after: '' };
 const moodOf = id => moods.find(mood => mood[3] === id);
 const moodBoxes = document.querySelectorAll('.moods');
 moodBoxes.forEach(box => {
-  box.innerHTML = [...moods].reverse().map(mood => `<button type="button" data-mood="${mood[3]}"><svg><use href="#mood-${mood[3]}"/></svg></button>`).join('') + '<span class="mood-answer"></span>';
+  box.innerHTML = moods.map(mood => `<button type="button" data-mood="${mood[3]}"><svg><use href="#mood-${mood[3]}"/></svg></button>`).join('') + '<span class="mood-answer"></span>';
   box.addEventListener('click', event => {
     const button = event.target.closest('button');
     if (!button) return;

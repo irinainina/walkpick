@@ -27,11 +27,11 @@ import com.walkpick.app.ui.walk.WalkEnding
 
 private val FaceSize = 44.dp
 
-/** Five faces, the best first as on the Health sheet; a tap says the mood, 1 (awful) to 5 (great). */
+/** Five faces from the saddest to the happiest; a tap says the mood, 1 (awful) to 5 (great). */
 @Composable
 private fun MoodRow(onMood: (Int) -> Unit, modifier: Modifier = Modifier) {
     Row(modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-        Mood.entries.reversed().forEach { mood ->
+        Mood.entries.forEach { mood ->
             MoodFace(
                 mood = mood,
                 modifier = Modifier
