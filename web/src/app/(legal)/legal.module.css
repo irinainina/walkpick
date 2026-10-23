@@ -1,0 +1,52 @@
+.hero {
+  min-height: 480px;
+}
+
+.legal {
+  padding-block: 64px 96px;
+  color: var(--ink);
+}
+
+.legal h2 {
+  margin-top: 40px;
+  font-size: 24px;
+  line-height: 32px;
+  letter-spacing: normal;
+}
+
+.legal h2:first-child {
+  margin-top: 0;
+}
+
+.legal p,
+.legal ul {
+  margin-top: 16px;
+}
+
+.legal > p:first-child {
+  margin-top: 0;
+}
+
+.legal ul {
+  padding-left: 24px;
+  list-style: disc;
+}
+
+.legal li + li {
+  margin-top: 8px;
+}
+
+.legal p a {
+  color: var(--blue);
+  text-decoration: underline;
+}
+
+@media (max-width: 720px) {
+  .hero {
+    min-height: 400px;
+  }
+
+  .legal {
+    padding-block: 40px 64px;
+  }
+}

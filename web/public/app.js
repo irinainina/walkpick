@@ -136,8 +136,8 @@ const footer = document.querySelector('.footer');
 if (footer) footer.innerHTML = `<div class="container footer-inner">
   ${logo}
   <ul class="footer-links">
-    <li><a href="../landing/privacy.html" data-ru="Политика конфиденциальности">Privacy Policy</a></li>
-    <li><a href="../landing/terms.html" data-ru="Условия использования">Terms of Use</a></li>
+    <li><a href="/privacy" data-ru="Политика конфиденциальности">Privacy Policy</a></li>
+    <li><a href="/terms" data-ru="Условия использования">Terms of Use</a></li>
     <li>© 2026 WalkPick</li>
   </ul>
 </div>`;

@@ -1,9 +1,11 @@
 // Signing in. The session is kept under the same key as in public/live.js, which reads it for the old pages.
-const API = "https://walkpick-406273949742.europe-west1.run.app/v1";
+export const API = "https://walkpick-406273949742.europe-west1.run.app/v1";
 const SUPABASE = "https://qangmeeugxafvlfcuxyp.supabase.co";
 // The publishable key: it is meant to be seen, the rows are guarded by the token of the user
 const SUPABASE_KEY = "sb_publishable_D-RF7XFeTEqOB6HSxo2QCQ_PZLAK3ma";
 const KEY = "session";
+// A token this close to its end is changed for a new one before the request
+const RENEW_MS = 60_000;
 
 /** The demo session has no refresh token: public/live.js asks the service for a new one. */
 interface Session {
@@ -58,4 +60,23 @@ export const demo = async () => {
   if (!answer.ok) throw new Error(`Demo: ${answer.status}`);
   const got: { access_token: string; expires_at: number } = await answer.json();
   keep({ access: got.access_token, refresh: null, until: got.expires_at * 1000 });
+};
+
+/** The access token, renewed when it is about to end; null when there is no session to renew. */
+export const token = async () => {
+  const session = saved();
+  if (!session) return null;
+  if (session.until - Date.now() > RENEW_MS) return session.access;
+  try {
+    if (session.refresh) keepSupabase(await auth("token?grant_type=refresh_token", { refresh_token: session.refresh }));
+    else await demo();
+    return saved()!.access;
+  } catch {
+    return null;
+  }
+};
+
+export const leave = () => {
+  localStorage.removeItem(KEY);
+  location.replace("/sign-in");
 };

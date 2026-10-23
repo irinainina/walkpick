@@ -1,4 +1,8 @@
 import type { Metadata } from "next";
+import "../../public/style.css";
+import "../../public/shell.css";
+import "../../public/app.css";
+import "../../public/pages.css";
 
 export const metadata: Metadata = {
   title: "WalkPick",
