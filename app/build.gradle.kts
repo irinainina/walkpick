@@ -25,7 +25,7 @@ android {
         minSdk = 26
         targetSdk = 36
         versionCode = 1
-        versionName = "0.1"
+        versionName = "0.2"
 
         buildConfigField("String", "SUPABASE_URL", "\"${localProperty("supabase.url")}\"")
         buildConfigField(
@@ -43,8 +43,20 @@ android {
         manifestPlaceholders["mapsKey"] = localProperty("maps.key")
     }
 
+    // CI has no release key and builds the release unsigned.
+    val releaseStore = localProperty("release.storeFile")
+    val releaseSigning = releaseStore.takeIf { it.isNotEmpty() }?.let {
+        signingConfigs.create("release") {
+            storeFile = file(it)
+            storePassword = localProperty("release.password")
+            keyAlias = "walkpick"
+            keyPassword = localProperty("release.password")
+        }
+    }
+
     buildTypes {
         release {
+            signingConfig = releaseSigning
             isMinifyEnabled = true
             isShrinkResources = true
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
