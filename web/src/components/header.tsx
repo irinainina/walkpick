@@ -1,21 +1,20 @@
 "use client";
 
-import { usePathname } from "next/navigation";
 import { useEffect, useRef } from "react";
 import { setLang, useLang } from "@/lib/lang";
 import Logo from "./logo";
 
-// The pages not yet rebuilt in React are the static ones from public/
+// While the site is a landing, the header leads to the stops of the home page
 const LINKS = [
-  ["/overview", "Overview", "Обзор"],
-  ["/walk.html", "Walks", "Прогулки"],
-  ["/photo.html", "Photos", "Фото"],
-  ["/health.html", "Health", "Здоровье"],
+  ["walk", "Walk", "Прогулка"],
+  ["photo", "Photo", "Фото"],
+  ["health", "Health", "Здоровье"],
+  ["results", "Results", "Результаты"],
+  ["faq", "Questions", "Вопросы"],
 ];
 
-/** A guest sees the language switch and Sign in instead of the avatar. */
+/** A guest sees the language switch instead of the avatar. */
 export default function Header({ guest = false }: { guest?: boolean }) {
-  const path = usePathname();
   const lang = useLang();
   const header = useRef<HTMLElement>(null);
 
@@ -50,19 +49,16 @@ export default function Header({ guest = false }: { guest?: boolean }) {
       <div className="header-inner glass">
         <Logo />
         <nav className="nav">
-          {LINKS.map(([href, en, ru]) => (
-            <a key={href} href={href} aria-current={path === href ? "page" : undefined}>{lang === "ru" ? ru : en}</a>
+          {LINKS.map(([id, en, ru]) => (
+            <a key={id} href={`/#${id}`}>{lang === "ru" ? ru : en}</a>
           ))}
         </nav>
         {guest ? (
-          <>
-            <div className="lang" role="group" aria-label="Language">
-              {(["en", "ru"] as const).map((code) => (
-                <button key={code} type="button" aria-pressed={lang === code} onClick={() => setLang(code)}>{code.toUpperCase()}</button>
-              ))}
-            </div>
-            <a className="button button-small button-ghost" href="/sign-in">{lang === "ru" ? "Войти" : "Sign in"}</a>
-          </>
+          <div className="lang" role="group" aria-label="Language">
+            {(["en", "ru"] as const).map((code) => (
+              <button key={code} type="button" aria-pressed={lang === code} onClick={() => setLang(code)}>{code.toUpperCase()}</button>
+            ))}
+          </div>
         ) : (
           <a className="avatar" href="/account.html" aria-label="Account">I</a>
         )}

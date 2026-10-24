@@ -93,24 +93,6 @@ const paint = () => {
 };
 new ResizeObserver(drawRoute).observe(route);
 
-// A made-up year up to the middle of October; the seed keeps it the same on every load
-const days = 284;
-const grid = document.querySelector('.year-grid');
-let seed = 2026;
-for (let index = 0; index < days; index++) {
-  seed = (seed * 9301 + 49297) % 233280;
-  const cell = document.createElement('i');
-  const level = Math.floor((seed / 233280) * 9) - 4;
-  if (level > 0) cell.dataset.level = level;
-  grid.append(cell);
-}
-const months = document.querySelector('.year-months');
-for (let month = 0; new Date(2026, month, 1) < new Date(2026, 0, days); month++) {
-  const label = document.createElement('span');
-  label.style.gridColumn = `${Math.floor((new Date(2026, month, 1) - new Date(2026, 0, 1)) / 6048e5) + 1} / span 4`;
-  months.append(label);
-}
-
 // The questions live in faq.json, so their text is edited without touching the page
 const attr = text => text.replaceAll('"', '&quot;');
 fetch('faq.json').then(answer => answer.json()).then(items => {
@@ -131,9 +113,6 @@ fetch('faq.json').then(answer => answer.json()).then(items => {
 
 // The language changes in place, so nothing that is moving on the page starts over
 onLanguage = () => {
-  [...months.children].forEach((label, month) => {
-    label.textContent = new Date(2026, month, 1).toLocaleDateString(t('en-US', 'ru-RU'), { month: 'short' });
-  });
   showTally();
   paint();
 };

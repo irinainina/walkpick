@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import type { Kind } from "./kinds";
 import { API, leave, token } from "./session";
 
 export interface Walk {
@@ -28,6 +29,30 @@ interface WalkRow {
   mood_after: number | null;
 }
 
+export interface Find {
+  id: string;
+  walk: string | null;
+  at: string;
+  lon: number;
+  lat: number;
+  kind: Kind;
+  name: string | null;
+  best: boolean;
+  photo: string | null;
+}
+
+interface FindRow {
+  id: string;
+  walk_id: string | null;
+  taken_at: string;
+  longitude: number;
+  latitude: number;
+  kind: Kind;
+  name: string | null;
+  is_best: boolean;
+  url: string | null;
+}
+
 export const api = async <T>(path: string, method = "GET", body?: object): Promise<T> => {
   const access = await token();
   if (!access) leave();
@@ -53,18 +78,35 @@ const all = async <T>(path: string) => {
   return items;
 };
 
-/** The walks of the account, the latest first; null while they load. */
-export const useWalks = () => {
-  const [walks, setWalks] = useState<Walk[] | null>(null);
+// A whole list in the page's shape; null while it loads
+const useAll = <Row, Item>(path: string, shape: (row: Row) => Item) => {
+  const [items, setItems] = useState<Item[] | null>(null);
   const [problem, setProblem] = useState("");
   useEffect(() => {
-    all<WalkRow>("/walks")
-      .then(rows => setWalks(rows.map(walk => ({
-        id: walk.id, number: walk.number, name: walk.name, start: walk.started_at, sec: walk.duration_s, steps: walk.steps,
-        m: walk.distance_m, route: walk.route ? walk.route.coordinates : [],
-        mood: walk.mood_before && walk.mood_after ? [walk.mood_before, walk.mood_after] : null,
-      }))))
-      .catch((error: Error) => setProblem(error.message));
-  }, []);
-  return { walks, problem };
+    all<Row>(path).then(rows => setItems(rows.map(shape))).catch((error: Error) => setProblem(error.message));
+  }, [path, shape]);
+  return { items, problem };
+};
+
+const walkOf = (walk: WalkRow): Walk => ({
+  id: walk.id, number: walk.number, name: walk.name, start: walk.started_at, sec: walk.duration_s, steps: walk.steps,
+  m: walk.distance_m, route: walk.route ? walk.route.coordinates : [],
+  mood: walk.mood_before && walk.mood_after ? [walk.mood_before, walk.mood_after] : null,
+});
+
+const findOf = (find: FindRow): Find => ({
+  id: find.id, walk: find.walk_id, at: find.taken_at, lon: find.longitude, lat: find.latitude, kind: find.kind,
+  name: find.name, best: find.is_best, photo: find.url,
+});
+
+/** The walks of the account, the latest first. */
+export const useWalks = () => {
+  const { items, problem } = useAll("/walks", walkOf);
+  return { walks: items, problem };
+};
+
+/** The photos of the account, the latest first. */
+export const useFinds = () => {
+  const { items, problem } = useAll("/photos", findOf);
+  return { finds: items, problem };
 };

@@ -1,0 +1,17 @@
+/* The warm palette of the app, see "Палитра" in docs/8; the home page keeps its own */
+.account {
+  --paper: #fbf7f0;
+  --ink: #3b2a1e;
+  --muted: #6e6257;
+  --soft: #8a7358;
+  --line: #ebe2d2;
+  --blue: #5f6b2d;
+  --blue-deep: #4f5a24;
+  min-height: 100vh;
+  color: var(--muted);
+  background: var(--paper);
+}
+
+.account :global(.segmented) {
+  background: #eadfc6;
+}

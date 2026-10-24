@@ -15,3 +15,10 @@ export const day = (date: Date | string, options: Intl.DateTimeFormatOptions = {
   new Date(date).toLocaleDateString(LOCALE, options);
 
 export const sum = <T>(items: T[], value: (item: T) => number) => items.reduce((total, item) => total + value(item), 0);
+
+export const clock = (date: Date | string) => new Date(date).toLocaleTimeString(LOCALE, { hour: "2-digit", minute: "2-digit" });
+
+// A local calendar day as YYYY-MM-DD, to group by day
+export const dayKey = (date: Date | string) => new Date(date).toLocaleDateString("sv-SE");
+
+export const walkName = (walk: { name: string | null; number: number }) => walk.name || `Walk ${walk.number}`;

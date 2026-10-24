@@ -1,60 +1,136 @@
 "use client";
 
 import { useState } from "react";
-import Bars from "@/components/bars";
-import PeriodSwitch from "@/components/period-switch";
+import Icon from "@/components/icon";
+import MoodFace from "@/components/mood-face";
+import MoodPair from "@/components/mood-pair";
+import PeriodSummary, { firstPeriod } from "@/components/period-summary";
+import RouteThumb from "@/components/route-thumb";
 import Stats from "@/components/stats";
-import { useWalks, type Walk } from "@/lib/api";
-import { day, duration, km, number, sum } from "@/lib/format";
-import { buckets, inPeriod, PERIODS, within, type Period } from "@/lib/period";
+import YearGrid from "@/components/year-grid";
+import { useFinds, useWalks, type Walk } from "@/lib/api";
+import { clock, day, dayKey, duration, km, number, sum, walkName } from "@/lib/format";
+import { KINDS, MOODS } from "@/lib/kinds";
+import type { Period } from "@/lib/period";
 
-const started = (walk: Walk) => walk.start;
-const titles: Record<Period, () => string> = {
-  week: () => "This week",
-  month: () => day(new Date(), { month: "long", year: "numeric" }),
-  year: () => String(new Date().getFullYear()),
-  all: () => "All walks",
+const shortDay = (date: string) => day(date, { month: "short", day: "numeric", year: "numeric" });
+const most = (walks: Walk[], value: (walk: Walk) => number) => walks.reduce((top, walk) => (value(walk) > value(top) ? walk : top));
+
+// The most days in a row with at least one walk
+const longestStreak = (walks: Walk[]) => {
+  const days = [...new Set(walks.map(walk => dayKey(walk.start)))].sort();
+  let longest = 0;
+  let run = 0;
+  days.forEach((key, index) => {
+    const next = new Date(`${days[index - 1]}T12:00`);
+    next.setDate(next.getDate() + 1);
+    run = index && dayKey(next) === key ? run + 1 : 1;
+    longest = Math.max(longest, run);
+  });
+  return longest;
 };
+
+function MoodCard({ walks }: { walks: Walk[] }) {
+  const asked = walks.flatMap(walk => (walk.mood ? [walk.mood] : []));
+  if (!asked.length) return <div className="card"><h3>Mood</h3><p>The app asks about your mood at the start and the end of every walk.</p></div>;
+  const better = asked.filter(([before, after]) => after > before).length;
+  return (
+    <div className="card">
+      <h3>Mood</h3>
+      <div className="mood-scale">
+        {["Before the walk", "After the walk"].map((label, index) => {
+          const average = sum(asked, mood => mood[index]) / asked.length;
+          return (
+            <div key={label}>
+              <MoodFace value={Math.round(average)} />
+              <span>{label}<strong>{MOODS[Math.round(average) - 1].name} · {number(average, 1)}</strong></span>
+            </div>
+          );
+        })}
+      </div>
+      <p>{better} of {asked.length} walks ended in a better mood.</p>
+    </div>
+  );
+}
+
+function WalkRow({ walk }: { walk: Walk }) {
+  const pace = walk.sec / (walk.m / 1000);
+  return (
+    <a className="walk-row" href={`/walk-page.html?id=${walk.id}`}>
+      <RouteThumb route={walk.route} />
+      <span><strong>{walkName(walk)}</strong><small>{shortDay(walk.start)} · {clock(walk.start)}</small></span>
+      <span>{km(walk.m)}</span>
+      <span>{duration(walk.sec)}</span>
+      <span>{number(walk.steps)} steps</span>
+      {walk.mood ? <MoodPair mood={walk.mood} /> : (
+        <span>{Math.floor(pace / 60)}:{String(Math.floor(pace % 60)).padStart(2, "0")} min/km</span>
+      )}
+    </a>
+  );
+}
 
 export default function Overview() {
   const { walks, problem } = useWalks();
+  const { finds } = useFinds();
   const [chosen, setChosen] = useState<Period | null>(null);
-  if (!walks) return <p className="empty">{problem}</p>;
+  if (!walks) return <main className="app container"><p className="empty">{problem}</p></main>;
 
-  // Opens on the shortest period that has walks
-  const period = chosen ?? (Object.keys(PERIODS) as Period[]).find(id => inPeriod(walks, id, started).length) ?? "week";
-  const inside = inPeriod(walks, period, started);
-  const bars = walks.length
-    ? buckets(period, walks[walks.length - 1].start).map(bucket => ({ ...bucket, value: sum(within(inside, bucket, started), walk => walk.m) }))
-    : [];
+  const longest = walks.length ? most(walks, walk => walk.m) : null;
+  const steps = walks.length ? most(walks, walk => walk.steps) : null;
+  const shots = finds?.filter(find => find.photo).slice(0, 12) ?? [];
 
   return (
-    <>
+    <main className="app container">
       <div className="page-head">
         <div>
           <h1>Overview</h1>
           <p>{day(new Date(), { weekday: "long", month: "long", day: "numeric", year: "numeric" })}</p>
         </div>
       </div>
-      <section className="period">
-        <div className="page-head">
-          <h2>{titles[period]()}</h2>
-          <PeriodSwitch chosen={period} onChange={setChosen} />
-        </div>
-        <div className="columns columns-even">
-          <div className="card">
-            <Stats items={[
-              [inside.length, "walks"],
-              [number(sum(inside, walk => walk.m) / 1000, 1), "km"],
-              [duration(sum(inside, walk => walk.sec)), "on foot"],
-              [number(sum(inside, walk => walk.steps)), "steps"],
-            ]} />
+      <PeriodSummary walks={walks} period={chosen ?? firstPeriod(walks)} onChange={setChosen} />
+      {longest && steps && (
+        <>
+          <section className="card">
+            <h3>A year of walks</h3>
+            <YearGrid walks={walks} />
+          </section>
+          <div className="columns columns-even">
+            <div className="card">
+              <h3>Records</h3>
+              <Stats items={[
+                [km(longest.m), `longest walk · ${shortDay(longest.start)}`],
+                [number(steps.steps), `most steps · ${shortDay(steps.start)}`],
+                [`${longestStreak(walks)} days`, "longest streak"],
+              ]} />
+            </div>
+            <MoodCard walks={walks} />
           </div>
-          <div className="card">
-            <Bars bars={bars} unit={km} />
+          <section className="section">
+            <div className="page-head">
+              <h2>Last walks</h2>
+              <a className="link" href="/walks">All walks <Icon name="arrow" /></a>
+            </div>
+            <div>{walks.slice(0, 5).map(walk => <WalkRow key={walk.id} walk={walk} />)}</div>
+          </section>
+        </>
+      )}
+      {shots.length > 0 && (
+        <section className="section">
+          <div className="page-head">
+            <h2>Last finds</h2>
+            <a className="link" href="/photo.html">All photos <Icon name="arrow" /></a>
           </div>
-        </div>
-      </section>
-    </>
+          <div className="tiles">
+            {shots.map(find => (
+              <a key={find.id} className="tile" href={`/photo-page.html?id=${find.id}`}>
+                {/* eslint-disable-next-line @next/next/no-img-element -- signed storage links change every hour */}
+                <img src={find.photo!} alt="" loading="lazy" />
+                <span className="tile-text"><strong>{find.name || KINDS[find.kind].name}</strong>{shortDay(find.at)}</span>
+              </a>
+            ))}
+          </div>
+        </section>
+      )}
+    </main>
   );
 }

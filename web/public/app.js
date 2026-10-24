@@ -88,18 +88,6 @@ const findTile = (find, caption) => `<a class="tile" href="photo-page.html?id=${
   <span class="tile-text"><strong>${findName(find)}</strong>${caption}</span>
 </a>`;
 
-// A walk drawn as a small line: longitudes are squeezed by cos(latitude) to keep the shape true
-const routeSvg = walk => {
-  if (!walk.route.length) return '<svg class="route-thumb" viewBox="0 0 64 64"></svg>';
-  const squeeze = Math.cos(walk.route[0][1] * Math.PI / 180);
-  const points = walk.route.map(([lon, lat]) => [lon * squeeze, -lat]);
-  const xs = points.map(point => point[0]);
-  const ys = points.map(point => point[1]);
-  const size = Math.max(Math.max(...xs) - Math.min(...xs), Math.max(...ys) - Math.min(...ys)) || 1;
-  const path = points.map(([x, y]) => `${((x - Math.min(...xs)) / size * 48 + 8).toFixed(1)},${((y - Math.min(...ys)) / size * 48 + 8).toFixed(1)}`).join(' ');
-  return `<svg class="route-thumb" viewBox="0 0 64 64"><polyline points="${path}" fill="none" stroke="#2ecc8f" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
-};
-
 document.body.insertAdjacentHTML('afterbegin', `<svg class="sprite" aria-hidden="true">
   <symbol id="pin-lens" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M24 45s-15-12-15-24a15 15 0 0 1 30 0c0 12-15 24-15 24z"/><circle cx="24" cy="21" r="8.25"/><path fill="currentColor" fill-rule="evenodd" stroke="none" transform="translate(24 21.5) scale(.75)" d="M6.3 -6.4C1 -6.6 -4.5 -5 -6 -1C-6.6 0.6 -6.3 1.8 -5.6 2.6L-4.9 3.7C-3 5 0.5 5.2 2.2 3.4C4.2 1.3 3 -3 6.3 -6.4ZM-3.72 2.77L-3.29 2.01L-2.81 1.22L-2.27 0.42L-1.66 -0.38L-0.99 -1.17L-0.23 -1.94L0.61 -2.66L1.55 -3.34A.55 .55 0 0 0 0.95 -4.26L-0.07 -3.53L-0.98 -2.74L-1.8 -1.91L-2.52 -1.07L-3.17 -0.22L-3.73 0.63L-4.24 1.45L-4.68 2.23A.55 .55 0 0 0 -3.72 2.77Z"/></symbol>
   <symbol id="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17L17 7M9 7h8v8"/></symbol>
@@ -121,14 +109,13 @@ document.body.insertAdjacentHTML('afterbegin', `<svg class="sprite" aria-hidden=
   <symbol id="mood-awful" viewBox="5 3 48 48" fill="none" stroke="currentColor" stroke-linecap="round" color="#ff6b6b"><path d="M29 48.5a21.5 21.5 0 1 0 0-43a21.5 21.5 0 0 0 0 43z" fill="#fff" stroke-width="3"/><path stroke-width="3" d="M19.5 24.5l6-4M32.5 20.5l6 4M20.5 38c5.667-6 11.333-6 17 0"/></symbol>
 </svg>`);
 
-const links = [['walk', 'Walk', 'Прогулка'], ['photo', 'Photo', 'Фото'], ['health', 'Health', 'Здоровье']];
-const logo = '<a class="logo" href="index.html"><svg class="logo-mark"><use href="#pin-lens"/></svg>WalkPick</a>';
+const links = [['walk', 'Walk', 'Прогулка'], ['photo', 'Photo', 'Фото'], ['health', 'Health', 'Здоровье'], ['results', 'Results', 'Результаты'], ['faq', 'Questions', 'Вопросы']];
+const logo = '<a class="logo" href="/"><svg class="logo-mark"><use href="#pin-lens"/></svg>WalkPick</a>';
 const header = document.querySelector('.header');
 header.innerHTML = `<div class="header-inner glass">
   ${logo}
-  <nav class="nav">${links.map(([id, en, ru]) => `<a href="${id}.html" data-ru="${ru}"${page.startsWith(id) ? ' aria-current="page"' : ''}>${en}</a>`).join('')}</nav>
+  <nav class="nav">${links.map(([id, en, ru]) => `<a href="/#${id}" data-ru="${ru}">${en}</a>`).join('')}</nav>
   <div class="lang" role="group" aria-label="Language">${['en', 'ru'].map(code => `<button type="button" data-lang="${code}">${code.toUpperCase()}</button>`).join('')}</div>
-  ${page === 'home' ? '<a class="button button-small button-ghost" href="/sign-in" data-ru="Войти">Sign in</a>' : ''}
   ${page === 'home' ? '' : `<a class="avatar" href="account.html" aria-label="${t('Account', 'Аккаунт')}">I</a>`}
 </div>`;
 

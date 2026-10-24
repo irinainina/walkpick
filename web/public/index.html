@@ -13,7 +13,6 @@
   <link rel="stylesheet" href="hero.css">
   <link rel="stylesheet" href="route.css">
   <link rel="stylesheet" href="stops.css">
-  <link rel="stylesheet" href="web.css">
   <link rel="stylesheet" href="home-responsive.css">
 </head>
 <body data-page="home">
@@ -29,7 +28,6 @@
           <p class="lead" data-ru="Маршрут, снимки по дороге и настроение, с которым вы вернулись домой.">The route you took, what you photographed on the way and how you felt when you got home.</p>
           <div class="actions">
             <a class="button" href="#get" data-ru="Скачать для Android">Get the Android app</a>
-            <a class="button button-ghost" href="walk.html" data-ru="Открыть демо">View demo</a>
           </div>
         </div>
         <div class="hud glass" aria-hidden="true">
@@ -79,15 +77,9 @@
                 <p data-ru="Нажмите «Старт», выключите телефон и уберите его в карман. Пока вы идёте, WalkPick запишет маршрут, расстояние, время и шаги. Решили посидеть на лавочке или проехать часть пути на машине? Поставьте прогулку на телефоне на паузу.">Tap Start, lock the phone and put it in your pocket. While you walk, WalkPick records the route, distance, time and steps. Decided to sit on a bench or go part of the way by car? Pause the walk on your phone.</p>
               </div>
             </div>
-            <dl class="counts">
-              <div><dt data-ru="шагов">steps</dt><dd data-ru="5 230">5,230</dd></div>
-              <div><dt data-ru="км">km</dt><dd>4</dd></div>
-              <div><dt data-ru="минут">minutes</dt><dd>48</dd></div>
-            </dl>
           </div>
           <div class="split-media">
             <img class="photo" src="assets/images/walk.webp" width="1000" height="1499" alt="A walker on a forest path with the sun breaking through tall trees" data-ru-alt="Человек на лесной тропе, солнце пробивается сквозь высокие деревья" loading="lazy">
-            <div class="phone split-phone"><img src="assets/images/screen-home.webp" width="720" height="1560" alt="WalkPick Home screen with the last walk" data-ru-alt="Экран Home с последней прогулкой" loading="lazy"></div>
           </div>
         </div>
       </section>
@@ -170,57 +162,28 @@
         </div>
       </section>
 
-      <section class="stop stop-right" id="web">
+      <section class="stop stop-right" id="results">
         <span class="stop-dot"></span>
-        <div class="stop-top">
-          <div class="stop-mark">
-            <p class="eyebrow" data-ru="Веб-клиент">Web client</p>
-            <p class="km"><b>4</b> <span data-ru="км">km</span></p>
+        <div class="split split-results">
+          <div class="phones">
+            <div class="phone"><img src="assets/images/screen-home.webp" width="720" height="1560" alt="WalkPick Home screen with the last walk" data-ru-alt="Экран Home с последней прогулкой" loading="lazy"></div>
           </div>
-          <div class="stop-head">
-            <h2 data-ru="Дома откройте ноутбук.">Back home, open your laptop.</h2>
-            <p data-ru="Весь маршрут на большой карте, каждый снимок там, где он сделан, и год прогулок на одной странице.">The whole route on a big map, every photo where you took it, a year of walks on one page.</p>
-          </div>
-        </div>
-        <div class="web">
-          <figure class="browser">
-            <div class="browser-bar"><i></i><i></i><i></i><span data-ru="WalkPick · Туманный вечер">WalkPick · Misty Evening</span></div>
-            <div class="browser-view">
-              <div class="map-box">
-              <svg class="map" viewBox="0 0 1120 480" aria-hidden="true">
-                <rect width="1120" height="480" fill="#eef3f8"/>
-                <g fill="#d9eedd"><rect x="40" y="250" width="250" height="190" rx="24"/><rect x="470" y="30" width="270" height="120" rx="24"/><circle cx="960" cy="380" r="72"/></g>
-                <path d="M780 -20C740 120 820 300 760 500" fill="none" stroke="#cfe4f7" stroke-width="48"/>
-                <g fill="none" stroke="#fff" stroke-width="12"><path d="M-20 200L1140 150M330 -20L390 500M-20 420L1140 330M900 -20L1010 500"/><path stroke-width="6" d="M560 -20L600 500M-20 70L1140 40M150 -20L190 500"/></g>
-                <defs><path id="trail" d="M150 380L230 300L360 310L430 200L560 180L640 110L790 130L860 230L980 250"/></defs>
-                <g fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#trail" stroke="#fff" stroke-width="16"/><use href="#trail" stroke="url(#mood-across)" stroke-width="8"/></g>
-                <circle cx="150" cy="380" r="10" fill="#f5b82e" stroke="#0e2233" stroke-width="4"/>
-                <rect x="970" y="240" width="20" height="20" rx="6" fill="#2ecc8f" stroke="#0e2233" stroke-width="4"/>
-              </svg>
-              <img class="map-find" style="left:32%;top:65%" src="assets/images/clover.webp" alt="" loading="lazy">
-              <img class="map-find" style="left:57%;top:23%" src="assets/images/robin.webp" alt="" loading="lazy">
-              <img class="map-find" style="left:77%;top:48%" src="assets/images/chapel.webp" alt="" loading="lazy">
+          <div class="split-text">
+            <div class="stop-top">
+              <div class="stop-mark">
+                <p class="eyebrow" data-ru="Результаты">Results</p>
+                <p class="km"><b>4</b> <span data-ru="км">km</span></p>
               </div>
-              <figcaption class="map-card glass">
-                <strong data-ru="Туманный вечер">Misty Evening</strong>
-                <span data-ru="4 км · 48 мин · 3 фото">4 km · 48 min · 3 photos</span>
-                <span class="mood-pair"><i></i><span data-ru="Нормально">Neutral</span> → <i></i><span data-ru="Отлично">Great</span></span>
-              </figcaption>
+              <div class="stop-head">
+                <h2 data-ru="Дома посмотрите, сколько прошли.">Back home, see how far you went.</h2>
+                <p data-ru="Шаги, расстояние и время последней прогулки, дни подряд и вся неделя — на главном экране приложения.">Steps, distance and time of your last walk, your streak and the whole week on the app's home screen.</p>
+              </div>
             </div>
-          </figure>
-          <figure class="year">
-            <div class="year-scroll" aria-hidden="true">
-              <div class="year-months"></div>
-              <div class="year-grid"></div>
-            </div>
-            <figcaption>
-              <span data-ru="110 прогулок · 431 км с начала года. Чем ярче квадрат, тем длиннее прогулка.">110 walks · 431 km this year. The brighter the square, the longer the walk.</span>
-              <span class="year-scale" aria-hidden="true"><i></i><i data-level="1"></i><i data-level="2"></i><i data-level="3"></i><i data-level="4"></i></span>
-            </figcaption>
-          </figure>
-          <div class="web-action">
-            <a class="button" href="/sign-in?demo" data-ru="Открыть демо">View demo</a>
-            <p class="note" data-ru="Без регистрации. Демо-аккаунт, в котором уже есть год прогулок.">No sign-up. A sample account with a year of walks already in it.</p>
+            <dl class="counts">
+              <div><dt data-ru="шагов">steps</dt><dd data-ru="6 420">6,420</dd></div>
+              <div><dt data-ru="км">km</dt><dd data-ru="4,8">4.8</dd></div>
+              <div><dt data-ru="минут">minutes</dt><dd>52</dd></div>
+            </dl>
           </div>
         </div>
       </section>
@@ -260,7 +223,6 @@
           </dl>
           <div class="actions">
             <a class="button" href="#get" data-ru="Скачать для Android">Get the Android app</a>
-            <a class="button button-ghost" href="walk.html" data-ru="Открыть демо">View demo</a>
           </div>
         </div>
       </section>

@@ -307,6 +307,7 @@ h3 {
   width: 64px;
   height: 64px;
   border-radius: 16px;
+  color: var(--mood-high);
   background: var(--line);
 }
 
