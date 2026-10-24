@@ -57,6 +57,8 @@ android {
     buildTypes {
         release {
             signingConfig = releaseSigning
+            // x86 is only for emulators and doubles the TensorFlow Lite libraries in the APK.
+            ndk { abiFilters += listOf("arm64-v8a", "armeabi-v7a") }
             isMinifyEnabled = true
             isShrinkResources = true
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
@@ -82,6 +84,8 @@ android {
             "PropertyEscape",
             // The app speaks English on any phone, and plurals would follow the phone's language.
             "PluralsCandidate",
+            // The release ships ARM only; ChromeOS translates it, and phones are the target.
+            "ChromeOsAbiSupport",
         )
     }
 

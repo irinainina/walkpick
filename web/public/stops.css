@@ -28,7 +28,22 @@
 }
 
 .split-media {
-  padding-left: 22%;
+  position: relative;
+  padding: 0 0 12% 22%;
+}
+
+.photo {
+  width: 100%;
+  aspect-ratio: 4 / 5;
+  border-radius: 32px;
+  object-fit: cover;
+}
+
+.split-phone {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 46%;
 }
 
 .finds {
