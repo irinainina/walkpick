@@ -65,8 +65,7 @@ img {
 }
 
 h1,
-h2,
-.subtitle {
+h2 {
   font-family: var(--display);
   font-weight: 800;
   color: var(--ink);
@@ -80,12 +79,6 @@ h2 span {
 h2 {
   font-size: clamp(32px, 4vw, 56px);
   line-height: 1.1;
-  letter-spacing: -0.02em;
-}
-
-.subtitle {
-  font-size: clamp(28px, 3vw, 40px);
-  line-height: 1.2;
   letter-spacing: -0.02em;
 }
 

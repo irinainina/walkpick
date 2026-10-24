@@ -122,10 +122,6 @@
   color: var(--blue);
 }
 
-.split-chart {
-  margin-top: 96px;
-}
-
 .phones {
   display: flex;
   align-items: flex-start;
